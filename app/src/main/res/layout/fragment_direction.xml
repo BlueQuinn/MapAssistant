@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:padding="7dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageButton
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        android:padding="7dp"
+        android:src="@drawable/back"
+        android:layout_gravity="center"
+        android:id="@+id/btnBack"
+        android:layout_weight="0.1"
+        android:layout_width="0dp"
+        android:layout_height="60dp" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_weight="0.8"
+        android:layout_width="0dp"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:hint="From"
+            android:textColorHint="@color/colorGray"
+            android:layout_margin="4dp"
+            android:background="@color/colorPrimaryLight"
+            android:textColor="@android:color/white"
+            android:padding="5dp"
+            android:textSize="15dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:id="@+id/txtFrom"
+            android:layout_weight="0.5"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:singleLine="true"/>
+        <TextView
+            android:hint="Choose destination"
+            android:textColorHint="@color/colorGray"
+            android:layout_margin="4dp"
+            android:background="@color/colorPrimaryLight"
+            android:textColor="@android:color/white"
+            android:padding="5dp"
+            android:textSize="15dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:id="@+id/txtTo"
+            android:layout_weight="0.5"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:singleLine="true"/>
+    </LinearLayout>
+
+    <ImageButton
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        android:padding="3dp"
+        android:src="@drawable/reverse"
+        android:layout_gravity="center"
+        android:id="@+id/btnReverse"
+        android:layout_weight="0.1"
+        android:layout_width="0dp"
+        android:layout_height="60dp" />
+</LinearLayout>

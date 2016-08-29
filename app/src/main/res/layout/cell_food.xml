@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="170dp"
+    android:background="@color/colorGray">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_margin="3dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/card"
+    android:orientation="vertical">
+
+    <ImageView
+        android:src="@drawable/food"
+        android:scaleType="fitXY"
+        android:id="@+id/imvThumbnail"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.7"/>
+
+    <TextView
+        android:layout_marginTop="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginLeft="4dp"
+        android:maxLines="2"
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.2"
+        android:gravity="center|left"
+        android:text="1234567890-ewrtyuio\nadasd"
+        android:textColor="@android:color/black"
+        android:textSize="12dp"/>
+
+    <TextView
+        android:layout_marginBottom="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginLeft="4dp"
+        android:id="@+id/tvAddress"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        android:gravity="center|left"
+        android:text="1234567890-ewrtyuio"
+        android:textColor="@color/colorAccent"
+        android:textSize="11dp"/>
+
+</LinearLayout>
+</LinearLayout>

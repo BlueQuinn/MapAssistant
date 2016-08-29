@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Map Assistant</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="trafficDatabase">https://androidtraffic.firebaseio.com/</string>
+
+</resources>
