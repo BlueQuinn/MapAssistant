@@ -86,7 +86,7 @@ public class FoodAst extends AsyncTask<String, Integer, ArrayList<Food>>
     protected void onPostExecute(ArrayList<Food> album)
     {
         super.onPostExecute(album);
-        listener.onLoaded(album);
+        listener.onFinish(album);
     }
 
     OnLoadListener<ArrayList<Food>> listener;

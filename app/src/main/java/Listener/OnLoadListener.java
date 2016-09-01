@@ -5,5 +5,5 @@ package Listener;
  */
 public interface OnLoadListener<Result>
 {
-    void onLoaded(Result result);
+    void onFinish(Result result);
 }

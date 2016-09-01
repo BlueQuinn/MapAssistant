@@ -18,9 +18,9 @@ public class FavouriteFragment extends DestinationFragment
         asyncTask = new DestinationAst("Favourite");
     }
 
-    @Override
+    /*@Override
     void onSelected(int position)
     {
         listener.onSelected(list.get(position).getName());
-    }
+    }*/
 }

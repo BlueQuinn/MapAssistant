@@ -47,7 +47,7 @@ public class DirectionAst extends AsyncTask<LatLng, Integer, ArrayList<LatLng>>
     @Override
     protected void onPostExecute(ArrayList<LatLng> result)
     {
-        listener.onLoaded(result);
+        listener.onFinish(result);
         super.onPostExecute(result);
     }
 

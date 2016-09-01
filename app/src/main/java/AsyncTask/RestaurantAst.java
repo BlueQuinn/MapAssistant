@@ -95,7 +95,7 @@ public class RestaurantAst extends AsyncTask<String, Integer, ArrayList<Restaura
     protected void onPostExecute(ArrayList<Restaurant> album)
     {
         super.onPostExecute(album);
-        listener.onLoaded(album);
+        listener.onFinish(album);
         prbLoading.setVisibility(View.GONE);
     }
 

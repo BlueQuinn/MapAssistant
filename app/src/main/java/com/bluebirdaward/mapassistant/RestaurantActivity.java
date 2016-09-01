@@ -66,7 +66,7 @@ public class RestaurantActivity extends AppCompatActivity
     }
 
     @Override
-    public void onLoaded(ArrayList<Restaurant> list)
+    public void onFinish(ArrayList<Restaurant> list)
     {
         prbLoading.setVisibility(View.GONE);
         if (list.size() < 1)

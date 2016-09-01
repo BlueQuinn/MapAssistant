@@ -78,7 +78,7 @@ public class DestinationFragment extends Fragment implements AdapterView.OnItemC
         asyncTask.setOnLoadListener(new OnLoadListener<ArrayList<Destination>>()
         {
             @Override
-            public void onLoaded(ArrayList<Destination> listDestination)
+            public void onFinish(ArrayList<Destination> listDestination)
             {
                 prbLoading.setVisibility(View.GONE);
                 //for (int i = 0; i < listDestination.size(); ++i)

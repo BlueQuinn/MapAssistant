@@ -38,7 +38,7 @@ public class DestinationAst extends AsyncTask<Void, Integer, ArrayList<Destinati
     @Override
     protected void onPostExecute(ArrayList<Destination> result)
     {
-        listener.onLoaded(result);
+        listener.onFinish(result);
         super.onPostExecute(result);
     }
 

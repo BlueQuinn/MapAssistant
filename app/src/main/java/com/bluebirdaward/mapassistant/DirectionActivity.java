@@ -1,12 +1,15 @@
 package com.bluebirdaward.mapassistant;
 
+import android.Manifest;
 import android.content.Intent;
-import android.os.Build;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,10 +37,12 @@ import java.util.ArrayList;
 import AsyncTask.DirectionAst;
 import Listener.OnLoadListener;
 import Listener.OnDirectionListener;
+
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 public class DirectionActivity extends AppCompatActivity
-        implements View.OnClickListener, OnMapReadyCallback, OnDirectionListener
+        implements View.OnClickListener, OnMapReadyCallback, OnDirectionListener,
+        GoogleMap.OnMyLocationChangeListener
 {
     GoogleMap map;
     LatLng position;
@@ -45,7 +50,9 @@ public class DirectionActivity extends AppCompatActivity
     float zoom;
     private int width;
     private int height;
-    String restaurant;
+
+    LatLng myLocation;
+    String destination;
 
     ImageButton btnBack;
     ImageButton btnReverse;
@@ -73,14 +80,14 @@ public class DirectionActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-
         Intent intent = getIntent();
         position = intent.getParcelableExtra("position");
         zoom = intent.getFloatExtra("zoom", 15);
-        restaurant = intent.getStringExtra("restaurant");
+        myLocation = intent.getParcelableExtra("myLocation");
+        destination = intent.getStringExtra("destination");
     }
 
-        void setListener()
+    void setListener()
     {
         btnBack.setOnClickListener(this);
         btnReverse.setOnClickListener(this);
@@ -93,17 +100,17 @@ public class DirectionActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap)
     {
         map = googleMap;
-        map.setContentDescription("");
+        map.setContentDescription(getResources().getString(R.string.app_name));
         map.setTrafficEnabled(true);
-        if (restaurant == null)
+        if (destination == null || myLocation == null)
         {
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
         }
-        else
+        else    // direction to destination from my location
         {
             try
             {
-                Intent intent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(restaurant).zzig(1).build(this);
+                Intent intent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(destination).zzig(1).build(this);
                 startActivityForResult(intent, 3);
             }
             catch (GooglePlayServicesRepairableException e)
@@ -118,9 +125,19 @@ public class DirectionActivity extends AppCompatActivity
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            map.setMyLocationEnabled(true);
+            map.setOnMyLocationChangeListener(this);
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if ((requestCode == 0 || requestCode == 1) && data != null)
+        if ((requestCode == 0 || requestCode == 1) && data != null)     // between 2 custom place
         {
             String place = data.getStringExtra("place");
             textView[requestCode].setText(place);
@@ -130,7 +147,7 @@ public class DirectionActivity extends AppCompatActivity
             BitmapDescriptor icon;
             if (requestCode == 0)
             {
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.car);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.marker);
             }
             else
             {
@@ -154,14 +171,26 @@ public class DirectionActivity extends AppCompatActivity
                 navigate(latLng[0], latLng[1]);
             }
         }
-        if (requestCode == 3)
+        if (requestCode == 3)       // direction to destination from my location
         {
             if (resultCode == -1)
             {
+
                 Place place = PlaceAutocomplete.getPlace(this, data);
-                textView[0].setText("my location");
                 textView[1].setText(place.getName());
-                latLng[0] = MainActivity.myLocation;
+                latLng[1] = place.getLatLng();
+
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                {
+                    if (android.os.Build.VERSION.SDK_INT > 22)
+                    {
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    }
+                    return;
+                }
+                map.setMyLocationEnabled(true);
+                map.setOnMyLocationChangeListener(this);
+                /*latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
                 latLng[1] = place.getLatLng();
 
                 BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.car);
@@ -175,7 +204,7 @@ public class DirectionActivity extends AppCompatActivity
                 marker[0].setPosition(latLng[0]);
                 marker[1].setPosition(latLng[1]);
 
-                navigate(latLng[0], latLng[1]);
+                navigate(latLng[0], latLng[1]);*/
             }
             else if (resultCode == 2)
             {
@@ -191,14 +220,14 @@ public class DirectionActivity extends AppCompatActivity
         asyncTask.setOnLoadListener(new OnLoadListener<ArrayList<LatLng>>()
         {
             @Override
-            public void onLoaded(ArrayList<LatLng> directionPoints)
+            public void onFinish(ArrayList<LatLng> directionPoints)
             {
                 if (directionPoints == null || directionPoints.size() < 1)
                 {
                     Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                PolylineOptions line = new PolylineOptions().width(12).color(getResources().getColor(R.color.colorPrimary));
+                PolylineOptions line = new PolylineOptions().width(15).color(getResources().getColor(R.color.colorPrimary));
                 for (int i = 0; i < directionPoints.size(); i++)
                 {
                     line.add(directionPoints.get(i));
@@ -239,8 +268,8 @@ public class DirectionActivity extends AppCompatActivity
 
                     double tmpLat = latLng[0].latitude;
                     double tmpLng = latLng[0].longitude;
-                    latLng[0] = new LatLng(latLng[1].latitude,  latLng[1].longitude);
-                    latLng[1] = new LatLng(tmpLat,  tmpLng);
+                    latLng[0] = new LatLng(latLng[1].latitude, latLng[1].longitude);
+                    latLng[1] = new LatLng(tmpLat, tmpLng);
 
                     marker[0].setPosition(latLng[0]);
                     marker[1].setPosition(latLng[1]);
@@ -264,7 +293,7 @@ public class DirectionActivity extends AppCompatActivity
         asyncTask.setOnLoadListener(new OnLoadListener<ArrayList<LatLng>>()
         {
             @Override
-            public void onLoaded(ArrayList<LatLng> directionPoints)
+            public void onFinish(ArrayList<LatLng> directionPoints)
             {
                 PolylineOptions line = new PolylineOptions().width(10).color(getResources().getColor(R.color.colorPrimary));
                 for (int i = 0; i < directionPoints.size(); i++)
@@ -299,5 +328,27 @@ public class DirectionActivity extends AppCompatActivity
             return builder.build();
         }
         return null;
+    }
+
+    @Override
+    public void onMyLocationChange(Location location)
+    {
+        map.setOnMyLocationChangeListener(null);
+        myLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
+        textView[0].setText("my location");
+
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.marker);
+        MarkerOptions markerOptions = new MarkerOptions().position(latLng[0]).icon(icon);
+        marker[0] = map.addMarker(markerOptions);
+
+        icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
+        markerOptions = new MarkerOptions().position(latLng[1]).icon(icon);
+        marker[1] = map.addMarker(markerOptions);
+
+        marker[0].setPosition(latLng[0]);
+        marker[1].setPosition(latLng[1]);
+
+        navigate(latLng[0], latLng[1]);
     }
 }

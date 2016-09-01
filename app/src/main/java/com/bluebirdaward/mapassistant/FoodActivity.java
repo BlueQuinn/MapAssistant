@@ -55,7 +55,6 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
         adapter = new FoodAdt(getApplicationContext(), R.layout.cell_food, listFood);
         gridMenu.setAdapter(adapter);
 
-
         asyncTask = new FoodAst();
         asyncTask.setOnLoaded(this);
         asyncTask.execute("https://www.deliverynow.vn" + restaurant.getUrl());
@@ -64,7 +63,7 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
     }
 
     @Override
-    public void onLoaded(ArrayList<Food> list)
+    public void onFinish(ArrayList<Food> list)
     {
         prbLoading.setVisibility(View.GONE);
         if (list.size() < 1)
@@ -96,7 +95,7 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
         name = name.substring(0, separator);
 
         Intent intent = new Intent(this, DirectionActivity.class);
-        intent.putExtra("restaurant", name);
+        intent.putExtra("destination", name);
         startActivity(intent);
     }
 

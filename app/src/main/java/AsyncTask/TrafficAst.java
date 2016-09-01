@@ -11,8 +11,6 @@ import com.google.android.gms.maps.model.LatLng;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 
 import DTO.Jam;
@@ -44,7 +42,7 @@ public class TrafficAst extends AsyncTask<String, Integer, ArrayList<LatLng>>
     @Override
     protected void onPostExecute(ArrayList<LatLng> result)
     {
-        listener.onLoaded(result);
+        listener.onFinish(result);
         super.onPostExecute(result);
     }
 

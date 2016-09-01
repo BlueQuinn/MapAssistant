@@ -3,8 +3,6 @@ package AsyncTask;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.google.android.gms.maps.model.LatLng;
-
 import java.util.ArrayList;
 
 import DTO.Place;
@@ -43,7 +41,7 @@ public class FindPlaceAst extends AsyncTask<Double, Integer, ArrayList<Place>>
     @Override
     protected void onPostExecute(ArrayList<Place> result)
     {
-        listener.onLoaded(result);
+        listener.onFinish(result);
         super.onPostExecute(result);
     }
 

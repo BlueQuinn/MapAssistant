@@ -1,47 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="200dp"
-              android:layout_height="210dp"
-              android:orientation="vertical">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="250dp"
+    android:layout_height="150dp"
+    android:orientation="vertical">
 
     <AutoCompleteTextView
-        android:completionThreshold="1"
-        android:padding="8dp"
-        android:layout_margin="12dp"
-        android:hint="Bạn cần tìm gì ?"
-        android:textColorHint="@android:color/darker_gray"
-        android:gravity="center"
         android:id="@+id/auto_complete_search"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.25"/>
+        android:layout_margin="15dp"
+        android:layout_weight="0.1"
+        android:completionThreshold="1"
+        android:gravity="center"
+        android:hint="Bạn cần tìm gì ?"
+        android:padding="8dp"
+        android:textColorHint="@android:color/darker_gray"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="10dp"/>
 
     <TextView
-        android:textColor="@color/colorAccent"
+        android:id="@+id/txtRadius"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.1"
+        android:textSize="16dp"
+        android:text="Phạm vi tìm kiếm 3km"
         android:textAlignment="center"
-        android:text="Phạm vi tìm kiếm (km)"
+        android:textColor="@android:color/black"/>
+
+    <!--<Spinner
+        android:id="@+id/radius_picker"
+        android:layout_width="70dp"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="15dp"
+        android:layout_marginTop="3dp"
+        android:layout_weight="0.15"/>-->
+
+    <SeekBar
+        android:id="@+id/radiusPicker"
+        android:max="9"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="15dp"
+        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.1"/>
 
-    <Spinner
-        android:layout_gravity="right"
-        android:id="@+id/radius_picker"
-        android:layout_width="100dp"
-        android:layout_height="0dp"
-        android:layout_weight="0.15"
-        android:layout_marginTop="3dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginBottom="12dp"/>
-
-    <Button
-        android:textColor="@android:color/white"
-        android:background="@color/colorPrimary"
-        android:text="Tìm kiếm"
+    <!--<Button
         android:id="@+id/btnFind"
-        android:layout_margin="12dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.2"/>
+        android:layout_margin="25dp"
+        android:layout_weight="0.2"
+        android:background="@color/colorPrimary"
+        android:text="Tìm kiếm"
+        android:textColor="@android:color/white"/>-->
 
+    <!--<widgets.CircularSeekBar
+        android:layout_width="150dp"
+        android:layout_height="150dp"/>-->
+    
+    
 </LinearLayout>
