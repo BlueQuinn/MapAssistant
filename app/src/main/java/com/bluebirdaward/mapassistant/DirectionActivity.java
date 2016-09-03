@@ -1,9 +1,11 @@
 package com.bluebirdaward.mapassistant;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import android.view.Display;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +40,7 @@ import java.util.ArrayList;
 import AsyncTask.DirectionAst;
 import Listener.OnLoadListener;
 import Listener.OnDirectionListener;
+import Utils.ServiceUtils;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
@@ -52,48 +56,68 @@ public class DirectionActivity extends AppCompatActivity
     private int height;
 
     LatLng myLocation;
-    String destination;
+    LatLng destination;
+    String place;
 
-    ImageButton btnBack;
-    ImageButton btnReverse;
+    String restaurant;
+
     TextView[] textView;
 
     LatLng[] latLng = new LatLng[2];
     Marker[] marker = new Marker[2];
+
+    int request;
+    final int CUSTOM_DIRECTION = 1;      //
+    public static final int RESTAURANT_DIRECTION = 2;    // btnTrack click
+    public static final int PLACE_DIRECTION = 3;
+
+    ProgressBar prbLoading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_direction);
-        getSreenDimanstions();
+        getSreenDimension();
 
         textView = new TextView[2];
         textView[0] = (TextView) findViewById(R.id.txtFrom);
         textView[1] = (TextView) findViewById(R.id.txtTo);
 
-        btnBack = (ImageButton) findViewById(R.id.btnBack);
-        btnReverse = (ImageButton) findViewById(R.id.btnReverse);
+        ImageButton btnBack = (ImageButton) findViewById(R.id.btnBack);
+        ImageButton btnReverse = (ImageButton) findViewById(R.id.btnReverse);
 
-        setListener();
+        prbLoading = (ProgressBar) findViewById(R.id.prbLoading);
+        prbLoading.setVisibility(View.GONE);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
-        Intent intent = getIntent();
-        position = intent.getParcelableExtra("position");
-        zoom = intent.getFloatExtra("zoom", 15);
-        myLocation = intent.getParcelableExtra("myLocation");
-        destination = intent.getStringExtra("destination");
-    }
-
-    void setListener()
-    {
         btnBack.setOnClickListener(this);
         btnReverse.setOnClickListener(this);
 
         textView[0].setOnClickListener(this);
         textView[1].setOnClickListener(this);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+        Intent intent = getIntent();
+        request = intent.getIntExtra("request", CUSTOM_DIRECTION);
+        switch (request)
+        {
+            case CUSTOM_DIRECTION:
+                position = intent.getParcelableExtra("position");
+                zoom = intent.getFloatExtra("zoom", 15);
+                break;
+
+            case RESTAURANT_DIRECTION:
+                restaurant = intent.getStringExtra("restaurant");
+                break;
+
+            case PLACE_DIRECTION:
+                myLocation = intent.getParcelableExtra("myLocation");
+                destination = intent.getParcelableExtra("destination");
+                place = intent.getStringExtra("place");
+                break;
+        }
     }
 
     @Override
@@ -102,25 +126,49 @@ public class DirectionActivity extends AppCompatActivity
         map = googleMap;
         map.setContentDescription(getResources().getString(R.string.app_name));
         map.setTrafficEnabled(true);
-        if (destination == null || myLocation == null)
+        map.getUiSettings().setCompassEnabled(true);
+        map.getUiSettings().setMyLocationButtonEnabled(false);
+        map.getUiSettings().setMapToolbarEnabled(false);
+
+        switch (request)
         {
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
-        }
-        else    // direction to destination from my location
-        {
-            try
+            case CUSTOM_DIRECTION:
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
+                break;
+
+            case RESTAURANT_DIRECTION:
             {
-                Intent intent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(destination).zzig(1).build(this);
-                startActivityForResult(intent, 3);
+                try
+                {
+                    Intent intent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(restaurant).zzig(1).build(this);
+                    startActivityForResult(intent, 3);
+                    //prbLoading.setVisibility(View.VISIBLE);
+                }
+                catch (GooglePlayServicesRepairableException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (GooglePlayServicesNotAvailableException e)
+                {
+                    e.printStackTrace();
+                }
+                break;
             }
-            catch (GooglePlayServicesRepairableException e)
-            {
-                e.printStackTrace();
-            }
-            catch (GooglePlayServicesNotAvailableException e)
-            {
-                e.printStackTrace();
-            }
+
+            case PLACE_DIRECTION:
+                latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
+                latLng[1] = new LatLng(destination.latitude, destination.longitude);
+
+                MarkerOptions markerOptions = new MarkerOptions().position(latLng[0]).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
+                marker[0] = map.addMarker(markerOptions.title("my location"));
+                markerOptions = new MarkerOptions().position(latLng[1]).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+                marker[1] = map.addMarker(markerOptions.title(place));
+
+                textView[0].setText("my location");
+                textView[1].setText(place);
+
+                navigate(latLng[0], latLng[1]);
+                break;
         }
     }
 
@@ -129,8 +177,17 @@ public class DirectionActivity extends AppCompatActivity
     {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
-            map.setMyLocationEnabled(true);
-            map.setOnMyLocationChangeListener(this);
+            if (ServiceUtils.checkServiceEnabled(this))
+            {
+                prbLoading.setVisibility(View.VISIBLE);
+                map.setMyLocationEnabled(true);
+                map.setOnMyLocationChangeListener(this);
+                //Toast.makeText(this, "Đang xác định vị trí của bạn", Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                Toast.makeText(this, "Bạn chưa mở GPS service", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -139,6 +196,7 @@ public class DirectionActivity extends AppCompatActivity
     {
         if ((requestCode == 0 || requestCode == 1) && data != null)     // between 2 custom place
         {
+            prbLoading.setVisibility(View.GONE);
             String place = data.getStringExtra("place");
             textView[requestCode].setText(place);
 
@@ -158,24 +216,23 @@ public class DirectionActivity extends AppCompatActivity
                 MarkerOptions markerOptions = new MarkerOptions().position(latLng[requestCode]).icon(icon);
                 //Marker = googleMap.addMarker(markerOptions);
                 //marker[requestCode] = map.addMarker(new MarkerOptions().position(latLng[requestCode]));
-                marker[requestCode] = map.addMarker(markerOptions);
+                marker[requestCode] = map.addMarker(markerOptions.title(place));
             }
             else
             {
                 marker[requestCode].setPosition(latLng[requestCode]);
             }
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng[requestCode], zoom));
+            map.animateCamera(CameraUpdateFactory.newLatLng(latLng[requestCode]));
 
             if (textView[0].getText().length() > 0 && textView[1].getText().length() > 0)
             {
                 navigate(latLng[0], latLng[1]);
             }
         }
-        if (requestCode == 3)       // direction to destination from my location
+        if (requestCode == 3)       // direction to restaurant from my location
         {
             if (resultCode == -1)
             {
-
                 Place place = PlaceAutocomplete.getPlace(this, data);
                 textView[1].setText(place.getName());
                 latLng[1] = place.getLatLng();
@@ -188,8 +245,19 @@ public class DirectionActivity extends AppCompatActivity
                     }
                     return;
                 }
-                map.setMyLocationEnabled(true);
-                map.setOnMyLocationChangeListener(this);
+                if (ServiceUtils.checkServiceEnabled(this))
+                {
+                    prbLoading.setVisibility(View.VISIBLE);
+                    map.setMyLocationEnabled(true);
+                    map.setOnMyLocationChangeListener(this);
+                    //Toast.makeText(this, "Đang xác định vị trí của bạn", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    prbLoading.setVisibility(View.GONE);
+                    Toast.makeText(this, "Bạn chưa mở GPS service", Toast.LENGTH_SHORT).show();
+                }
+
                 /*latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
                 latLng[1] = place.getLatLng();
 
@@ -216,15 +284,15 @@ public class DirectionActivity extends AppCompatActivity
     void navigate(LatLng start, LatLng end)
     {
         DirectionAst asyncTask = new DirectionAst();
-        asyncTask.execute(start, end);
         asyncTask.setOnLoadListener(new OnLoadListener<ArrayList<LatLng>>()
         {
             @Override
             public void onFinish(ArrayList<LatLng> directionPoints)
             {
+                prbLoading.setVisibility(View.GONE);
                 if (directionPoints == null || directionPoints.size() < 1)
                 {
-                    Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_LONG).show();
                     return;
                 }
                 PolylineOptions line = new PolylineOptions().width(15).color(getResources().getColor(R.color.colorPrimary));
@@ -237,10 +305,11 @@ public class DirectionActivity extends AppCompatActivity
                     route.remove();
                 }
                 route = map.addPolyline(line);
-                LatLngBounds latlngBounds = createLatLngBoundsObject(latLng[0], latLng[1]);
-                map.animateCamera(CameraUpdateFactory.newLatLngBounds(latlngBounds, width, height, 150));
+                map.animateCamera(CameraUpdateFactory.newLatLngBounds(createLatLngBoundsObject(latLng[0], latLng[1]), width, height, 150));
             }
         });
+        asyncTask.execute(start, end);
+        prbLoading.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -311,7 +380,7 @@ public class DirectionActivity extends AppCompatActivity
         });
     }
 
-    private void getSreenDimanstions()
+    private void getSreenDimension()
     {
         Display display = getWindowManager().getDefaultDisplay();
         width = display.getWidth();
@@ -334,17 +403,18 @@ public class DirectionActivity extends AppCompatActivity
     public void onMyLocationChange(Location location)
     {
         map.setOnMyLocationChangeListener(null);
+        prbLoading.setVisibility(View.GONE);
         myLocation = new LatLng(location.getLatitude(), location.getLongitude());
         latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
         textView[0].setText("my location");
 
         BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.marker);
         MarkerOptions markerOptions = new MarkerOptions().position(latLng[0]).icon(icon);
-        marker[0] = map.addMarker(markerOptions);
+        marker[0] = map.addMarker(markerOptions.title("my location"));
 
         icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
         markerOptions = new MarkerOptions().position(latLng[1]).icon(icon);
-        marker[1] = map.addMarker(markerOptions);
+        marker[1] = map.addMarker(markerOptions.title(textView[1].getText().toString()));
 
         marker[0].setPosition(latLng[0]);
         marker[1].setPosition(latLng[1]);

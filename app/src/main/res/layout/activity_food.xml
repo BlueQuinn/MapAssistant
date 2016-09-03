@@ -7,7 +7,7 @@
     tools:context="com.bluebirdaward.mapassistant.FoodActivity">
 
     <GridView
-        android:numColumns="3"
+        android:numColumns="2"
         android:id="@+id/lvArticle"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

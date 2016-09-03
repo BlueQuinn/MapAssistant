@@ -27,7 +27,6 @@ public class RestaurantActivity extends AppCompatActivity
     TextView tvEmpty;
     ArrayList<Restaurant> listRestaurant;
     RestaurantAdt adapter;
-    RestaurantAst asyncTask;
     ProgressBar prbLoading;
 
     @Override
@@ -49,7 +48,7 @@ public class RestaurantActivity extends AppCompatActivity
         Intent intent = getIntent();
 
         String url = "https://www.deliverynow.vn/ho-chi-minh/danh-sach-dia-diem-phuc-vu-" + intent.getStringExtra("url") + "-giao-tan-noi";
-        asyncTask = new RestaurantAst(this.findViewById(android.R.id.content));
+        RestaurantAst asyncTask = new RestaurantAst(this.findViewById(android.R.id.content));
         asyncTask.setOnLoaded(this);
         asyncTask.execute(url);
 

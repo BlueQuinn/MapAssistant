@@ -185,7 +185,7 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
         {
             listener.onClose();
         }
-        else
+        /*else
         {
             PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -204,7 +204,7 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
             {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 
     LatLngBounds toBounds(LatLng center, double radius) {

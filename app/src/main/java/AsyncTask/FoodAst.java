@@ -48,17 +48,17 @@ public class FoodAst extends AsyncTask<String, Integer, ArrayList<Food>>
             TagNode root = htmlCleaner.clean(urlConnection.getInputStream());
 
             Object[] node_title = root.evaluateXPath("//img[@class='materialboxed']/@title");
-            Object[] node_url = root.evaluateXPath("//span[@class='txt-blue font16 bold']/text()");
+            Object[] nodePrice = root.evaluateXPath("//span[@class='txt-blue font16 bold']/text()");
             Object[] nodeImg = root.evaluateXPath("//img[@class='materialboxed']/@src");
 
             for (int i = 0; i < nodeImg.length; ++i)
             {
                 String title = UnicodeConverter.convert((String) node_title[i]);
-                String url = node_url[i].toString();
+                String price = nodePrice[i].toString() + "đ";
                 String img = (String) nodeImg[i];
                 img = img.replace("/content/images/no-image.png", "");
 
-                list.add(new Food(title, url, img));
+                list.add(new Food(title, price, img));
             }
         }
         catch (MalformedURLException e)

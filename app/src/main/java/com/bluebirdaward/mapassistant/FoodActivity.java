@@ -12,6 +12,7 @@ import android.view.WindowManager;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -20,6 +21,8 @@ import AsyncTask.FoodAst;
 import DTO.Food;
 import DTO.Restaurant;
 import Listener.OnLoadListener;
+import Utils.ServiceUtils;
+
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 public class FoodActivity extends AppCompatActivity implements OnLoadListener<ArrayList<Food>>, OnClickListener
@@ -28,7 +31,6 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
     TextView tvEmpty;
     ArrayList<Food> listFood;
     FoodAdt adapter;
-    FoodAst asyncTask;
     Restaurant restaurant;
     FloatingActionButton btnGo;
     ProgressBar prbLoading;
@@ -55,7 +57,7 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
         adapter = new FoodAdt(getApplicationContext(), R.layout.cell_food, listFood);
         gridMenu.setAdapter(adapter);
 
-        asyncTask = new FoodAst();
+        FoodAst asyncTask = new FoodAst();
         asyncTask.setOnLoaded(this);
         asyncTask.execute("https://www.deliverynow.vn" + restaurant.getUrl());
 
@@ -83,20 +85,46 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
     @Override
     public void onClick(View v)
     {
-        String name = restaurant.getTitle();
-        int separator = name.length();
-        for (int i = 0; i < name.length(); ++i)
+        if (ServiceUtils.checkServiceEnabled(this))
         {
-            if (name.charAt(i) == '-')
+            String address = restaurant.getAddress();
+            int comma = address.indexOf(',');
+            if (comma < 1)
             {
-                separator = i;
+                comma = address.length();
             }
-        }
-        name = name.substring(0, separator);
+            int splash = address.indexOf('/');
+            if (splash == -1)
+            {
+                address = address.substring(findFirstNumber(address), comma);
+            }
+            else
+            {
+                int i = address.indexOf(' ');
+                if (i > splash + 1)
+                {
+                    String s = address.substring(findFirstNumber(address), splash) + address.substring(i, comma);
+                    address = s;
+                }
+            }
 
-        Intent intent = new Intent(this, DirectionActivity.class);
-        intent.putExtra("destination", name);
-        startActivity(intent);
+            Intent intent = new Intent(this, DirectionActivity.class);
+            intent.putExtra("request", DirectionActivity.RESTAURANT_DIRECTION);
+            intent.putExtra("restaurant", address);
+            startActivity(intent);
+        }
+        else
+        {
+            Toast.makeText(this, "Bạn chưa mở GPS service", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    int findFirstNumber(String s)
+    {
+        for (int i = 0 ;i<s.length(); ++i)
+            if(s.charAt(i) >= '0' && s.charAt(i) <= '9')
+                return i;
+        return -1;
     }
 
     @Override

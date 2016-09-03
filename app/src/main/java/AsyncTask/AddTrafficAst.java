@@ -4,6 +4,7 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
+import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -74,15 +75,17 @@ public class AddTrafficAst extends AsyncTask<Integer, MarkerOptions, Boolean>
             if (traffic.getVote() < 2 * meta)
             {
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.traffic_medium);
-                level = "\nÙn tắc giao thông";
+                level = "Ùn tắc giao thông";
             }
             else
             {
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.traffic_high);
-                level = "\nKẹt xe";
+                level = "Kẹt xe";
             }
             options = new MarkerOptions().icon(icon);
-            options.position(new LatLng(traffic.getLat(), traffic.getLng())).title(AddressUtils.getAddress(geocoder, traffic.getLat(), traffic.getLng()) + level);
+            options.position(new LatLng(traffic.getLat(), traffic.getLng()))
+                    //.snippet(AddressUtils.getAddress(geocoder, traffic.getLat(), traffic.getLng()))
+                    .title(level).snippet(Integer.toString(traffic.getVote()) + " người đã thông báo");
             publishProgress(options);
         }
         return true;

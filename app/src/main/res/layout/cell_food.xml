@@ -3,7 +3,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="170dp"
+    android:layout_height="210dp"
     android:background="@color/colorGray">
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -36,6 +36,7 @@
         android:textSize="12dp"/>
 
     <TextView
+        android:paddingLeft="1dp"
         android:layout_marginBottom="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginLeft="4dp"
@@ -45,7 +46,7 @@
         android:layout_weight="0.1"
         android:gravity="center|left"
         android:text="1234567890-ewrtyuio"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/colorPrimary"
         android:textSize="11dp"/>
 
 </LinearLayout>

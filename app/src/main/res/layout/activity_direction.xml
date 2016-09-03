@@ -16,7 +16,9 @@
         app:contentInsetStart="0dp">
 
         <include layout="@layout/fragment_direction"/>
-        </android.support.v7.widget.Toolbar>
+
+    </android.support.v7.widget.Toolbar>
 
     <include layout="@layout/content_main" />
+
 </LinearLayout>

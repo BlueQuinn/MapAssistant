@@ -1,17 +1,18 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Geocoder;
 import android.location.Location;
-import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.firebase.client.DataSnapshot;
@@ -26,18 +27,20 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import AsyncTask.AddressAst;
 import DTO.Jam;
 import DTO.Position;
-import Utils.AddressUtils;
+import Listener.OnLoadListener;
+
 import com.bluebirdaward.mapassistant.gmmap.R;
+import com.google.android.gms.maps.model.LatLng;
 
 public class NotifyActivity extends AppCompatActivity implements View.OnClickListener
 {
     boolean change;
     double myLat;
     double myLng;
-    TextView tvPlace, tvAddress;
-    Button btnNotify;
+    //TextView tvPlace, tvAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -47,16 +50,43 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
 
         Firebase.setAndroidContext(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setTitle("Thông báo tắc đường");
 
-        myLat = MainActivity.myLocation.latitude;
-        myLng = MainActivity.myLocation.longitude;
+        Intent intent = getIntent();
+        LatLng myLocation = intent.getParcelableExtra("myLocation");
+        myLat = myLocation.latitude;
+        myLng = myLocation.longitude;
 
-        tvPlace = (TextView) findViewById(R.id.tvPlace);
-        tvAddress = (TextView) findViewById(R.id.tvAddress);
+        final TextView tvAddress = (TextView) findViewById(R.id.tvAddress);
 
-        btnNotify = (Button) findViewById(R.id.btnNotify);
+        final Button btnNotify = (Button) findViewById(R.id.btnNotify);
 
-        String address = AddressUtils.getAddress(new Geocoder(this, Locale.getDefault()), myLat, myLng);
+        final ProgressBar prbLoading = (ProgressBar) findViewById(R.id.prbLoading);
+        final LinearLayout layoutContent = (LinearLayout) findViewById(R.id.main_content);
+
+        AddressAst asyncTask = new AddressAst(new Geocoder(this, Locale.getDefault()));
+        asyncTask.setListener(new OnLoadListener<String>()
+        {
+            @Override
+            public void onFinish(String address)
+            {
+                prbLoading.setVisibility(View.GONE);
+                layoutContent.setVisibility(View.VISIBLE);
+
+                if (address.length() < 1)
+                {
+                    tvAddress.setText("Không có kết nối internet");
+                    btnNotify.setEnabled(false);
+                    return;
+                }
+
+                tvAddress.setText("Bạn đang ở " + address);
+                btnNotify.setOnClickListener(NotifyActivity.this);
+            }
+        });
+        asyncTask.execute(myLat, myLng);
+
+        /*String address = AddressUtils.getAddress(new Geocoder(this, Locale.getDefault()), myLat, myLng);
         if (address.length() < 1)
         {
             tvAddress.setText("Không có kết nối internet");
@@ -65,7 +95,7 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
         }
 
         tvAddress.setText("Bạn đang ở " + address);
-        btnNotify.setOnClickListener(this);
+        btnNotify.setOnClickListener(this);*/
     }
 
     float getDistance(double lat1, double lng1, double lat2, double lng2)
@@ -126,7 +156,7 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
     {
         change = false;
 
-        final Firebase ref = new Firebase(getResources().getString(R.string.trafficDatabase));
+        final Firebase ref = new Firebase(getResources().getString(R.string.database_traffic));
         ref.addValueEventListener(new ValueEventListener()
         {
             @Override
@@ -208,7 +238,8 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
 
     void showMessage(String message)
     {
-        new AlertDialog.Builder(this).setMessage(message).show()
+        new AlertDialog.Builder(this)
+                .setMessage(message)
                 .setOnDismissListener(new DialogInterface.OnDismissListener()
                 {
                     @Override
@@ -216,7 +247,7 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
                     {
                         finish();
                     }
-                });
+                }).show();
     }
 
     @Override

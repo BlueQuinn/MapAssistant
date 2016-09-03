@@ -2,7 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="250dp"
+    android:layout_height="220dp"
     android:background="@color/colorGray">
 <LinearLayout
     android:layout_margin="7dp"
@@ -19,13 +19,14 @@
         android:layout_weight="0.7"/>
 
     <TextView
+        android:layout_marginBottom="3dp"
         android:layout_marginTop="7dp"
         android:layout_marginRight="7dp"
         android:layout_marginLeft="7dp"
         android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.15"
+        android:layout_weight="0.17"
         android:gravity="center|left"
         android:text="1234567890-ewrtyuio\nasdasdasdas"
         android:textColor="@android:color/black"

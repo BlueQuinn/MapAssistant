@@ -4,13 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_violet"
+    android:background="@android:color/white"
     tools:context="com.bluebirdaward.mapassistant.NotifyActivity">
 
     <LinearLayout
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@drawable/gradient_violet"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/tvAddress"
@@ -49,10 +52,10 @@
             android:textColor="@android:color/white"/>-->
     </LinearLayout>
 
-    <!--<include
+    <include
         layout="@layout/progress_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"/>-->
+        android:layout_centerVertical="true"/>
 
 </RelativeLayout>

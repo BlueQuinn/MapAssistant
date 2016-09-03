@@ -1,7 +1,6 @@
 package com.bluebirdaward.mapassistant;
 
 import android.Manifest;
-import android.app.ActionBar;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -11,33 +10,22 @@ import android.graphics.Color;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.support.design.widget.CoordinatorLayout;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.NumberPicker;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,9 +33,11 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -69,8 +59,8 @@ import java.util.Locale;
 
 import Adapter.MenuAdt;
 import AsyncTask.AddTrafficAst;
+import AsyncTask.AddressAst;
 import AsyncTask.FindPlaceAst;
-import DTO.Jam;
 import DTO.MenuSection;
 import DTO.Menu;
 import DTO.Nearby;
@@ -78,38 +68,40 @@ import DTO.Place;
 import DTO.Traffic;
 import Listener.OnLoadListener;
 import Sqlite.SqliteHelper;
-import Utils.AddressUtils;
 import Utils.RequestCode;
 import widgets.PlacePickerDialog;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
-        View.OnClickListener, View.OnLongClickListener, GoogleMap.OnMyLocationChangeListener,
-        ExpandableListView.OnChildClickListener
+        View.OnClickListener, View.OnLongClickListener,
+        ExpandableListView.OnChildClickListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener
 {
     final int LOCATE_ON_START = 1;      //
     final int LOCATE_ON_REQUEST = 2;    // btnTrack click
-
+    final int LOCATE_FOR_NEARBY = 3;      //
+    final int LOCATE_FOR_DIRECTION = 4;    //
+    final int LOCATE_TO_NOTIFY = 5;
+    /*final int LOCATE_ON_REQUEST = 2;    // btnTrack click
+    final int LOCATE_ON_START = 1;      //
+    final int LOCATE_ON_REQUEST = 2;    // btnTrack click*/
     GoogleMap map;
+    GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
 
-    FloatingActionButton btnTrack, btnFavourite;
     ProgressBar prbLoading;
-    public static LatLng myLocation;
-    ImageButton btnMenu, btnVoice;
+    LatLng myLocation, destination;
+
+    //ImageButton btnMenu, btnVoice;
     TextView txtSearch;
     String place = "", address = "";
     public static SqliteHelper dbHelper;
 
     ExpandableListView lvLeftmenu;
-    MenuAdt adapter;
-
-    CoordinatorLayout frameLayout;
-    ArrayList<MenuSection> listSection = new ArrayList<>();
     DrawerLayout drawerLayout;
 
-    boolean track = true;
-int request = -1;
+    int request = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -118,34 +110,36 @@ int request = -1;
         setContentView(R.layout.activity_main);
         Firebase.setAndroidContext(this);
 
-        btnTrack = (FloatingActionButton) findViewById(R.id.btnTrack);
-        btnFavourite = (FloatingActionButton) findViewById(R.id.btnFavourite);
-        btnMenu = (ImageButton) findViewById(R.id.btnMenu);
-        btnVoice = (ImageButton) findViewById(R.id.btnVoice);
+        FloatingActionButton btnTrack = (FloatingActionButton) findViewById(R.id.btnTrack);
+        FloatingActionButton btnFavourite = (FloatingActionButton) findViewById(R.id.btnFavourite);
+        ImageButton btnMenu = (ImageButton) findViewById(R.id.btnMenu);
+        ImageButton btnVoice = (ImageButton) findViewById(R.id.btnVoice);
         txtSearch = (TextView) findViewById(R.id.txtSearch);
         lvLeftmenu = (ExpandableListView) findViewById(R.id.lvLeftMenu);
-        frameLayout = (CoordinatorLayout) findViewById(R.id.frameLayout);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerlayout);
         prbLoading = (ProgressBar) findViewById(R.id.prbLoading);
 
         btnTrack.setOnClickListener(this);
         btnFavourite.setOnClickListener(this);
         btnVoice.setOnClickListener(this);
-        txtSearch.setOnClickListener(this);
         btnMenu.setOnClickListener(this);
+        txtSearch.setOnClickListener(this);
         prbLoading.setVisibility(View.GONE);
 
         initMenu();
-        setAdapter();
+        //setAdapter();
         initDatabase();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        buildGoogleApiClient();
     }
 
     void initMenu()
     {
         ArrayList<Menu> listMenu = new ArrayList<>();
+        ArrayList<MenuSection> listSection = new ArrayList<>();
 
         listMenu.add(new Menu("Tìm nhà hàng", R.drawable.restaurant));
         listMenu.add(new Menu("Tìm địa điểm", R.drawable.place));
@@ -163,14 +157,18 @@ int request = -1;
         listMenu.add(new Menu("Xem từ vệ tinh", R.drawable.satellite));
         listMenu.add(new Menu("Xem theo địa hình", R.drawable.terrain));
         listSection.add(new MenuSection("Xem bản đồ", listMenu));
-    }
 
-    void setAdapter()
-    {
-        adapter = new MenuAdt(getApplicationContext(), R.layout.row_menu, R.layout.row_section, listSection);
+        MenuAdt adapter = new MenuAdt(getApplicationContext(), R.layout.row_menu, R.layout.row_section, listSection);
         lvLeftmenu.setAdapter(adapter);
         lvLeftmenu.setOnChildClickListener(this);
     }
+
+    /*void setAdapter()
+    {
+        MenuAdt adapter = new MenuAdt(getApplicationContext(), R.layout.row_menu, R.layout.row_section, listSection);
+        lvLeftmenu.setAdapter(adapter);
+        lvLeftmenu.setOnChildClickListener(this);
+    }*/
 
     void initDatabase()
     {
@@ -186,33 +184,26 @@ int request = -1;
         }
     }
 
-    void setMap()
+    synchronized void buildGoogleApiClient()
     {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-        {
-            map.setMyLocationEnabled(true);
-        }
-
-        map.setContentDescription(getResources().getString(R.string.app_name));
-        map.setTrafficEnabled(true);
-        map.getUiSettings().setCompassEnabled(true);
-        map.getUiSettings().setMyLocationButtonEnabled(false);
-        map.getUiSettings().setMapToolbarEnabled(false);
-
-        if (checkServiceEnabled())
-        {
-            map.setOnMyLocationChangeListener(this);
-            Toast.makeText(this, "Đang xác định vị trí của bạn", Toast.LENGTH_SHORT).show();
-            prbLoading.setVisibility(View.VISIBLE);
-        }
-        else
-            Toast.makeText(this, "Bạn chưa mở GPS service", Toast.LENGTH_SHORT).show();
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap)
     {
+        mGoogleApiClient.connect();
+
         map = googleMap;
+        map.setContentDescription(getResources().getString(R.string.app_name));
+        map.setTrafficEnabled(true);
+        map.getUiSettings().setCompassEnabled(true);
+        map.getUiSettings().setMyLocationButtonEnabled(false);
+        map.getUiSettings().setMapToolbarEnabled(false);
 
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         String myLat = sharedPref.getString("myLat", "");
@@ -237,32 +228,7 @@ int request = -1;
         }
         //}
         //map.setMyLocationEnabled(true);
-        setMap();
-    }
-
-    @Override
-    public void onMyLocationChange(Location location)
-    {
-        map.setOnMyLocationChangeListener(null);
-        prbLoading.setVisibility(View.GONE);
-        myLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        address = AddressUtils.getAddress(new Geocoder(this, Locale.getDefault()), myLocation.latitude, myLocation.longitude);
-        txtSearch.setText(address);
-        Log.d("123", "my = " + myLocation.latitude + " " + myLocation.longitude);
-
-        if (track)
-        {
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 15));
-            SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
-            editor.putString("myLat", Double.toString(location.getLatitude()));
-            editor.putString("myLng", Double.toString(location.getLongitude()));
-            editor.apply();
-        }
-        else
-        {
-            track = true;
-            showDialog();
-        }
+        //setMap();
     }
 
     @Override
@@ -282,8 +248,32 @@ int request = -1;
                     LatLng position = data.getParcelableExtra("position");
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 16));
 
-                    BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.marker);
-                    map.addMarker(new MarkerOptions().icon(icon).position(position));
+                    BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
+                    map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+                    {
+                        @Override
+                        public boolean onMarkerClick(final Marker marker)
+                        {
+                            Snackbar.make(findViewById(R.id.frameLayout), marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
+                                    .setAction("Chỉ đường", new View.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(View view)
+                                        {
+                                            destination = marker.getPosition();
+                                            /*Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
+                                            intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
+                                            intent.putExtra("myLocation", myLocation);
+                                            intent.putExtra("destination", marker.getPosition());
+                                            intent.putExtra("place", place);
+                                            startActivity(intent);*/
+                                            openGPS(LOCATE_FOR_DIRECTION);
+                                        }
+                                    }).show();
+                            return true;
+                        }
+                    });
+                    map.addMarker(new MarkerOptions().icon(icon).position(position).title(place).snippet(address));
                     break;
                 }
 
@@ -314,21 +304,16 @@ int request = -1;
     {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         {
-            switch (requestCode)
+            if (checkServiceEnabled())
             {
-                case LOCATE_ON_START:
-                {
-                    //map.setMyLocationEnabled(true);
-                    setMap();
-                    break;
-                }
-                case LOCATE_ON_REQUEST:
-                {
-                    //map.setMyLocationEnabled(true);
-                    setMap();
-                    //map.setOnMyLocationChangeListener(this);
-                    break;
-                }
+                prbLoading.setVisibility(View.VISIBLE);
+                map.setMyLocationEnabled(true);
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+                //Toast.makeText(this, getResources().getString(R.string.gps_loading), Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                Toast.makeText(this, getResources().getString(R.string.gps_unabled), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -340,13 +325,12 @@ int request = -1;
         {
             case R.id.btnTrack:
             {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
                 {
                     requestLocation(LOCATE_ON_REQUEST);
                     return;
-                }
-                //map.setOnMyLocationChangeListener(this);
-                setMap();
+                }*/
+                openGPS(LOCATE_ON_REQUEST);
                 break;
             }
 
@@ -358,39 +342,31 @@ int request = -1;
             {
                 if (address.length() > 1)
                 {
-                    if (place.length() < 1)
-                    {
-                        final Dialog dialog = new Dialog(this);
-                        dialog.setContentView(R.layout.dialog_save_favourite);
-                        dialog.setTitle("Lưu vào yêu thích với tên ");
+                    final Dialog dialog = new Dialog(this);
+                    dialog.setContentView(R.layout.dialog_save_favourite);
+                    dialog.setTitle("Lưu vào yêu thích với tên ");
 
-                        final EditText txtFavourite = (EditText) dialog.findViewById(R.id.txtFavourite);
-                        Button btnSave = (Button) dialog.findViewById(R.id.btnSave);
-                        btnSave.setOnClickListener(new View.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(View v)
-                            {
-                                String name = txtFavourite.getText().toString();
-                                if (name.length() > 0)
-                                {
-                                    place = name;
-                                    saveFavourite();
-                                    place = "";
-                                    dialog.dismiss();
-                                }
-                                else
-                                {
-                                    Toast.makeText(getApplicationContext(), "Bạn chưa đặt tên cho địa chỉ này", Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-                        dialog.show();
-                    }
-                    else
+                    final EditText txtFavourite = (EditText) dialog.findViewById(R.id.txtFavourite);
+                    txtFavourite.setText(place);
+                    Button btnSave = (Button) dialog.findViewById(R.id.btnSave);
+                    btnSave.setOnClickListener(new View.OnClickListener()
                     {
-                        saveFavourite();
-                    }
+                        @Override
+                        public void onClick(View v)
+                        {
+                            String name = txtFavourite.getText().toString();
+                            if (name.length() > 0)
+                            {
+                                saveFavourite(name);
+                                dialog.dismiss();
+                            }
+                            else
+                            {
+                                Toast.makeText(getApplicationContext(), "Bạn chưa đặt tên cho địa chỉ này", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                    dialog.show();
                 }
                 else
                 {
@@ -415,16 +391,15 @@ int request = -1;
         }
     }
 
-    void saveFavourite()
+    void saveFavourite(String name)
     {
-        dbHelper.delete("Favourite", place);
-        dbHelper.insert("Favourite", place, address);
+        dbHelper.delete("Favourite", name);
+        dbHelper.insert("Favourite", name, address);
         Toast.makeText(getApplicationContext(), "Đã lưu vào Yêu thích", Toast.LENGTH_SHORT).show();
     }
 
     void showDialog()
     {
-        //final CoordinatorLayout frameLayout = (CoordinatorLayout) findViewById(R.id.frameLayout);
         final GoogleMap.OnMarkerClickListener listener = new GoogleMap.OnMarkerClickListener()
         {
             @Override
@@ -432,16 +407,21 @@ int request = -1;
             {
                 marker.hideInfoWindow();
 
-                final String destination = marker.getTitle();
-                Snackbar.make(frameLayout, destination, Snackbar.LENGTH_INDEFINITE)
+                place = marker.getTitle();
+                address = marker.getSnippet();
+
+                Snackbar.make(findViewById(R.id.frameLayout), marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
                         .setAction("Chỉ đường", new View.OnClickListener()
                         {
                             @Override
                             public void onClick(View view)
                             {
-                                request = 1;
+                                //destination = marker.getPosition();
                                 Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
-                                intent.putExtra("destination", marker);
+                                intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
+                                intent.putExtra("myLocation", myLocation);
+                                intent.putExtra("destination", marker.getPosition());
+                                intent.putExtra("place", place);
                                 startActivity(intent);
                             }
                         }).show();
@@ -477,13 +457,11 @@ int request = -1;
                         {
                             Place place = list.get(i);
                             LatLng position = new LatLng(place.getLat(), place.getLng());
-                            map.addMarker(options.position(position).title(place.getName()));
+                            map.addMarker(options.position(position).title(place.getName()).snippet(place.getAddress()));
                             builder.include(position);
                         }
-                        map.addCircle(new CircleOptions()
-                                .center(myLocation)
-                                .radius(1000 * radius)
-                                .strokeColor(Color.RED));
+                        map.addCircle(new CircleOptions().center(myLocation)
+                                .radius(1000 * radius).strokeColor(Color.RED));
                         map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
                         map.setOnMarkerClickListener(listener);
                     }
@@ -493,90 +471,6 @@ int request = -1;
             }
         });
         dialog.show();
-        /*final Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.dialog_place_picker);
-
-        final AutoCompleteTextView autoCompleteSearch = (AutoCompleteTextView) dialog.findViewById(R.id.auto_complete_search);
-
-        String[] places = {"Accounting", "Airport", "Amusement Park", "Aquarium", "Art Gallery", "Atm", "Bakery", "Bank", "Bar", "Beauty Salon", "Bicycle Store", "Book Store", "Bus Station", "Cafe", "Campground", "Car Dealer", "Car Rental", "Car Repair", "Car Wash", "Casino", "Cemetery", "Church", "City Hall", "Clothing Store", "Convenience Store", "Courthouse", "Dentist", "Department Store", "Doctor", "Electrician", "Electronics Store", "Embassy", "Finance", "Fire Station", "Florist", "Food", "Funeral Home", "Furniture Store", "Gas Station", "Grocery Or Supermarket", "Gym", "Hair Care", "Hardware Store", "Health", "Home Goods Store", "Hospital", "Insurance Agency", "Jewelry Store", "Laundry", "Lawyer", "Library", "Liquor Store", "Local Government Office", "Locksmith", "Lodging", "Meal Delivery", "Meal Takeaway", "Mosque", "Movie Rental", "Movie Theater", "Moving Company", "Museum", "Night Club", "Painter", "Park", "Parking", "Pet Store", "Pharmacy", "Plumber", "Police", "Post Office", "Real Estate Agency", "Restaurant", "School", "Shoe Store", "Shopping Mall", "Spa", "Stadium", "Storage", "Store", "Taxi Stand", "Train Station", "Travel Agency", "University", "Zoo"};
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, places);
-        autoCompleteSearch.setAdapter(adapter);
-        autoCompleteSearch.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                choice = position;
-            }
-        });
-
-        Integer[] rad = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-        final Spinner radiusPicker = (Spinner) dialog.findViewById(R.id.radius_picker);
-        radiusPicker.setAdapter(new ArrayAdapter<Integer>(this, R.layout.row_spinner, rad)
-        {
-            public View getView(int position, View convertView, ViewGroup parent)
-            {
-                View v = super.getView(position, convertView, parent);
-                return v;
-            }
-
-            public View getDropDownView(int position, View convertView, ViewGroup parent)
-            {
-                View v = super.getDropDownView(position, convertView, parent);
-                return v;
-            }
-        });
-        radiusPicker.setSelection(2);
-
-        Button btnFind = (Button) dialog.findViewById(R.id.btnFind);
-        btnFind.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                if (choice > -1)
-                {
-                    String placeType = adapter.getItem(choice).toLowerCase().replace(" ", "_");
-                    FindPlaceAst asyncTask = new FindPlaceAst(getApplicationContext(), placeType, radiusPicker.getSelectedItemPosition() + 1);
-                    asyncTask.setOnLoadListener(new OnLoadListener<ArrayList<Place>>()
-                    {
-                        @Override
-                        public void onFinish(ArrayList<Place> list)
-                        {
-                            if (list == null || list.size() < 1)
-                            {
-                                Toast.makeText(getApplicationContext(), "Không tải được dữ liệu", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
-
-                            map.clear();
-                            BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.marker);
-                            MarkerOptions options = new MarkerOptions().icon(icon);
-                            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                            //ArrayList<Place> list = (ArrayList<Place>) result;
-                            for (int i = 0; i < list.size(); ++i)
-                            {
-                                Place place = list.get(i);
-                                LatLng position = new LatLng(place.getLat(), place.getLng());
-                                map.addMarker(options.position(position).title(place.getName()));
-                                builder.include(position);
-                            }
-                            map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
-                        }
-                    });
-                    asyncTask.execute(myLocation.latitude, myLocation.longitude);
-
-                    choice = -1;
-                    dialog.dismiss();
-                }
-                else
-                {
-                }
-            }
-        });
-
-        dialog.show();*/
     }
 
     @Override
@@ -601,16 +495,7 @@ int request = -1;
                         break;
                     }
                     case 1:     // search nearby place by place type and radius
-                        if (checkServiceEnabled())
-                        {
-                            track = false;
-                            map.setOnMyLocationChangeListener(this);
-                            Toast.makeText(this, "Đang xác định vị trí của bạn", Toast.LENGTH_SHORT).show();
-                            prbLoading.setVisibility(View.VISIBLE);
-                            //showDialog();
-                        }
-                        else
-                        Toast.makeText(this, "Bạn chưa mở GPS service", Toast.LENGTH_SHORT).show();
+                        openGPS(LOCATE_FOR_NEARBY);
                         break;
                     case 2:     // direction
                     {
@@ -622,6 +507,7 @@ int request = -1;
                     }
 
                     case 3:
+                        //openGPS(LOCATE_FOR_NEARBY);
                         if (address.length() > 0)
                         {
                             String msg;
@@ -657,8 +543,7 @@ int request = -1;
 
                     case 1:     // notify traffic jam
                     {
-                        Intent intent = new Intent(this, NotifyActivity.class);
-                        startActivity(intent);
+                        openGPS(LOCATE_TO_NOTIFY);
                         break;
                     }
                 }
@@ -696,11 +581,33 @@ int request = -1;
         return false;
     }
 
+    void openGPS(int requestCode)
+    {
+        request = requestCode;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            requestLocation(requestCode);
+            return;
+        }
+        if (checkServiceEnabled())
+        {
+            prbLoading.setVisibility(View.VISIBLE);
+            map.setMyLocationEnabled(true);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+            //Toast.makeText(this, getResources().getString(R.string.gps_loading), Toast.LENGTH_SHORT).show();
+            //Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        }
+        else
+        {
+            Toast.makeText(this, getResources().getString(R.string.gps_unabled), Toast.LENGTH_SHORT).show();
+        }
+    }
+
     void loadTraffic()
     {
         prbLoading.setVisibility(View.VISIBLE);
         //Toast.makeText(getApplicationContext(), "Đang tải dữ liệu", Toast.LENGTH_SHORT).show();
-        final Firebase ref = new Firebase(getResources().getString(R.string.trafficDatabase));
+        final Firebase ref = new Firebase(getResources().getString(R.string.database_traffic));
         final ValueEventListener listener = new ValueEventListener()
         {
             @Override
@@ -746,15 +653,36 @@ int request = -1;
                         }
                     }
                     Log.d("123", "" + listTraffic.size());
-                    //markTraffic(listTraffic, meta);
 
                     map.clear();
-                    AddTrafficAst asyncTask = new AddTrafficAst(listTraffic, map, new Geocoder(MainActivity.this, Locale.getDefault()));
+                    final Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                    AddTrafficAst asyncTask = new AddTrafficAst(listTraffic, map, geocoder);
                     asyncTask.setListener(new OnLoadListener<Boolean>()
                     {
                         @Override
-                        public void onFinish(Boolean aBoolean)
+                        public void onFinish(Boolean result)
                         {
+                            map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+                            {
+                                @Override
+                                public boolean onMarkerClick(Marker marker)
+                                {
+                                    prbLoading.setVisibility(View.VISIBLE);
+                                    AddressAst asyncTask = new AddressAst(geocoder);
+                                    asyncTask.setListener(new OnLoadListener<String>()
+                                    {
+                                        @Override
+                                        public void onFinish(String address)
+                                        {
+                                            prbLoading.setVisibility(View.GONE);
+                                            Snackbar.make(findViewById(R.id.frameLayout), address, Snackbar.LENGTH_INDEFINITE).show();
+                                        }
+                                    });
+                                    LatLng position = marker.getPosition();
+                                    asyncTask.execute(position.latitude, position.longitude);
+                                    return false;
+                                }
+                            });
                             prbLoading.setVisibility(View.GONE);
                         }
                     });
@@ -778,37 +706,101 @@ int request = -1;
         ref.addValueEventListener(listener);
     }
 
-    void markTraffic(ArrayList<Traffic> listTraffic, int meta)
+    @Override
+    public void onConnected(@Nullable Bundle bundle)
     {
-        map.clear();
-        BitmapDescriptor icon;
-        MarkerOptions options;
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        //mLocationRequest.setInterval(100); // Update location every second
 
-        for (Traffic traffic : listTraffic)
-        {
-            if (traffic.getVote() < 2 * meta)
-            {
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.traffic_medium);
-            }
-            else
-            {
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.traffic_high);
-            }
-            options = new MarkerOptions().icon(icon);
-            map.addMarker(options.position(new LatLng(traffic.getLat(), traffic.getLng())).title(AddressUtils.getAddress(new Geocoder(this, Locale.getDefault()), traffic.getLat(), traffic.getLng())));
-        }
+        openGPS(LOCATE_ON_START);
     }
 
-    /*int getStatusBarHeight()
+    @Override
+    public void onConnectionSuspended(int i)
     {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0)
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
+    {
+        buildGoogleApiClient();
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        mGoogleApiClient.disconnect();
+    }
+
+    @Override
+    public void onLocationChanged(Location location)
+    {
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        myLocation = new LatLng(location.getLatitude(), location.getLongitude());
+
+        switch (request)
         {
-            result = getResources().getDimensionPixelSize(resourceId);
+            case LOCATE_ON_START:
+            {
+                prbLoading.setVisibility(View.GONE);
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 19));
+                break;
+            }
+
+            case LOCATE_ON_REQUEST:
+            {
+                AddressAst asyncTask = new AddressAst(new Geocoder(this, Locale.getDefault()));
+                asyncTask.setListener(new OnLoadListener<String>()
+                {
+                    @Override
+                    public void onFinish(String result)
+                    {
+                        prbLoading.setVisibility(View.GONE);
+                        address = result;
+                        txtSearch.setText(address);
+                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 19));
+                    }
+                });
+                asyncTask.execute(myLocation.latitude, myLocation.longitude);
+                break;
+            }
+
+            case LOCATE_FOR_NEARBY:
+                prbLoading.setVisibility(View.GONE);
+                showDialog();
+                break;
+
+            case LOCATE_TO_NOTIFY:
+            {
+                prbLoading.setVisibility(View.GONE);
+                Intent intent = new Intent(this, NotifyActivity.class);
+                intent.putExtra("myLocation", myLocation);
+                startActivity(intent);
+                break;
+            }
+
+            case LOCATE_FOR_DIRECTION:
+            {
+                prbLoading.setVisibility(View.GONE);
+                Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
+                intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
+                intent.putExtra("myLocation", myLocation);
+                intent.putExtra("destination", destination);
+                intent.putExtra("place", place);
+                startActivity(intent);
+                break;
+            }
         }
-        return result;
-    }*/
+    }
 }
 
 
