@@ -13,7 +13,6 @@ public class Destination implements Serializable
     {
         this.name = name;
         this.address = address;
-        check = false;
     }
 
     String address;
@@ -28,10 +27,4 @@ public class Destination implements Serializable
         return address;
     }
 
-    boolean check;
-
-    public boolean isCheck()
-    {
-        return check;
-    }
 }

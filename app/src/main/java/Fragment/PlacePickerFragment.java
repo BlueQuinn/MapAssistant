@@ -24,8 +24,8 @@ import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
-import Listener.DestinationListener;
-
+import Listener.OnCloseListener;
+import com.bluebirdaward.mapassistant.MainActivity;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**
@@ -43,9 +43,9 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
     @Nullable
     private PlaceSelectionListener placeListener;
 
-    DestinationListener listener;
+    OnCloseListener listener;
 
-    public void setListener(DestinationListener listener)
+    public void setOnCloseListener(OnCloseListener listener)
     {
         this.listener = listener;
     }
@@ -185,10 +185,26 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
         {
             listener.onClose();
         }
-        else
+        /*else
         {
-            listener.onRemove();
-        }
+            PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            builder.include(MainActivity.myLocation);
+            //intentBuilder.setLatLngBounds(toBounds(MainActivity.myLocation, 30));
+            //intentBuilder.setLatLngBounds(builder.build());
+            try
+            {
+                startActivityForResult(intentBuilder.build(getActivity()), 2);
+            }
+            catch (GooglePlayServicesRepairableException e)
+            {
+                e.printStackTrace();
+            }
+            catch (GooglePlayServicesNotAvailableException e)
+            {
+                e.printStackTrace();
+            }
+        }*/
     }
 
     LatLngBounds toBounds(LatLng center, double radius) {

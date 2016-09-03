@@ -3,11 +3,16 @@ package com.bluebirdaward.mapassistant;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
@@ -16,23 +21,21 @@ import com.google.android.gms.maps.model.LatLng;
 
 import Adapter.ViewPagerAdapter;
 import Fragment.ContactFragment;
-import Fragment.DestinationFragment;
 import Fragment.FavouriteFragment;
 import Fragment.HistoryFragment;
 import Fragment.PlacePickerFragment;
-import Listener.DestinationListener;
+import Listener.OnCloseListener;
 import Listener.OnPlaceSelectedListener;
 import Utils.RequestCode;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 public class DestinationActivity extends AppCompatActivity
-        implements OnPlaceSelectedListener, DestinationListener
+        implements OnPlaceSelectedListener, OnCloseListener
 {
-    //private TabLayout tabLayout;
+    private TabLayout tabLayout;
     PlacePickerFragment fragmentPlace;
     private ViewPager viewPager;
-    ViewPagerAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -46,7 +49,7 @@ public class DestinationActivity extends AppCompatActivity
             initFragment();
             initContact();
 
-            adapter = new ViewPagerAdapter(getSupportFragmentManager());
+            ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
             adapter.addFragment(favouriteFragment, "yêu thích");
             adapter.addFragment(historyFragment, "gần đây");
             adapter.addFragment(contactFragment, "danh bạ");
@@ -68,11 +71,11 @@ public class DestinationActivity extends AppCompatActivity
 
     void setupViewPager()
     {
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
         fragmentPlace = (PlacePickerFragment) getSupportFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-        fragmentPlace.setListener(this);
+        fragmentPlace.setOnCloseListener(this);
         fragmentPlace.setOnPlaceSelectedListener(new PlaceSelectionListener()
         {
             @Override
@@ -147,12 +150,5 @@ public class DestinationActivity extends AppCompatActivity
     public void onClose()
     {
         finish();
-    }
-
-    @Override
-    public void onRemove()
-    {
-        DestinationFragment fragment = (DestinationFragment) adapter.getItem(viewPager.getCurrentItem());
-        fragment.remove();
     }
 }

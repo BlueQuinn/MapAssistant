@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -16,16 +15,15 @@ import com.bluebirdaward.mapassistant.gmmap.R;
 /**
  * Created by lequan on 4/23/2016.
  */
-public class DestinationAdt extends ArrayAdapter<Destination>
+public class ContactAdt extends ArrayAdapter<Destination>
 {
     ArrayList<Destination> list;
     Context context;
     int resource;
-    CheckBox checkBox;
-
-    public DestinationAdt(Context context, int resource, ArrayList<Destination> listDestination)
+    public ContactAdt(Context context, int resource, ArrayList<Destination> listDestination)
     {
         super(context, resource);
+
 
         list = listDestination;
         this.context = context;
@@ -44,7 +42,6 @@ public class DestinationAdt extends ArrayAdapter<Destination>
         if (convertView == null)
             convertView = LayoutInflater.from(context).inflate(resource, parent, false);
 
-        checkBox = (CheckBox) convertView.findViewById(R.id.chbRemove);
         TextView tvAddress = (TextView) convertView.findViewById(R.id.tvAddress);
         TextView tvName = (TextView) convertView.findViewById(R.id.tvName);
 
@@ -52,15 +49,5 @@ public class DestinationAdt extends ArrayAdapter<Destination>
         tvName.setText(list.get(position).getName());
 
         return convertView;
-    }
-
-    public void removeEnabled()
-    {
-        checkBox.setVisibility(View.VISIBLE);
-    }
-
-    public void removeDisabled()
-    {
-        checkBox.setVisibility(View.GONE);
     }
 }
