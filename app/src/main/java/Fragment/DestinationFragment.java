@@ -10,8 +10,9 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
-import Adapter.ContactAdt;
+import Adapter.DestinationAdt;
 import AsyncTask.DestinationAst;
 import DTO.Destination;
 import Listener.OnLoadListener;
@@ -21,11 +22,12 @@ import com.bluebirdaward.mapassistant.gmmap.R;
 /**
  * Created by lequan on 4/27/2016.
  */
-public class DestinationFragment extends Fragment implements AdapterView.OnItemClickListener
+public class DestinationFragment extends Fragment
+        implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener
 {
     ListView lvDestination;
     ArrayList<Destination> list;
-    ContactAdt adapter;
+    DestinationAdt adapter;
     OnPlaceSelectedListener listener;
     ProgressBar prbLoading;
     boolean loaded;
@@ -54,7 +56,7 @@ public class DestinationFragment extends Fragment implements AdapterView.OnItemC
 
         prbLoading = (ProgressBar) convertView.findViewById(R.id.prbLoading);
 
-        adapter = new ContactAdt(getActivity().getApplicationContext(), R.layout.row_destination, list);
+        adapter = new DestinationAdt(getActivity().getApplicationContext(), R.layout.row_destination, list);
         lvDestination = (ListView) convertView.findViewById(R.id.lvDestination);
         lvDestination.setAdapter(adapter);
         lvDestination.setOnItemClickListener(this);
@@ -108,5 +110,24 @@ public class DestinationFragment extends Fragment implements AdapterView.OnItemC
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)
     {
         onSelected(position);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+    {
+        for (int i=0;i<adapter.getCount();++i)
+        {
+adapter.removeEnabled();
+        }
+        return false;
+    }
+
+    public void remove()
+    {
+        for(Iterator<Destination> iterator = list.iterator(); iterator.hasNext(); ) {
+            if(iterator.next().isCheck())
+                iterator.remove();
+        }
+        adapter.notifyDataSetChanged();
     }
 }
