@@ -1,10 +1,12 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
@@ -14,7 +16,7 @@ import java.util.ArrayList;
 
 import Adapter.RestaurantAdt;
 import AsyncTask.RestaurantAst;
-import model.Restaurant;
+import DTO.Restaurant;
 import Listener.OnLoadListener;
 import com.bluebirdaward.mapassistant.gmmap.R;
 

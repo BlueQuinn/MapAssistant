@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import model.Jam;
+import DTO.Jam;
 import Listener.OnLoadListener;
 
 /**

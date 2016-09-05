@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import model.Place;
+import DTO.Place;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**

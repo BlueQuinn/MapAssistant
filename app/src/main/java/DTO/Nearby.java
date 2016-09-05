@@ -1,4 +1,4 @@
-package model;
+package DTO;
 
 /**
  * Created by lequan on 8/30/2016.

@@ -1,4 +1,4 @@
-package model;
+package DTO;
 
 /**
  * Created by Quan-DevTeam on 11/9/15.

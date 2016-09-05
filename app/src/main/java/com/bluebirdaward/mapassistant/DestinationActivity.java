@@ -3,15 +3,11 @@ package com.bluebirdaward.mapassistant;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.SparseBooleanArray;
-import android.view.View;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
@@ -25,13 +21,13 @@ import Fragment.FavouriteFragment;
 import Fragment.HistoryFragment;
 import Fragment.PlacePickerFragment;
 import Listener.DestinationListener;
-import Listener.DestinationFragmentListener;
+import Listener.OnPlaceSelectedListener;
 import Utils.RequestCode;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 public class DestinationActivity extends AppCompatActivity
-        implements DestinationFragmentListener, DestinationListener
+        implements OnPlaceSelectedListener, DestinationListener
 {
     PlacePickerFragment fragmentPlace;
     private ViewPager viewPager;
@@ -146,44 +142,6 @@ public class DestinationActivity extends AppCompatActivity
         fragmentPlace.findPlace(address);
     }
 
-    FloatingActionButton btnRemove;
-    DestinationFragment fragment;
-
-    @Override
-    public void onEnableRemove()
-    {
-        fragmentPlace.setRemove(true);
-
-        /*DestinationFragment fragment = (DestinationFragment) adapter.getItem(viewPager.getCurrentItem());
-        fragment.remove();*/
-
-
-        btnRemove = (FloatingActionButton) findViewById(R.id.btnRemove);
-        btnRemove.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-
-
-                fragment = (DestinationFragment) adapter.getItem(viewPager.getCurrentItem());
-                fragment.remove();
-                fragment.update();
-                /*fragment = null;
-                fragment = (DestinationFragment) getSupportFragmentManager().findFragmentByTag("Your_Fragment_TAG");
-                final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                ft.detach(fragment);
-                ft.attach(fragment);
-                ft.commit();*/
-
-                fragmentPlace.setRemove(false);
-
-                btnRemove.setVisibility(View.GONE);
-            }
-        });
-        btnRemove.setVisibility(View.VISIBLE);
-    }
-
     @Override
     public void onClose()
     {
@@ -191,10 +149,16 @@ public class DestinationActivity extends AppCompatActivity
     }
 
     @Override
+    public void onRemove()
+    {
+        DestinationFragment fragment = (DestinationFragment) adapter.getItem(viewPager.getCurrentItem());
+        fragment.remove();
+        fragmentPlace.setRemove(false);
+    }
+
+    @Override
     public void disableRemove()
     {
         fragmentPlace.setRemove(false);
-        fragment.cancelRemove();
-        btnRemove.setVisibility(View.GONE);
     }
 }

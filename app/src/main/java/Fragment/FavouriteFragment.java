@@ -23,10 +23,4 @@ public class FavouriteFragment extends DestinationFragment
     {
         listener.onSelected(list.get(position).getName());
     }*/
-
-    @Override
-    String fragmentName()
-    {
-        return "Favourite";
-    }
 }

@@ -14,12 +14,12 @@ import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
 import java.util.List;
 
-import model.Restaurant;
+import DTO.Restaurant;
 
 /**
  * Created by lequan on 2/1/2016.
  */
-public class RestaurantAdt extends ArrayAdapter<model.Restaurant>
+public class RestaurantAdt extends ArrayAdapter<DTO.Restaurant>
 {
 
     Context context;

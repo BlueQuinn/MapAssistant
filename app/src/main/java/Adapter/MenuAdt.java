@@ -11,8 +11,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import model.MenuSection;
-import model.Menu;
+import DTO.MenuSection;
+import DTO.Menu;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 

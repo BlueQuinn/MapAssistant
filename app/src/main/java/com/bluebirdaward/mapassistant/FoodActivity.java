@@ -1,12 +1,14 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
+import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -16,8 +18,8 @@ import java.util.ArrayList;
 
 import Adapter.FoodAdt;
 import AsyncTask.FoodAst;
-import model.Food;
-import model.Restaurant;
+import DTO.Food;
+import DTO.Restaurant;
 import Listener.OnLoadListener;
 import Utils.ServiceUtils;
 

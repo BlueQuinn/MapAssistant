@@ -2,11 +2,14 @@ package AsyncTask;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.provider.ContactsContract;
+
+import com.bluebirdaward.mapassistant.DestinationActivity;
 
 import java.util.ArrayList;
 
-import model.Destination;
+import DTO.Destination;
 
 /**
  * Created by lequan on 5/14/2016.

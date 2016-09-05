@@ -2,8 +2,6 @@ package Fragment;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,14 +10,13 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import Adapter.DestinationAdt;
 import AsyncTask.DestinationAst;
-import model.Destination;
+import DTO.Destination;
 import Listener.OnLoadListener;
-import Listener.DestinationFragmentListener;
-
-import com.bluebirdaward.mapassistant.MainActivity;
+import Listener.OnPlaceSelectedListener;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**
@@ -31,7 +28,7 @@ public class DestinationFragment extends Fragment
     ListView lvDestination;
     ArrayList<Destination> list;
     DestinationAdt adapter;
-    DestinationFragmentListener listener;
+    OnPlaceSelectedListener listener;
     ProgressBar prbLoading;
     boolean loaded;
     DestinationAst asyncTask;
@@ -63,7 +60,6 @@ public class DestinationFragment extends Fragment
         lvDestination = (ListView) convertView.findViewById(R.id.lvDestination);
         lvDestination.setAdapter(adapter);
         lvDestination.setOnItemClickListener(this);
-        lvDestination.setOnItemLongClickListener(this);
 
         return convertView;
     }
@@ -100,7 +96,7 @@ public class DestinationFragment extends Fragment
         asyncTask.execute();
     }
 
-    public void setOnPlaceSelectedListener(DestinationFragmentListener listener)
+    public void setOnPlaceSelectedListener(OnPlaceSelectedListener listener)
     {
         this.listener = listener;
     }
@@ -115,37 +111,13 @@ public class DestinationFragment extends Fragment
     {
         if (remove)
         {
-            if (list.get(position).isCheck())
-            {
-                list.get(position).setCheck(false);
-                lvDestination.setItemChecked(position, false);
-                //view.setSelected(false);
-                Log.d("123", "false " + position);
-            }
+            list.get(position).setCheck(true);
+        }
             else
-            {
-                list.get(position).setCheck(true);
-                lvDestination.setItemChecked(position, true);
-                //view.setSelected(true);
-                Log.d("123", "true " + position);
-            }
-        }
-        else
-        {
-            onSelected(position);
-        }
+        onSelected(position);
     }
 
     boolean remove = false;
-
-    void enableRemove()
-    {
-        remove = true;
-        lvDestination.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        lvDestination.setItemsCanFocus(false);
-        listener.onEnableRemove();
-    }
-
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
@@ -154,71 +126,17 @@ public class DestinationFragment extends Fragment
         {
             adapter.removeEnabled();
         }*/
-        enableRemove();
-        //remove = true;
+        remove = true;
         return false;
-    }
-
-    String fragmentName()
-    {
-        return "";
     }
 
     public void remove()
     {
-        SparseBooleanArray checked = lvDestination.getCheckedItemPositions();
-        for (int i = 0; i < lvDestination.getCount(); i++)
-        {
-            if (checked.get(i))
-            {
-                Destination item = list.get(i);
-                MainActivity.dbHelper.delete(fragmentName(), item.getName());
-  /* do whatever you want with the checked item */
-            }
-        }
-
-        /*for(Iterator<Destination> iterator = list.iterator(); iterator.hasNext(); ) {
+        for(Iterator<Destination> iterator = list.iterator(); iterator.hasNext(); ) {
             if(iterator.next().isCheck())
                 iterator.remove();
-        }*/
-        //adapter.notifyDataSetChanged();
+        }
+        adapter.notifyDataSetChanged();
         remove = false;
-        lvDestination.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        lvDestination.setItemsCanFocus(true);
     }
-
-    public void update()
-    {
-        prbLoading.setVisibility(View.VISIBLE);
-        list = new ArrayList<>();
-        //loadDestination();
-
-        initAsyncTask();
-        asyncTask.setOnLoadListener(new OnLoadListener<ArrayList<Destination>>()
-        {
-            @Override
-            public void onFinish(ArrayList<Destination> listDestination)
-            {
-                prbLoading.setVisibility(View.GONE);
-                //for (int i = 0; i < listDestination.size(); ++i)
-                for (int i = listDestination.size() - 1; i > -1; --i)
-                {
-                    list.add(listDestination.get(i));
-                }
-                adapter.notifyDataSetChanged();
-                lvDestination.setVisibility(View.VISIBLE);
-                lvDestination.clearChoices();
-                lvDestination.requestLayout();
-            }
-        });
-
-        asyncTask.execute();
-    }
-
-    public void cancelRemove()
-    {
-        lvDestination.clearChoices();
-        lvDestination.requestLayout();
-    }
-
 }

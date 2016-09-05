@@ -5,7 +5,7 @@ import android.os.AsyncTask;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import model.Destination;
+import DTO.Destination;
 import Listener.OnLoadListener;
 import com.bluebirdaward.mapassistant.MainActivity;
 

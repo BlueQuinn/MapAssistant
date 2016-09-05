@@ -12,7 +12,7 @@ import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
 import java.util.List;
 
-import model.Food;
+import DTO.Food;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**

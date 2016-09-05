@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import Fragment.DestinationFragment;
 /**
  * Created by lequan on 4/27/2016.
  */
@@ -39,15 +38,6 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter
     @Override
     public CharSequence getPageTitle(int position) {
         return mFragmentTitleList.get(position);
-    }
-
-    @Override
-    public int getItemPosition(Object object) {
-        DestinationFragment f = (DestinationFragment) object;
-        if (f != null) {
-            f.update();
-        }
-        return super.getItemPosition(object);
     }
 }
 

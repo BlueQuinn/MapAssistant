@@ -6,6 +6,6 @@ package Listener;
 public interface DestinationListener
 {
     void onClose();
-    //void onRemove();
+    void onRemove();
     void disableRemove();
 }

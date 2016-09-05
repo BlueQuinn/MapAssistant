@@ -6,7 +6,6 @@
     android:orientation="vertical">
 
     <ListView
-        android:listSelector="@drawable/selected_row"
         android:visibility="gone"
         android:id="@+id/lvDestination"
         android:layout_width="match_parent"

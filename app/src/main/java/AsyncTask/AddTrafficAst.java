@@ -4,6 +4,7 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
+import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -12,8 +13,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
-import model.Traffic;
+import DTO.Traffic;
 import Listener.OnLoadListener;
+import Utils.AddressUtils;
 
 /**
  * Created by lequan on 8/29/2016.
