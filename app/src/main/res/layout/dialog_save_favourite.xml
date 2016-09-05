@@ -16,6 +16,7 @@
         android:layout_marginBottom="3dp"/>
 
     <EditText
+        android:lines="3"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:padding="8dp"
@@ -25,7 +26,7 @@
         android:id="@+id/txtFavourite"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.3"/>
+        android:layout_weight="0.4"/>
 
     <Button
         android:textColor="@android:color/white"

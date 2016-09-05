@@ -110,7 +110,8 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
 
             Intent intent = new Intent(this, DirectionActivity.class);
             intent.putExtra("request", DirectionActivity.RESTAURANT_DIRECTION);
-            intent.putExtra("restaurant", address);
+            intent.putExtra("address", address);
+            intent.putExtra("restaurant", restaurant.getTitle());
             startActivity(intent);
         }
         else

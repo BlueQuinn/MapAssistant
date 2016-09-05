@@ -41,6 +41,8 @@ public class PlaceActivity extends AppCompatActivity implements AdapterView.OnIt
         list.add(new RestaurantSection("Đồ nướng", "thit-nuong-quay", R.drawable.bbq));
         list.add(new RestaurantSection("Pizza, hamburger", "pizza-hamburger", R.drawable.pizza));
         list.add(new RestaurantSection("Cơm", "com-ga-com-tam", R.drawable.rice));
+        list.add(new RestaurantSection("Trái cây tươi", "trai-cay-sach", R.drawable.fruit));
+        list.add(new RestaurantSection("Ăn vặt, ăn nhẹ", "an-vat-an-nhe", R.drawable.fastfood));
 
         adapter = new RestaurantSectionAdt(getApplicationContext(), R.layout.cell_place, list);
         grid = (GridView) findViewById(R.id.gridPlace);

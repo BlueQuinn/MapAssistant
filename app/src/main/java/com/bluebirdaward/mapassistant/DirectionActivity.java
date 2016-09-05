@@ -1,15 +1,14 @@
 package com.bluebirdaward.mapassistant;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.widget.ImageButton;
@@ -39,13 +38,12 @@ import java.util.ArrayList;
 
 import AsyncTask.DirectionAst;
 import Listener.OnLoadListener;
-import Listener.OnDirectionListener;
 import Utils.ServiceUtils;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 public class DirectionActivity extends AppCompatActivity
-        implements View.OnClickListener, OnMapReadyCallback, OnDirectionListener,
+        implements View.OnClickListener, OnMapReadyCallback,
         GoogleMap.OnMyLocationChangeListener
 {
     GoogleMap map;
@@ -57,9 +55,9 @@ public class DirectionActivity extends AppCompatActivity
 
     LatLng myLocation;
     LatLng destination;
-    String place;
+    String place, address;
 
-    String restaurant;
+    //String restaurant;
 
     TextView[] textView;
 
@@ -109,13 +107,15 @@ public class DirectionActivity extends AppCompatActivity
                 break;
 
             case RESTAURANT_DIRECTION:
-                restaurant = intent.getStringExtra("restaurant");
+                place = intent.getStringExtra("restaurant");
+                address = intent.getStringExtra("address");
                 break;
 
             case PLACE_DIRECTION:
                 myLocation = intent.getParcelableExtra("myLocation");
                 destination = intent.getParcelableExtra("destination");
                 place = intent.getStringExtra("place");
+                address = intent.getStringExtra("address");
                 break;
         }
     }
@@ -140,7 +140,7 @@ public class DirectionActivity extends AppCompatActivity
             {
                 try
                 {
-                    Intent intent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(restaurant).zzig(1).build(this);
+                    Intent intent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(address).zzig(1).build(this);
                     startActivityForResult(intent, 3);
                     //prbLoading.setVisibility(View.VISIBLE);
                 }
@@ -163,6 +163,10 @@ public class DirectionActivity extends AppCompatActivity
                 marker[0] = map.addMarker(markerOptions.title("my location"));
                 markerOptions = new MarkerOptions().position(latLng[1]).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
                 marker[1] = map.addMarker(markerOptions.title(place));
+                if (address != null)
+                {
+                    marker[1].setSnippet(address);
+                }
 
                 textView[0].setText("my location");
                 textView[1].setText(place);
@@ -340,44 +344,26 @@ public class DirectionActivity extends AppCompatActivity
                     latLng[0] = new LatLng(latLng[1].latitude, latLng[1].longitude);
                     latLng[1] = new LatLng(tmpLat, tmpLng);
 
+                    tmp = marker[0].getTitle();
+                    marker[0].setTitle(marker[1].getTitle());
+                    marker[1].setTitle(tmp);
+
+                    Log.d("234", marker[0].getSnippet() + "    " + marker[1].getSnippet());
+
+                    tmp = marker[0].getSnippet();
+                    marker[0].setSnippet(marker[1].getSnippet());
+                    marker[1].setSnippet(tmp);
+
                     marker[0].setPosition(latLng[0]);
                     marker[1].setPosition(latLng[1]);
+
+                    marker[0].hideInfoWindow();
+                    marker[1].hideInfoWindow();
+
                     navigate(latLng[0], latLng[1]);
                 }
                 break;
         }
-    }
-
-    @Override
-    public void onDirection(Place startLocation, Place endLocation)
-    {
-        final LatLng start = startLocation.getLatLng();
-        final LatLng end = endLocation.getLatLng();
-
-        map.addMarker(new MarkerOptions().position(start));
-        map.addMarker(new MarkerOptions().position(end));
-
-        DirectionAst asyncTask = new DirectionAst();
-        asyncTask.execute(start, end);
-        asyncTask.setOnLoadListener(new OnLoadListener<ArrayList<LatLng>>()
-        {
-            @Override
-            public void onFinish(ArrayList<LatLng> directionPoints)
-            {
-                PolylineOptions line = new PolylineOptions().width(10).color(getResources().getColor(R.color.colorPrimary));
-                for (int i = 0; i < directionPoints.size(); i++)
-                {
-                    line.add(directionPoints.get(i));
-                }
-                if (route != null)
-                {
-                    route.remove();
-                }
-                route = map.addPolyline(line);
-                LatLngBounds latlngBounds = createLatLngBoundsObject(start, end);
-                map.animateCamera(CameraUpdateFactory.newLatLngBounds(latlngBounds, width, height, 150));
-            }
-        });
     }
 
     private void getSreenDimension()
@@ -400,7 +386,7 @@ public class DirectionActivity extends AppCompatActivity
     }
 
     @Override
-    public void onMyLocationChange(Location location)
+    public void onMyLocationChange(Location location)   // this callback only run for restaurant direction
     {
         map.setOnMyLocationChangeListener(null);
         prbLoading.setVisibility(View.GONE);
@@ -415,6 +401,10 @@ public class DirectionActivity extends AppCompatActivity
         icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
         markerOptions = new MarkerOptions().position(latLng[1]).icon(icon);
         marker[1] = map.addMarker(markerOptions.title(textView[1].getText().toString()));
+        if (place.length() > 0)
+        {
+            marker[1].setSnippet(place);
+        }
 
         marker[0].setPosition(latLng[0]);
         marker[1].setPosition(latLng[1]);

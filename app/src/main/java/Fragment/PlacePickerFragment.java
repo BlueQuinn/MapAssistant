@@ -24,8 +24,8 @@ import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
-import Listener.OnCloseListener;
-import com.bluebirdaward.mapassistant.MainActivity;
+import Listener.DestinationListener;
+
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**
@@ -34,7 +34,8 @@ import com.bluebirdaward.mapassistant.gmmap.R;
 public class PlacePickerFragment extends Fragment implements OnClickListener
 {
 
-    private ImageButton btnBack, btnNearby;
+    ImageButton btnBack;
+
     private TextView textView;
     @Nullable
     private LatLngBounds bounds;
@@ -43,9 +44,9 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
     @Nullable
     private PlaceSelectionListener placeListener;
 
-    OnCloseListener listener;
+    DestinationListener listener;
 
-    public void setOnCloseListener(OnCloseListener listener)
+    public void setOnCloseListener(DestinationListener listener)
     {
         this.listener = listener;
     }
@@ -58,9 +59,7 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
     {
         View var4 = inflater.inflate(R.layout.fragment_place_picker, container, false);
         btnBack = (ImageButton) var4.findViewById(R.id.btnBack);
-        btnNearby = (ImageButton) var4.findViewById(R.id.btnNearby);
         btnBack.setOnClickListener(this);
-        btnNearby.setOnClickListener(this);
         //zzaRi = var4.findViewById(R.id.imvClose);
         textView = (TextView) var4.findViewById(R.id.txtSearch);
         OnClickListener var5 = new OnClickListener()
@@ -178,33 +177,27 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    boolean remove = false;
+
+    public void setRemove(boolean remove)
+    {
+        this.remove = remove;
+    }
+
     @Override
     public void onClick(View v)
     {
         if (v.getId() == R.id.btnBack)
         {
+            if (remove)
+                listener.disableRemove();
+            else
             listener.onClose();
         }
-        /*else
+        else
         {
-            PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            builder.include(MainActivity.myLocation);
-            //intentBuilder.setLatLngBounds(toBounds(MainActivity.myLocation, 30));
-            //intentBuilder.setLatLngBounds(builder.build());
-            try
-            {
-                startActivityForResult(intentBuilder.build(getActivity()), 2);
-            }
-            catch (GooglePlayServicesRepairableException e)
-            {
-                e.printStackTrace();
-            }
-            catch (GooglePlayServicesNotAvailableException e)
-            {
-                e.printStackTrace();
-            }
-        }*/
+            listener.onRemove();
+        }
     }
 
     LatLngBounds toBounds(LatLng center, double radius) {

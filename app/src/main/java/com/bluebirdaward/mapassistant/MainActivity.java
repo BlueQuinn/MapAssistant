@@ -69,6 +69,7 @@ import DTO.Traffic;
 import Listener.OnLoadListener;
 import Sqlite.SqliteHelper;
 import Utils.RequestCode;
+import Utils.ServiceUtils;
 import widgets.PlacePickerDialog;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
@@ -145,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         listMenu.add(new Menu("Tìm địa điểm", R.drawable.place));
         listMenu.add(new Menu("Tìm đường đi", R.drawable.direction));
         listMenu.add(new Menu("Chia sẻ", R.drawable.share));
-        listSection.add(new MenuSection("Hỗ trợ", listMenu));
+        listSection.add(new MenuSection("Tiện ích", listMenu));
 
         listMenu = new ArrayList<>();
         listMenu.add(new Menu("Tình trạng tắc đường", R.drawable.traffic_cone));
@@ -211,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (myLat.length() < 1 || myLng.length() < 1)
         //myLocation = new LatLng(10.762689, 106.68233989999999);
         {
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(10.78261522192309, 106.69588862681348), 19));
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(10.78261522192309, 106.69588862681348), 20));
         }
         else
         {
@@ -304,7 +305,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         {
-            if (checkServiceEnabled())
+            if (ServiceUtils.checkServiceEnabled(this))
             {
                 prbLoading.setVisibility(View.VISIBLE);
                 map.setMyLocationEnabled(true);
@@ -422,6 +423,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 intent.putExtra("myLocation", myLocation);
                                 intent.putExtra("destination", marker.getPosition());
                                 intent.putExtra("place", place);
+                                intent.putExtra("address", address);
                                 startActivity(intent);
                             }
                         }).show();
@@ -452,7 +454,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.marker);
                         MarkerOptions options = new MarkerOptions().icon(icon);
                         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                        //ArrayList<Place> list = (ArrayList<Place>) result;
                         for (int i = 0; i < list.size(); ++i)
                         {
                             Place place = list.get(i);
@@ -507,7 +508,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
 
                     case 3:
-                        //openGPS(LOCATE_FOR_NEARBY);
                         if (address.length() > 0)
                         {
                             String msg;
@@ -571,16 +571,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return false;
     }
 
-    boolean checkServiceEnabled()
-    {
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
-        {
-            return lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        }
-        return false;
-    }
-
     void openGPS(int requestCode)
     {
         request = requestCode;
@@ -589,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             requestLocation(requestCode);
             return;
         }
-        if (checkServiceEnabled())
+        if (ServiceUtils.checkServiceEnabled(this))
         {
             prbLoading.setVisibility(View.VISIBLE);
             map.setMyLocationEnabled(true);
@@ -654,39 +644,47 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     Log.d("123", "" + listTraffic.size());
 
-                    map.clear();
-                    final Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                    AddTrafficAst asyncTask = new AddTrafficAst(listTraffic, map, geocoder);
-                    asyncTask.setListener(new OnLoadListener<Boolean>()
+                    if (listTraffic.size() > 0)
                     {
-                        @Override
-                        public void onFinish(Boolean result)
+                        map.clear();
+                        final Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                        AddTrafficAst asyncTask = new AddTrafficAst(listTraffic, map, geocoder);
+                        asyncTask.setListener(new OnLoadListener<Boolean>()
                         {
-                            map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+                            @Override
+                            public void onFinish(Boolean result)
                             {
-                                @Override
-                                public boolean onMarkerClick(Marker marker)
+                                map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
                                 {
-                                    prbLoading.setVisibility(View.VISIBLE);
-                                    AddressAst asyncTask = new AddressAst(geocoder);
-                                    asyncTask.setListener(new OnLoadListener<String>()
+                                    @Override
+                                    public boolean onMarkerClick(Marker marker)
                                     {
-                                        @Override
-                                        public void onFinish(String address)
+                                        prbLoading.setVisibility(View.VISIBLE);
+                                        AddressAst asyncTask = new AddressAst(geocoder);
+                                        asyncTask.setListener(new OnLoadListener<String>()
                                         {
-                                            prbLoading.setVisibility(View.GONE);
-                                            Snackbar.make(findViewById(R.id.frameLayout), address, Snackbar.LENGTH_INDEFINITE).show();
-                                        }
-                                    });
-                                    LatLng position = marker.getPosition();
-                                    asyncTask.execute(position.latitude, position.longitude);
-                                    return false;
-                                }
-                            });
-                            prbLoading.setVisibility(View.GONE);
-                        }
-                    });
-                    asyncTask.execute(meta);
+                                            @Override
+                                            public void onFinish(String address)
+                                            {
+                                                prbLoading.setVisibility(View.GONE);
+                                                Snackbar.make(findViewById(R.id.frameLayout), address, Snackbar.LENGTH_INDEFINITE).show();
+                                            }
+                                        });
+                                        LatLng position = marker.getPosition();
+                                        asyncTask.execute(position.latitude, position.longitude);
+                                        return false;
+                                    }
+                                });
+                                prbLoading.setVisibility(View.GONE);
+                            }
+                        });
+                        asyncTask.execute(meta);
+                    }
+                    else
+                    {
+                        prbLoading.setVisibility(View.GONE);
+                        Toast.makeText(MainActivity.this, "Chưa có nơi nào tắc đường", Toast.LENGTH_SHORT).show();
+                    }
                     ref.removeEventListener(this);
                 }
                 catch (ParseException e)
@@ -796,6 +794,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 intent.putExtra("myLocation", myLocation);
                 intent.putExtra("destination", destination);
                 intent.putExtra("place", place);
+                intent.putExtra("address", address);
                 startActivity(intent);
                 break;
             }

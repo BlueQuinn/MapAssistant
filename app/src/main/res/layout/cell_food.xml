@@ -22,6 +22,7 @@
         android:layout_weight="0.7"/>
 
     <TextView
+        android:paddingLeft="2dp"
         android:layout_marginTop="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginLeft="4dp"
@@ -29,25 +30,25 @@
         android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.2"
+        android:layout_weight="0.16"
         android:gravity="center|left"
         android:text="1234567890-ewrtyuio\nadasd"
         android:textColor="@android:color/black"
-        android:textSize="12dp"/>
+        android:textSize="13dp"/>
 
     <TextView
-        android:paddingLeft="1dp"
+        android:paddingLeft="2dp"
         android:layout_marginBottom="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginLeft="4dp"
         android:id="@+id/tvAddress"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.1"
+        android:layout_weight="0.15"
         android:gravity="center|left"
         android:text="1234567890-ewrtyuio"
         android:textColor="@color/colorPrimary"
-        android:textSize="11dp"/>
+        android:textSize="13dp"/>
 
 </LinearLayout>
 </LinearLayout>

@@ -16,6 +16,8 @@
         android:src="@drawable/back" />
 
     <TextView
+        android:paddingLeft="3dp"
+        android:paddingRight="3dp"
         android:background="@color/colorPrimaryLight"
         android:textColor="@android:color/white"
         android:layout_margin="8dp"
@@ -28,7 +30,7 @@
         android:layout_height="match_parent"
         android:singleLine="true"/>
 
-    <ImageButton
+    <!--<ImageButton
         android:scaleType="fitCenter"
         android:background="@android:color/transparent"
         android:layout_marginRight="8dp"
@@ -37,5 +39,5 @@
         android:layout_weight="0.1"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:src="@drawable/location" />
+        android:src="@drawable/location" />-->
 </LinearLayout>
