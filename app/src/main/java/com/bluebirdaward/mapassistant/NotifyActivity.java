@@ -28,8 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import AsyncTask.AddressAst;
-import DTO.Jam;
-import DTO.Position;
+import model.Jam;
+import model.Position;
 import Listener.OnLoadListener;
 
 import com.bluebirdaward.mapassistant.gmmap.R;

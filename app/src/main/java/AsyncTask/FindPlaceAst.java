@@ -5,7 +5,7 @@ import android.os.AsyncTask;
 
 import java.util.ArrayList;
 
-import DTO.Place;
+import model.Place;
 import Listener.OnLoadListener;
 import MapAPI.PlaceAPI;
 import Utils.JsonUtils;

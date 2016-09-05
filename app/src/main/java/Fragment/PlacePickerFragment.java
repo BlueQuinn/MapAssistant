@@ -168,7 +168,8 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
         }
         else    // find nearby
         {
-            if (resultCode == -1) {
+            if (resultCode == -1)
+            {
                 Place place = PlacePicker.getPlace(data, getActivity());
                 placeListener.onPlaceSelected(place);
             }
@@ -190,23 +191,29 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
         if (v.getId() == R.id.btnBack)
         {
             if (remove)
+            {
                 listener.disableRemove();
+            }
             else
-            listener.onClose();
+            {
+                listener.onClose();
+            }
         }
-        else
+       /* else
         {
             listener.onRemove();
-        }
+        }*/
     }
 
-    LatLngBounds toBounds(LatLng center, double radius) {
+    LatLngBounds toBounds(LatLng center, double radius)
+    {
         LatLng southwest = computeOffset(center, radius * Math.sqrt(2.0), 225);
         LatLng northeast = computeOffset(center, radius * Math.sqrt(2.0), 45);
         return new LatLngBounds(southwest, northeast);
     }
 
-    static LatLng computeOffset(LatLng from, double distance, double heading) {
+    static LatLng computeOffset(LatLng from, double distance, double heading)
+    {
         distance /= 6371009.0D;     // Earth's radius
         heading = Math.toRadians(heading);
         double fromLat = Math.toRadians(from.latitude);

@@ -2,7 +2,6 @@ package widgets;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -13,7 +12,7 @@ import android.widget.TextView;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
-import DTO.Nearby;
+import model.Nearby;
 import Listener.OnLoadListener;
 
 /**

@@ -12,7 +12,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-import DTO.RestaurantSection;
+import model.RestaurantSection;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**

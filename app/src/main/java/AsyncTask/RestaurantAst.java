@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 
-import DTO.Restaurant;
+import model.Restaurant;
 
 /**
  * Created by Quan-DevTeam on 10/8/15.

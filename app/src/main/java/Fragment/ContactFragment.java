@@ -1,11 +1,8 @@
 package Fragment;
 
 import android.content.ContentResolver;
-import android.database.Cursor;
-import android.provider.ContactsContract;
 
 import AsyncTask.ContactAst;
-import DTO.Destination;
 
 /**
  * Created by lequan on 4/28/2016.

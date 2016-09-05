@@ -13,7 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import DTO.Food;
+import model.Food;
 import Listener.OnLoadListener;
 import Utils.UnicodeConverter;
 
