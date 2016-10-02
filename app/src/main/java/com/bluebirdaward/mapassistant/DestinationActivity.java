@@ -14,15 +14,14 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.model.LatLng;
 
-import Adapter.ViewPagerAdapter;
-import Fragment.ContactFragment;
-import Fragment.DestinationFragment;
-import Fragment.FavouriteFragment;
-import Fragment.HistoryFragment;
-import Fragment.PlacePickerFragment;
-import Listener.DestinationListener;
-import Listener.OnPlaceSelectedListener;
-import Utils.RequestCode;
+import adapter.ViewPagerAdapter;
+import fragment.ContactFragment;
+import fragment.FavouriteFragment;
+import fragment.HistoryFragment;
+import fragment.PlacePickerFragment;
+import listener.DestinationListener;
+import listener.OnPlaceSelectedListener;
+import utils.RequestCode;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
@@ -79,7 +78,7 @@ public class DestinationActivity extends AppCompatActivity
             {
                 LatLng position = place.getLatLng();
 
-                historyFragment.save(place.getName().toString(), place.getAddress().toString());
+                historyFragment.save(place.getName().toString(), place.getAddress().toString(), position.latitude, position.longitude);
 
                 Intent intent = new Intent();
                 intent.putExtra("place", place.getName().toString());
@@ -137,9 +136,10 @@ public class DestinationActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSelected(String address)
+    public void onSelected(String fragment, String name)
     {
-        fragmentPlace.findPlace(address);
+        MainActivity.dbHelper.getPlace(fragment, name);
+        //fragmentPlace.findPlace(address);
     }
 
     @Override
@@ -148,17 +148,4 @@ public class DestinationActivity extends AppCompatActivity
         finish();
     }
 
-    @Override
-    public void onRemove()
-    {
-        DestinationFragment fragment = (DestinationFragment) adapter.getItem(viewPager.getCurrentItem());
-        fragment.remove();
-        fragmentPlace.setRemove(false);
-    }
-
-    @Override
-    public void disableRemove()
-    {
-        fragmentPlace.setRemove(false);
-    }
 }

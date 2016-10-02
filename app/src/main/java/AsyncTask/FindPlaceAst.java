@@ -1,14 +1,14 @@
-package AsyncTask;
+package asyncTask;
 
 import android.content.Context;
 import android.os.AsyncTask;
 
 import java.util.ArrayList;
 
-import DTO.Place;
-import Listener.OnLoadListener;
-import MapAPI.PlaceAPI;
-import Utils.JsonUtils;
+import model.Place;
+import listener.OnLoadListener;
+import mapAPI.PlaceAPI;
+import utils.JsonUtils;
 
 /**
  * Created by lequan on 5/13/2016.

@@ -1,4 +1,4 @@
-package Adapter;
+package adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -14,12 +14,12 @@ import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 
 import java.util.List;
 
-import DTO.Restaurant;
+import model.Restaurant;
 
 /**
  * Created by lequan on 2/1/2016.
  */
-public class RestaurantAdt extends ArrayAdapter<DTO.Restaurant>
+public class RestaurantAdt extends ArrayAdapter<model.Restaurant>
 {
 
     Context context;

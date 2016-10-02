@@ -1,4 +1,4 @@
-package Listener;
+package listener;
 
 /**
  * Created by lequan on 4/28/2016.
@@ -6,6 +6,4 @@ package Listener;
 public interface DestinationListener
 {
     void onClose();
-    void onRemove();
-    void disableRemove();
 }

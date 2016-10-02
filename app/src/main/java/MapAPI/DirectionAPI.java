@@ -1,4 +1,4 @@
-package MapAPI;
+package mapAPI;
 
 import com.google.android.gms.maps.model.LatLng;
 

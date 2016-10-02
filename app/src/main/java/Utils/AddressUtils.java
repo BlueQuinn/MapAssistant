@@ -1,11 +1,9 @@
-package Utils;
+package utils;
 
 import android.location.Address;
 import android.location.Geocoder;
 
 import java.io.IOException;
-
-import AsyncTask.AddressAst;
 
 /**
  * Created by lequan on 5/18/2016.
@@ -29,5 +27,37 @@ public class AddressUtils
             e.printStackTrace();
         }
         return currentAddress;
+    }
+
+    public static String minimizeAddress(String address)
+    {
+        int comma = address.indexOf(',');
+        if (comma < 1)
+        {
+            comma = address.length();
+        }
+        int splash = address.indexOf('/');
+        if (splash == -1)
+        {
+            address = address.substring(findFirstNumber(address), comma);
+        }
+        else
+        {
+            int i = address.indexOf(' ');
+            if (i > splash + 1)
+            {
+                String s = address.substring(findFirstNumber(address), splash) + address.substring(i, comma);
+                address = s;
+            }
+        }
+        return address;
+    }
+
+    static int  findFirstNumber(String s)
+    {
+        for (int i = 0 ;i<s.length(); ++i)
+            if(s.charAt(i) >= '0' && s.charAt(i) <= '9')
+                return i;
+        return -1;
     }
 }

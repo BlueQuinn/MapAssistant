@@ -1,4 +1,4 @@
-package Fragment;
+package fragment;
 
 import android.support.v4.app.Fragment;
 import android.content.Intent;
@@ -24,7 +24,7 @@ import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
-import Listener.DestinationListener;
+import listener.DestinationListener;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
@@ -177,26 +177,12 @@ public class PlacePickerFragment extends Fragment implements OnClickListener
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    boolean remove = false;
-
-    public void setRemove(boolean remove)
-    {
-        this.remove = remove;
-    }
-
     @Override
     public void onClick(View v)
     {
         if (v.getId() == R.id.btnBack)
         {
-            if (remove)
-                listener.disableRemove();
-            else
             listener.onClose();
-        }
-        else
-        {
-            listener.onRemove();
         }
     }
 

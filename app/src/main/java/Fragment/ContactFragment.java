@@ -1,11 +1,8 @@
-package Fragment;
+package fragment;
 
 import android.content.ContentResolver;
-import android.database.Cursor;
-import android.provider.ContactsContract;
 
-import AsyncTask.ContactAst;
-import DTO.Destination;
+import asyncTask.ContactAst;
 
 /**
  * Created by lequan on 4/28/2016.
@@ -26,7 +23,7 @@ public class ContactFragment extends DestinationFragment
     }
 
     @Override
-    void init()
+    void initFragment()
     {
         contentResolver = getActivity().getContentResolver();
     }

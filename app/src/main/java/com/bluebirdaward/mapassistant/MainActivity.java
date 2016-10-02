@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
@@ -57,19 +56,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-import Adapter.MenuAdt;
-import AsyncTask.AddTrafficAst;
-import AsyncTask.AddressAst;
-import AsyncTask.FindPlaceAst;
-import DTO.MenuSection;
-import DTO.Menu;
-import DTO.Nearby;
-import DTO.Place;
-import DTO.Traffic;
-import Listener.OnLoadListener;
-import Sqlite.SqliteHelper;
-import Utils.RequestCode;
-import Utils.ServiceUtils;
+import adapter.MenuAdt;
+import asyncTask.AddTrafficAst;
+import asyncTask.AddressAst;
+import asyncTask.FindPlaceAst;
+import model.MenuSection;
+import model.Menu;
+import model.Nearby;
+import model.Place;
+import model.Traffic;
+import listener.OnLoadListener;
+import sqlite.SqliteHelper;
+import utils.RequestCode;
+import utils.ServiceUtils;
 import widgets.PlacePickerDialog;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
@@ -262,12 +261,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         public void onClick(View view)
                                         {
                                             destination = marker.getPosition();
-                                            /*Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
-                                            intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
-                                            intent.putExtra("myLocation", myLocation);
-                                            intent.putExtra("destination", marker.getPosition());
-                                            intent.putExtra("place", place);
-                                            startActivity(intent);*/
                                             openGPS(LOCATE_FOR_DIRECTION);
                                         }
                                     }).show();
@@ -395,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     void saveFavourite(String name)
     {
         dbHelper.delete("Favourite", name);
-        dbHelper.insert("Favourite", name, address);
+        dbHelper.insert("Favourite", name, address, destination.latitude, destination.longitude);
         Toast.makeText(getApplicationContext(), "Đã lưu vào Yêu thích", Toast.LENGTH_SHORT).show();
     }
 
@@ -410,6 +403,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 place = marker.getTitle();
                 address = marker.getSnippet();
+                destination = marker.getPosition();     // consider reference ???
 
                 Snackbar.make(findViewById(R.id.frameLayout), marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
                         .setAction("Chỉ đường", new View.OnClickListener()
@@ -421,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
                                 intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
                                 intent.putExtra("myLocation", myLocation);
-                                intent.putExtra("destination", marker.getPosition());
+                                intent.putExtra("destination", destination);
                                 intent.putExtra("place", place);
                                 intent.putExtra("address", address);
                                 startActivity(intent);
@@ -763,6 +757,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onFinish(String result)
                     {
                         prbLoading.setVisibility(View.GONE);
+                        destination = new LatLng(myLocation.latitude, myLocation.longitude);
                         address = result;
                         txtSearch.setText(address);
                         map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 19));

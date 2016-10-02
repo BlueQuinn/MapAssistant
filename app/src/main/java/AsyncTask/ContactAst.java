@@ -1,15 +1,12 @@
-package AsyncTask;
+package asyncTask;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.provider.ContactsContract;
-
-import com.bluebirdaward.mapassistant.DestinationActivity;
 
 import java.util.ArrayList;
 
-import DTO.Destination;
+import model.Destination;
 
 /**
  * Created by lequan on 5/14/2016.
@@ -28,15 +25,19 @@ public class ContactAst extends DestinationAst
     {
         ArrayList<Destination> list = new ArrayList<>();
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-        while (cursor.moveToNext())
+        if (cursor != null)
         {
-            String contactID = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-            String name = contactName(contactID);
-            String address = contactAddress(contactID);
-            if (name != null && address != null && name.length() > 0 && address.length() > 0)
+            while (cursor.moveToNext())
             {
-                list.add(new Destination(name, address));
+                String contactID = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+                String name = contactName(contactID);
+                String address = contactAddress(contactID);
+                if (name != null && address != null && name.length() > 0 && address.length() > 0)
+                {
+                    list.add(new Destination(name, address));
+                }
             }
+            cursor.close();
         }
         return list;
     }

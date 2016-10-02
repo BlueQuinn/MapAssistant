@@ -1,12 +1,12 @@
-package AsyncTask;
+package asyncTask;
 
 import android.os.AsyncTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import DTO.Destination;
-import Listener.OnLoadListener;
+import model.Destination;
+import listener.OnLoadListener;
 import com.bluebirdaward.mapassistant.MainActivity;
 
 /**
@@ -16,6 +16,7 @@ public class DestinationAst extends AsyncTask<Void, Integer, ArrayList<Destinati
 {
     String table;
     OnLoadListener listener;
+
     public void setOnLoadListener(OnLoadListener listener)
     {
         this.listener = listener;

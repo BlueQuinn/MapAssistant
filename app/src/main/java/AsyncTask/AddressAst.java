@@ -1,4 +1,4 @@
-package AsyncTask;
+package asyncTask;
 
 import android.location.Address;
 import android.location.Geocoder;
@@ -6,8 +6,7 @@ import android.os.AsyncTask;
 
 import java.io.IOException;
 
-import Listener.OnLoadListener;
-import Utils.AddressUtils;
+import listener.OnLoadListener;
 
 /**
  * Created by lequan on 9/2/2016.

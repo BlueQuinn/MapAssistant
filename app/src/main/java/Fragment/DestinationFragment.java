@@ -1,4 +1,4 @@
-package Fragment;
+package fragment;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -10,20 +10,19 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
-import Adapter.DestinationAdt;
-import AsyncTask.DestinationAst;
-import DTO.Destination;
-import Listener.OnLoadListener;
-import Listener.OnPlaceSelectedListener;
+import adapter.DestinationAdt;
+import asyncTask.DestinationAst;
+import model.Destination;
+import listener.OnLoadListener;
+import listener.OnPlaceSelectedListener;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**
  * Created by lequan on 4/27/2016.
  */
 public class DestinationFragment extends Fragment
-        implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener
+        implements AdapterView.OnItemClickListener
 {
     ListView lvDestination;
     ArrayList<Destination> list;
@@ -32,6 +31,7 @@ public class DestinationFragment extends Fragment
     ProgressBar prbLoading;
     boolean loaded;
     DestinationAst asyncTask;
+    String fragmentName;
 
     public DestinationFragment()
     {
@@ -43,7 +43,7 @@ public class DestinationFragment extends Fragment
     {
         super.onCreate(savedInstanceState);
 
-        init();
+        initFragment();
 
         list = new ArrayList<>();
         loadDestination();
@@ -64,7 +64,7 @@ public class DestinationFragment extends Fragment
         return convertView;
     }
 
-    void init()     // do not delete this
+    void initFragment()     // do not delete this
     {
 
     }
@@ -103,40 +103,12 @@ public class DestinationFragment extends Fragment
 
     void onSelected(int position)
     {
-        listener.onSelected(list.get(position).getAddress());
+        listener.onSelected(fragmentName, list.get(position).getName());
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)
     {
-        if (remove)
-        {
-            list.get(position).setCheck(true);
-        }
-            else
         onSelected(position);
-    }
-
-    boolean remove = false;
-
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
-    {
-        /*for (int i=0;i<adapter.getCount();++i)
-        {
-            adapter.removeEnabled();
-        }*/
-        remove = true;
-        return false;
-    }
-
-    public void remove()
-    {
-        for(Iterator<Destination> iterator = list.iterator(); iterator.hasNext(); ) {
-            if(iterator.next().isCheck())
-                iterator.remove();
-        }
-        adapter.notifyDataSetChanged();
-        remove = false;
     }
 }

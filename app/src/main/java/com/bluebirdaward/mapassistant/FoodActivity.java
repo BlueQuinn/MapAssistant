@@ -1,14 +1,12 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
-import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -16,12 +14,13 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import Adapter.FoodAdt;
-import AsyncTask.FoodAst;
-import DTO.Food;
-import DTO.Restaurant;
-import Listener.OnLoadListener;
-import Utils.ServiceUtils;
+import adapter.FoodAdt;
+import asyncTask.FoodAst;
+import model.Food;
+import model.Restaurant;
+import listener.OnLoadListener;
+import utils.AddressUtils;
+import utils.ServiceUtils;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
@@ -87,26 +86,7 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
     {
         if (ServiceUtils.checkServiceEnabled(this))
         {
-            String address = restaurant.getAddress();
-            int comma = address.indexOf(',');
-            if (comma < 1)
-            {
-                comma = address.length();
-            }
-            int splash = address.indexOf('/');
-            if (splash == -1)
-            {
-                address = address.substring(findFirstNumber(address), comma);
-            }
-            else
-            {
-                int i = address.indexOf(' ');
-                if (i > splash + 1)
-                {
-                    String s = address.substring(findFirstNumber(address), splash) + address.substring(i, comma);
-                    address = s;
-                }
-            }
+            String address = AddressUtils.minimizeAddress(restaurant.getAddress());
 
             Intent intent = new Intent(this, DirectionActivity.class);
             intent.putExtra("request", DirectionActivity.RESTAURANT_DIRECTION);
@@ -120,13 +100,7 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
         }
     }
 
-    int findFirstNumber(String s)
-    {
-        for (int i = 0 ;i<s.length(); ++i)
-            if(s.charAt(i) >= '0' && s.charAt(i) <= '9')
-                return i;
-        return -1;
-    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)

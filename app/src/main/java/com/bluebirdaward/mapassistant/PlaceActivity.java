@@ -1,19 +1,17 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
-import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
 import java.util.ArrayList;
 
-import Adapter.RestaurantSectionAdt;
-import DTO.RestaurantSection;
+import adapter.RestaurantSectionAdt;
+import model.RestaurantSection;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 public class PlaceActivity extends AppCompatActivity implements AdapterView.OnItemClickListener

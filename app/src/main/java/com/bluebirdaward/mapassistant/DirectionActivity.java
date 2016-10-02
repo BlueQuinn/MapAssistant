@@ -36,9 +36,9 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 
-import AsyncTask.DirectionAst;
-import Listener.OnLoadListener;
-import Utils.ServiceUtils;
+import asyncTask.DirectionAst;
+import listener.OnLoadListener;
+import utils.ServiceUtils;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
@@ -202,9 +202,10 @@ public class DirectionActivity extends AppCompatActivity
         {
             prbLoading.setVisibility(View.GONE);
             String place = data.getStringExtra("place");
-            textView[requestCode].setText(place);
-
+            String address = data.getStringExtra("address");
             latLng[requestCode] = data.getParcelableExtra("position");
+
+            textView[requestCode].setText(place);
 
             BitmapDescriptor icon;
             if (requestCode == 0)
@@ -215,7 +216,10 @@ public class DirectionActivity extends AppCompatActivity
             {
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
             }
-            if (marker[requestCode] == null)
+
+            MarkerOptions markerOptions = new MarkerOptions().position(latLng[requestCode]).icon(icon);
+            marker[requestCode] = map.addMarker(markerOptions.title(place).snippet(address));
+            /*if (marker[requestCode] == null)
             {
                 MarkerOptions markerOptions = new MarkerOptions().position(latLng[requestCode]).icon(icon);
                 //Marker = googleMap.addMarker(markerOptions);
@@ -225,7 +229,7 @@ public class DirectionActivity extends AppCompatActivity
             else
             {
                 marker[requestCode].setPosition(latLng[requestCode]);
-            }
+            }*/
             map.animateCamera(CameraUpdateFactory.newLatLng(latLng[requestCode]));
 
             if (textView[0].getText().length() > 0 && textView[1].getText().length() > 0)

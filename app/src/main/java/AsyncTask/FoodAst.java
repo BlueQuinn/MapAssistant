@@ -1,4 +1,4 @@
-package AsyncTask;
+package asyncTask;
 
 import android.os.AsyncTask;
 
@@ -13,9 +13,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import DTO.Food;
-import Listener.OnLoadListener;
-import Utils.UnicodeConverter;
+import model.Food;
+import listener.OnLoadListener;
+import utils.UnicodeConverter;
 
 /**
  * Created by Quan-DevTeam on 10/8/15.

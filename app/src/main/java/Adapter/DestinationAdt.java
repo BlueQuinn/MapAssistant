@@ -1,4 +1,4 @@
-package Adapter;
+package adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import DTO.Destination;
+import model.Destination;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**
@@ -20,10 +20,10 @@ public class DestinationAdt extends ArrayAdapter<Destination>
     ArrayList<Destination> list;
     Context context;
     int resource;
+
     public DestinationAdt(Context context, int resource, ArrayList<Destination> listDestination)
     {
         super(context, resource);
-
 
         list = listDestination;
         this.context = context;

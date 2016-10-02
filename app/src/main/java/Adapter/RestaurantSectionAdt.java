@@ -1,4 +1,4 @@
-package Adapter;
+package adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -12,7 +12,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-import DTO.RestaurantSection;
+import model.RestaurantSection;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**

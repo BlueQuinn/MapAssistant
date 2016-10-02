@@ -1,11 +1,11 @@
-package AsyncTask;
+package asyncTask;
 
 import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import Listener.OnLoadListener;
-import Utils.UnicodeConverter;
+import listener.OnLoadListener;
+import utils.UnicodeConverter;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 import org.htmlcleaner.CleanerProperties;
@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 
-import DTO.Restaurant;
+import model.Restaurant;
 
 /**
  * Created by Quan-DevTeam on 10/8/15.

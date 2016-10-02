@@ -1,4 +1,4 @@
-package AsyncTask;
+package asyncTask;
 
 import android.os.AsyncTask;
 
@@ -13,8 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import DTO.Jam;
-import Listener.OnLoadListener;
+import model.Jam;
+import listener.OnLoadListener;
 
 /**
  * Created by lequan on 5/13/2016.

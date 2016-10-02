@@ -1,4 +1,4 @@
-package AsyncTask;
+package asyncTask;
 
 import android.os.AsyncTask;
 
@@ -6,9 +6,9 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
-import Listener.OnLoadListener;
-import MapAPI.DirectionAPI;
-import Utils.JsonUtils;
+import listener.OnLoadListener;
+import mapAPI.DirectionAPI;
+import utils.JsonUtils;
 
 /**
  * Created by lequan on 4/22/2016.

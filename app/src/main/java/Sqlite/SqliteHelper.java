@@ -1,4 +1,4 @@
-package Sqlite;
+package sqlite;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -87,7 +87,7 @@ public class SqliteHelper extends SQLiteOpenHelper
         return excuteQuery("select * from " + table);
     }
 
-    public ArrayList<HashMap<String, String>> excuteQuery(String sql)
+    public ArrayList<HashMap<String, String>> excuteQuery(String sql)   // place - address
     {
         ArrayList<HashMap<String, String>> listData = new ArrayList<HashMap<String, String>>();
         if (db != null)
@@ -132,6 +132,28 @@ public class SqliteHelper extends SQLiteOpenHelper
     public void insert(String table, String place, String address)
     {
         excute(String.format("insert into %s values ('%s', '%s')", table, place, address));
+    }
+
+    public void insert(String table, String place, String address, double lat, double lng)
+    {
+        String latStr = Double.toString(lat);
+        String lngStr = Double.toString(lng);
+        excute(String.format("insert into %s values ('%s', '%s', '%s', '%s')", table, place, address, latStr, lngStr));
+    }
+
+    public double[] getPlace(String table, String place)
+    {
+        if (db != null)
+        {
+            Cursor cursor = db.rawQuery(String.format("select lat, lng from %s where Place = '%s'", table, place), null);
+            if (cursor.moveToFirst())
+            {
+                double lat = cursor.getDouble(0);
+                double lng = cursor.getDouble(1);
+                return new double[]{lat,lng};
+            }
+        }
+        return null;
     }
 
     public void delete(String table, String place)

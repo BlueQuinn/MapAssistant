@@ -27,20 +27,25 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import AsyncTask.AddressAst;
-import DTO.Jam;
-import DTO.Position;
-import Listener.OnLoadListener;
+import asyncTask.AddressAst;
+import model.Jam;
+import model.Position;
+import listener.OnLoadListener;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 import com.google.android.gms.maps.model.LatLng;
 
-public class NotifyActivity extends AppCompatActivity implements View.OnClickListener
+public class NotifyActivity extends AppCompatActivity
 {
-    boolean change;
+    //boolean change;
     double myLat;
     double myLng;
-    //TextView tvPlace, tvAddress;
+    Button btnNotify;
+    LinearLayout layoutContent;
+    ProgressBar prbLoading;
+    TextView tvAddress;
+
+    View.OnClickListener reloadListener, notifyListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -57,12 +62,46 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
         myLat = myLocation.latitude;
         myLng = myLocation.longitude;
 
-        final TextView tvAddress = (TextView) findViewById(R.id.tvAddress);
+        tvAddress = (TextView) findViewById(R.id.tvAddress);
 
-        final Button btnNotify = (Button) findViewById(R.id.btnNotify);
+        btnNotify = (Button) findViewById(R.id.btnNotify);
 
-        final ProgressBar prbLoading = (ProgressBar) findViewById(R.id.prbLoading);
-        final LinearLayout layoutContent = (LinearLayout) findViewById(R.id.main_content);
+        prbLoading = (ProgressBar) findViewById(R.id.prbLoading);
+        layoutContent = (LinearLayout) findViewById(R.id.main_content);
+
+        reloadListener = new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                loadMyLocation();
+            }
+        };
+
+        notifyListener = new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if (checkLocation())
+                {
+                    showMessage("Không thể gửi thông báo !!!\nBạn đã từng thông báo ở vị trí này từ trước đó rồi");
+                }
+                else
+                {
+                    saveFirebase();
+                }
+            }
+        };
+
+        loadMyLocation();
+
+    }
+
+    void loadMyLocation()
+    {
+        prbLoading.setVisibility(View.VISIBLE);
+        layoutContent.setVisibility(View.GONE);
 
         AddressAst asyncTask = new AddressAst(new Geocoder(this, Locale.getDefault()));
         asyncTask.setListener(new OnLoadListener<String>()
@@ -76,26 +115,18 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
                 if (address.length() < 1)
                 {
                     tvAddress.setText("Không có kết nối internet");
-                    btnNotify.setEnabled(false);
-                    return;
+                    btnNotify.setText("Thử lại");
+                    btnNotify.setOnClickListener(reloadListener);
                 }
-
-                tvAddress.setText("Bạn đang ở " + address);
-                btnNotify.setOnClickListener(NotifyActivity.this);
+                else
+                {
+                    tvAddress.setText("Bạn đang ở " + address);
+                    btnNotify.setText("Thông báo");
+                    btnNotify.setOnClickListener(notifyListener);
+                }
             }
         });
         asyncTask.execute(myLat, myLng);
-
-        /*String address = AddressUtils.getAddress(new Geocoder(this, Locale.getDefault()), myLat, myLng);
-        if (address.length() < 1)
-        {
-            tvAddress.setText("Không có kết nối internet");
-            btnNotify.setEnabled(false);
-            return;
-        }
-
-        tvAddress.setText("Bạn đang ở " + address);
-        btnNotify.setOnClickListener(this);*/
     }
 
     float getDistance(double lat1, double lng1, double lat2, double lng2)
@@ -108,7 +139,7 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
         targetLocation.setLatitude(lat2);
         targetLocation.setLongitude(lng2);
 
-        return 1000 * targetLocation.distanceTo(homeLocation);
+        return targetLocation.distanceTo(homeLocation);     // meters
     }
 
     int toMinutes(String time)
@@ -120,22 +151,10 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
         return hoursInMins + mins;
     }
 
-    @Override
-    public void onClick(View v)
-    {
-        if (checkLocation())
-        {
-            showMessage("Không thể gửi thông báo !!!\nBạn đã từng thông báo vị trí này từ trước đó rồi");
-        }
-        else
-        {
-            saveFirebase();
-        }
-    }
-
     boolean checkLocation()
     {
         ArrayList<HashMap<String, String>> listRow = MainActivity.dbHelper.getAll("Location");
+        Log.d("123", "size " + listRow.size());
         for (HashMap<String, String> row : listRow)
         {
             double lat = Double.parseDouble(row.get("Lat"));
@@ -144,7 +163,7 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
             Log.d("123", "lat = " + lat + " " + myLat);
             Log.d("123", "lng = " + lng + " " + myLng);
             Log.d("123", "distance = " + distance);
-            if (distance >= 0 && distance <= 1)
+            if (distance >= 0 && distance <= 1000)
             {
                 return true;
             }
@@ -154,78 +173,70 @@ public class NotifyActivity extends AppCompatActivity implements View.OnClickLis
 
     void saveFirebase()
     {
-        change = false;
-
+        prbLoading.setVisibility(View.VISIBLE);
         final Firebase ref = new Firebase(getResources().getString(R.string.database_traffic));
         ref.addValueEventListener(new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
-                if (!change)
-                {
-                    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-                    Date date = new Date();
-                    int timeNow = 60 * date.getHours() + date.getMinutes();
+                SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
+                Date date = new Date();
+                int timeNow = 60 * date.getHours() + date.getMinutes();
 
-                    boolean findPosition = false;
-                    int meta = ((Long) snapshot.child("meta").getValue()).intValue();
-                    DataSnapshot traffic = snapshot.child("traffic");
-                    for (DataSnapshot item : traffic.getChildren())
-                    {
-                        double lat = (Double) item.child("position/lat").getValue();
-                        double lng = (Double) item.child("position/lng").getValue();
-                        float distance = getDistance(myLat, myLng, lat, lng);
-                        if (distance >= 0 && distance <= 1)     // kiểm tra xem trên Firebase đã tồn tại điểm nào ở gần điểm này mà bị tắc đường chưa (gần ở đây là dưới 1km)
-                        {
-                            boolean findTime = false;
-                            DataSnapshot jamList = item.child("jam");
-                            for (DataSnapshot jamItem : jamList.getChildren())
-                            {
-                                String time = (String) jamItem.child("time").getValue();
-                                int timeSpan = timeNow - toMinutes(time);
-                                if (timeSpan > -90 || timeSpan < 90)
-                                {
-                                    int vote = ((Long) jamItem.child("vote").getValue()).intValue();
-                                    Firebase jamRef = jamItem.getRef();
-                                    Map<String, Object> voteMap = new HashMap<>();
-                                    voteMap.put("vote", vote + 1);
-                                    jamRef.updateChildren(voteMap);
-                                    findTime = true;
-                                    change = true;
-                                    break;
-                                }
-                            }
-                            if (!findTime)
-                            {
-                                Firebase trafficRef = item.getRef();
-                                Map<String, Object> jam = new HashMap<>();
-                                jam.put("time", formatter.format(date));
-                                jam.put("vote", 1);
-                                trafficRef.push().setValue(jam);
-                                change = true;
-                            }
-                            findPosition = true;
-                            break;
-                        }
-                    }
-                    if (!findPosition)
-                    {
-                        Firebase trafficRef = traffic.getRef();
-                        Position position = new Position(myLat, myLng);
-                        Jam[] jam = new Jam[]{new Jam(formatter.format(date), 1)};
-                        Map<String, Object> trafficItem = new HashMap<>();
-                        trafficItem.put("position", position);
-                        trafficItem.put("jam", jam);
-                        trafficRef.push().setValue(trafficItem);
-                        change = true;
-                    }
-                }
-                else
+                boolean findPosition = false;
+                DataSnapshot traffic = snapshot.child("traffic");
+                for (DataSnapshot item : traffic.getChildren())
                 {
-                    MainActivity.dbHelper.saveLocation(myLat, myLng);
-                    showMessage("Thông báo của bạn đã được gửi đi");
+                    double lat = (Double) item.child("position/lat").getValue();
+                    double lng = (Double) item.child("position/lng").getValue();
+                    float distance = getDistance(myLat, myLng, lat, lng);
+                    if (distance >= 0 && distance <= 1)     // kiểm tra xem trên Firebase đã tồn tại điểm nào ở gần điểm này mà bị tắc đường chưa (gần ở đây là dưới 1km)
+                    {
+                        boolean findTime = false;
+                        DataSnapshot jamList = item.child("jam");
+                        for (DataSnapshot jamItem : jamList.getChildren())
+                        {
+                            String time = (String) jamItem.child("time").getValue();
+                            int timeSpan = timeNow - toMinutes(time);
+                            if (timeSpan > -90 || timeSpan < 90)
+                            {
+                                int vote = ((Long) jamItem.child("vote").getValue()).intValue();
+                                Firebase jamRef = jamItem.getRef();
+                                Map<String, Object> voteMap = new HashMap<>();
+                                voteMap.put("vote", vote + 1);
+                                jamRef.updateChildren(voteMap);
+                                findTime = true;
+                                break;
+                            }
+                        }
+                        if (!findTime)
+                        {
+                            Firebase trafficRef = item.getRef();
+                            Map<String, Object> jam = new HashMap<>();
+                            jam.put("time", formatter.format(date));
+                            jam.put("vote", 1);
+                            trafficRef.push().setValue(jam);
+                        }
+                        findPosition = true;
+                        break;
+                    }
                 }
+                if (!findPosition)
+                {
+                    Firebase trafficRef = traffic.getRef();
+                    Position position = new Position(myLat, myLng);
+                    Jam[] jam = new Jam[]{new Jam(formatter.format(date), 1)};
+                    Map<String, Object> trafficItem = new HashMap<>();
+                    trafficItem.put("position", position);
+                    trafficItem.put("jam", jam);
+                    trafficRef.push().setValue(trafficItem);
+                }
+
+                MainActivity.dbHelper.saveLocation(myLat, myLng);
+                showMessage("Thông báo của bạn đã được gửi đi");
+                ref.removeEventListener(this);
+                prbLoading.setVisibility(View.GONE);
             }
 
             @Override

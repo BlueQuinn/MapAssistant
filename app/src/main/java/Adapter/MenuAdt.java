@@ -1,4 +1,4 @@
-package Adapter;
+package adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,8 +11,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import DTO.MenuSection;
-import DTO.Menu;
+import model.MenuSection;
+import model.Menu;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 
