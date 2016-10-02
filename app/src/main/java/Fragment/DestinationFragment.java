@@ -2,6 +2,7 @@ package fragment;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,24 +30,18 @@ public class DestinationFragment extends Fragment
     DestinationAdt adapter;
     OnPlaceSelectedListener listener;
     ProgressBar prbLoading;
-    boolean loaded;
     DestinationAst asyncTask;
     String fragmentName;
 
     public DestinationFragment()
     {
-        loaded = false;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-
-        initFragment();
-
-        list = new ArrayList<>();
-        loadDestination();
+        Log.d("hehe", "2");
     }
 
     @Override
@@ -56,22 +51,20 @@ public class DestinationFragment extends Fragment
 
         prbLoading = (ProgressBar) convertView.findViewById(R.id.prbLoading);
 
+        list = new ArrayList<>();
         adapter = new DestinationAdt(getActivity().getApplicationContext(), R.layout.row_destination, list);
         lvDestination = (ListView) convertView.findViewById(R.id.lvDestination);
         lvDestination.setAdapter(adapter);
         lvDestination.setOnItemClickListener(this);
 
+        loadDestination();
+
         return convertView;
-    }
-
-    void initFragment()     // do not delete this
-    {
-
     }
 
     void initAsyncTask()    // do not delete this
     {
-
+        asyncTask = new DestinationAst(fragmentName);
     }
 
     void loadDestination()
@@ -103,7 +96,7 @@ public class DestinationFragment extends Fragment
 
     void onSelected(int position)
     {
-        listener.onSelected(fragmentName, list.get(position).getName());
+        listener.onSelected(fragmentName, list.get(position).getName(), list.get(position).getAddress());
     }
 
     @Override

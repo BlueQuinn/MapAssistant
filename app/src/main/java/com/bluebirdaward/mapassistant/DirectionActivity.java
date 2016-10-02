@@ -219,17 +219,6 @@ public class DirectionActivity extends AppCompatActivity
 
             MarkerOptions markerOptions = new MarkerOptions().position(latLng[requestCode]).icon(icon);
             marker[requestCode] = map.addMarker(markerOptions.title(place).snippet(address));
-            /*if (marker[requestCode] == null)
-            {
-                MarkerOptions markerOptions = new MarkerOptions().position(latLng[requestCode]).icon(icon);
-                //Marker = googleMap.addMarker(markerOptions);
-                //marker[requestCode] = map.addMarker(new MarkerOptions().position(latLng[requestCode]));
-                marker[requestCode] = map.addMarker(markerOptions.title(place));
-            }
-            else
-            {
-                marker[requestCode].setPosition(latLng[requestCode]);
-            }*/
             map.animateCamera(CameraUpdateFactory.newLatLng(latLng[requestCode]));
 
             if (textView[0].getText().length() > 0 && textView[1].getText().length() > 0)

@@ -13,7 +13,7 @@ public class ContactFragment extends DestinationFragment
 
     public ContactFragment()
     {
-
+        contentResolver = getActivity().getContentResolver();
     }
 
     @Override
@@ -23,9 +23,8 @@ public class ContactFragment extends DestinationFragment
     }
 
     @Override
-    void initFragment()
+    void onSelected(int position)
     {
-        contentResolver = getActivity().getContentResolver();
+        listener.onSelected(list.get(position).getAddress());
     }
-
 }

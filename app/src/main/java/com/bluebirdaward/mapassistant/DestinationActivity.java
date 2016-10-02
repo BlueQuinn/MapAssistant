@@ -136,10 +136,24 @@ public class DestinationActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSelected(String fragment, String name)
+    public void onSelected(String fragment, String name, String address)
     {
-        MainActivity.dbHelper.getPlace(fragment, name);
-        //fragmentPlace.findPlace(address);
+        double[] position = MainActivity.dbHelper.getPlace(fragment, name);
+
+        historyFragment.save(name, address, position[0], position[1]);
+
+        Intent intent = new Intent();
+        intent.putExtra("place", name);
+        intent.putExtra("address", address);
+        intent.putExtra("position", new LatLng(position[0], position[1]));
+        setResult(RequestCode.SEARCH_DESTINATION, intent);
+        finish();
+    }
+
+    @Override
+    public void onSelected(String address)
+    {
+        fragmentPlace.findPlace(address);
     }
 
     @Override

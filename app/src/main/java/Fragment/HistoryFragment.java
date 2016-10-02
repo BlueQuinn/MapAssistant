@@ -1,6 +1,5 @@
 package fragment;
 
-import asyncTask.DestinationAst;
 import com.bluebirdaward.mapassistant.MainActivity;
 
 /**
@@ -10,13 +9,7 @@ public class HistoryFragment extends DestinationFragment
 {
     public HistoryFragment()
     {
-
-    }
-
-    @Override
-    void initAsyncTask()
-    {
-        asyncTask = new DestinationAst("History");
+        fragmentName = "History";
     }
 
     public void save(String place, String address, double lat, double lng)
@@ -25,14 +18,4 @@ public class HistoryFragment extends DestinationFragment
         MainActivity.dbHelper.insert("History", place, address, lat, lng);
     }
 
-    /*@Override
-    void onSelected(int position)
-    {
-
-        //listener.onSelected(list.get(position).getName());
-        double[] location = MainActivity.dbHelper.getPlace("History", list.get(position).getName());
-        double lat = location[0];
-        double lng = location[1];
-
-    }*/
 }

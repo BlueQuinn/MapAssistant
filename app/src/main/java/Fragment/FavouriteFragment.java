@@ -1,7 +1,6 @@
 package fragment;
 
-import asyncTask.DestinationAst;
-import utils.AddressUtils;
+import android.util.Log;
 
 /**
  * Created by lequan on 4/28/2016.
@@ -10,18 +9,7 @@ public class FavouriteFragment extends DestinationFragment
 {
     public FavouriteFragment()
     {
-
+        fragmentName = "Favourite";
+        Log.d("hehe", "1");
     }
-
-    @Override
-    void initAsyncTask()
-    {
-        asyncTask = new DestinationAst("Favourite");
-    }
-
-    /*@Override
-    void onSelected(int position)
-    {
-        listener.onSelected(AddressUtils.minimizeAddress(list.get(position).getAddress()));
-    }*/
 }

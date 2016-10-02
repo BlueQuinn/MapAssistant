@@ -517,7 +517,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             sharingIntent.setType("text/plain");
                             sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ từ Map Assistant.");
                             sharingIntent.putExtra(Intent.EXTRA_TEXT, msg);
-                            startActivity(Intent.createChooser(sharingIntent, "message"));
+                            startActivity(Intent.createChooser(sharingIntent, "Chia sẻ địa điểm"));
                         }
                         else
                         {
