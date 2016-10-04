@@ -30,7 +30,6 @@ public class Place
 
     public Place(double lat, double lng, String name, String address)
     {
-
         this.lat = lat;
         this.lng = lng;
         this.name = name;

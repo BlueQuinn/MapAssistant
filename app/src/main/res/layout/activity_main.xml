@@ -69,51 +69,6 @@
             </LinearLayout>
         </android.support.v7.widget.Toolbar>
 
-        <!--<LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="bottom|right"
-            android:layout_marginRight="@dimen/fab_margin"
-            android:layout_marginBottom="@dimen/fab_margin">
-            <android.support.design.widget.FloatingActionButton
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="16dp"
-                android:id="@+id/btnTrack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:src="@drawable/location"
-                app:layout_behavior="widgets.FloatingActionButtonBehavior"/>
-
-            <android.support.design.widget.FloatingActionButton
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="16dp"
-                android:id="@+id/btnFavourite"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:src="@drawable/favourite"
-                app:layout_behavior="widgets.FloatingActionButtonBehavior"/>
-        </LinearLayout>-->
-
-        <!--<android.support.design.widget.FloatingActionButton
-            android:id="@+id/btnTrack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginBottom="86dp"
-            android:layout_marginRight="16dp"
-            android:src="@drawable/location"/>
-
-        <android.support.design.widget.FloatingActionButton
-            android:layout_margin="16dp"
-            android:id="@+id/btnFavourite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:src="@drawable/favourite"/>-->
-
         <android.support.design.widget.FloatingActionButton
             app:layout_behavior="widgets.FloatingActionButtonBehavior"
             android:id="@+id/btnTrack"

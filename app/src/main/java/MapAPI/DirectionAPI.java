@@ -7,6 +7,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
 
+import model.Route;
+
 /**
  * Created by lequan on 4/22/2016.
  */
@@ -21,21 +23,30 @@ public class DirectionAPI
         return urlString;
     }
 
-    public static ArrayList<LatLng> getDirection(JSONObject object)
+    public static Route getDirection(JSONObject object)
     {
         if (object == null)
             return null;
 
-        ArrayList<LatLng> directionPoints = new ArrayList<>();
+        Route route = new Route();
+        //ArrayList<LatLng> directionPoints = new ArrayList<>();
         try
         {
             JSONObject direction = object.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0);
+
+            // distance
+            JSONObject distance = direction.getJSONObject("distance");
+            route.setDistance(distance.getString("text"));
+
+            // duration
+            JSONObject duration = direction.getJSONObject("duration");
+            route.setDuration(duration.getString("text"));
 
             // start
             JSONObject start = direction.getJSONObject("start_location");
             double lat = start.getDouble("lat");
             double lng = start.getDouble("lng");
-            directionPoints.add(new LatLng(lat, lng));
+            route.add(new LatLng(lat, lng));
 
             // steps
             JSONArray steps = direction.getJSONArray("steps");
@@ -43,20 +54,20 @@ public class DirectionAPI
             {
                 String polyline = steps.getJSONObject(i).getJSONObject("polyline").getString("points");
                 ArrayList<LatLng> points = decodePoly(polyline);
-                directionPoints.addAll(points);
+                route.addAll(points);
             }
 
             // end
             JSONObject end = direction.getJSONObject("end_location");
             lat = end.getDouble("lat");
             lng = end.getDouble("lng");
-            directionPoints.add(new LatLng(lat, lng));
+            route.add(new LatLng(lat, lng));
         }
         catch (JSONException e)
         {
             e.printStackTrace();
         }
-        return directionPoints;
+        return route;
     }
 
     static ArrayList<LatLng> decodePoly(String encoded)

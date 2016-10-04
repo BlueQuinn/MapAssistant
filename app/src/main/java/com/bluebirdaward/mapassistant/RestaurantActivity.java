@@ -16,7 +16,11 @@ import adapter.RestaurantAdt;
 import asyncTask.RestaurantAst;
 import model.Restaurant;
 import listener.OnLoadListener;
+
 import com.bluebirdaward.mapassistant.gmmap.R;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 
 public class RestaurantActivity extends AppCompatActivity
         implements AdapterView.OnItemClickListener, OnLoadListener<ArrayList<Restaurant>>
@@ -26,6 +30,7 @@ public class RestaurantActivity extends AppCompatActivity
     ArrayList<Restaurant> listRestaurant;
     RestaurantAdt adapter;
     ProgressBar prbLoading;
+    InterstitialAd mInterstitialAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -52,6 +57,21 @@ public class RestaurantActivity extends AppCompatActivity
 
         getSupportActionBar().setTitle(intent.getStringExtra("name"));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-8112894826901791/5653913263");
+
+        mInterstitialAd.setAdListener(new AdListener()
+        {
+            @Override
+            public void onAdClosed()
+            {
+                requestNewInterstitial();
+                finish();
+            }
+        });
+
+        requestNewInterstitial();
     }
 
     @Override
@@ -86,8 +106,23 @@ public class RestaurantActivity extends AppCompatActivity
     {
         if (item.getItemId() == android.R.id.home)
         {
-            finish();
+            if (mInterstitialAd.isLoaded())
+            {
+                mInterstitialAd.show();
+            }
+            else
+            {
+                finish();
+            }
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    void requestNewInterstitial()
+    {
+        AdRequest adRequest = new AdRequest.Builder()
+                .build();
+
+        mInterstitialAd.loadAd(adRequest);
     }
 }

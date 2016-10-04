@@ -38,6 +38,7 @@ import java.util.ArrayList;
 
 import asyncTask.DirectionAst;
 import listener.OnLoadListener;
+import model.Route;
 import utils.ServiceUtils;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
@@ -254,22 +255,6 @@ public class DirectionActivity extends AppCompatActivity
                     prbLoading.setVisibility(View.GONE);
                     Toast.makeText(this, "Bạn chưa mở GPS service", Toast.LENGTH_SHORT).show();
                 }
-
-                /*latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
-                latLng[1] = place.getLatLng();
-
-                BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.car);
-                MarkerOptions markerOptions = new MarkerOptions().position(latLng[0]).icon(icon);
-                marker[0] = map.addMarker(markerOptions);
-
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
-                markerOptions = new MarkerOptions().position(latLng[1]).icon(icon);
-                marker[1] = map.addMarker(markerOptions);
-
-                marker[0].setPosition(latLng[0]);
-                marker[1].setPosition(latLng[1]);
-
-                navigate(latLng[0], latLng[1]);*/
             }
             else if (resultCode == 2)
             {
@@ -281,27 +266,31 @@ public class DirectionActivity extends AppCompatActivity
     void navigate(LatLng start, LatLng end)
     {
         DirectionAst asyncTask = new DirectionAst();
-        asyncTask.setOnLoadListener(new OnLoadListener<ArrayList<LatLng>>()
+        asyncTask.setOnLoadListener(new OnLoadListener<Route>()
         {
             @Override
-            public void onFinish(ArrayList<LatLng> directionPoints)
+            public void onFinish(Route result)
             {
                 prbLoading.setVisibility(View.GONE);
-                if (directionPoints == null || directionPoints.size() < 1)
+                if (result == null || result.lenght() < 1)
                 {
                     Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_LONG).show();
                     return;
                 }
-                PolylineOptions line = new PolylineOptions().width(15).color(getResources().getColor(R.color.colorPrimary));
-                for (int i = 0; i < directionPoints.size(); i++)
+                PolylineOptions option = new PolylineOptions().width(15).color(getResources().getColor(R.color.colorPrimary));
+                /*for (int i = 0; i < result.lenght(); i++)
                 {
-                    line.add(directionPoints.get(i));
-                }
+                    line.add(result.get(i));
+                }*/
+                option.addAll(result.getRoute());
                 if (route != null)
                 {
                     route.remove();
                 }
-                route = map.addPolyline(line);
+
+                route = map.addPolyline(option);
+                //route.setClickable(true);
+                //route.set
                 map.animateCamera(CameraUpdateFactory.newLatLngBounds(createLatLngBoundsObject(latLng[0], latLng[1]), width, height, 150));
             }
         });

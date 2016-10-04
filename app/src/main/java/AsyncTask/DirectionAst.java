@@ -4,18 +4,17 @@ import android.os.AsyncTask;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.ArrayList;
-
 import listener.OnLoadListener;
 import mapAPI.DirectionAPI;
+import model.Route;
 import utils.JsonUtils;
 
 /**
  * Created by lequan on 4/22/2016.
  */
-public class DirectionAst extends AsyncTask<LatLng, Integer, ArrayList<LatLng>>
+public class DirectionAst extends AsyncTask<LatLng, Integer, Route>
 {
-    OnLoadListener<ArrayList<LatLng>> listener;
+    OnLoadListener<Route> listener;
     String mode;
 
     public String getMode()
@@ -45,7 +44,7 @@ public class DirectionAst extends AsyncTask<LatLng, Integer, ArrayList<LatLng>>
     }
 
     @Override
-    protected void onPostExecute(ArrayList<LatLng> result)
+    protected void onPostExecute(Route result)
     {
         listener.onFinish(result);
         super.onPostExecute(result);
@@ -58,7 +57,7 @@ public class DirectionAst extends AsyncTask<LatLng, Integer, ArrayList<LatLng>>
     }
 
     @Override
-    protected ArrayList<LatLng> doInBackground(LatLng... params)
+    protected Route doInBackground(LatLng... params)
     {
         String url = DirectionAPI.createDirectionUrlRequest(params[0], params[1], mode);
         return DirectionAPI.getDirection(JsonUtils.getJSON(url));
