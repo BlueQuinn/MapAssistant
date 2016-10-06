@@ -51,6 +51,6 @@ public class AddressAst extends AsyncTask<Double, Void, String>
             e.printStackTrace();
         }
         return currentAddress;
-        //return AddressUtils.getAddress(geocoder, params[0], params[1]);
+        //return MapUtils.getAddress(geocoder, params[0], params[1]);
     }
 }

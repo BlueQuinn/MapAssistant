@@ -3,17 +3,15 @@ package asyncTask;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 
-import com.bluebirdaward.mapassistant.gmmap.R;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
 import model.Traffic;
 import listener.OnLoadListener;
+import utils.MarkerUtils;
+import utils.TrafficUtils;
 
 /**
  * Created by lequan on 8/29/2016.
@@ -23,13 +21,11 @@ public class AddTrafficAst extends AsyncTask<Integer, MarkerOptions, Boolean>
     ArrayList<Traffic> listTraffic;
     OnLoadListener<Boolean> listener;
     GoogleMap map;
-    Geocoder geocoder;
 
-    public AddTrafficAst(ArrayList<Traffic> listTraffic, GoogleMap map, Geocoder geocoder)
+    public AddTrafficAst(ArrayList<Traffic> listTraffic, GoogleMap map)
     {
         this.listTraffic = listTraffic;
         this.map = map;
-        this.geocoder = geocoder;
     }
 
     public void setListener(OnLoadListener<Boolean> listener)
@@ -64,27 +60,11 @@ public class AddTrafficAst extends AsyncTask<Integer, MarkerOptions, Boolean>
     @Override
     protected Boolean doInBackground(Integer... params)
     {
-        BitmapDescriptor icon;
-        MarkerOptions options;
         int meta = params[0];
-        String level;
+        MarkerUtils marker = new MarkerUtils(meta);
         for (Traffic traffic : listTraffic)
         {
-            if (traffic.getVote() < 2 * meta)
-            {
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.traffic_medium);
-                level = "Ùn tắc giao thông";
-            }
-            else
-            {
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.traffic_high);
-                level = "Kẹt xe";
-            }
-            options = new MarkerOptions().icon(icon);
-            options.position(new LatLng(traffic.getLat(), traffic.getLng()))
-                    //.snippet(AddressUtils.getAddress(geocoder, traffic.getLat(), traffic.getLng()))
-                    .title(level).snippet(Integer.toString(traffic.getVote()) + " người đã thông báo");
-            publishProgress(options);
+            publishProgress(marker.getOption(traffic));
         }
         return true;
     }

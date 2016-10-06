@@ -1,14 +1,18 @@
 package com.bluebirdaward.mapassistant;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -26,6 +30,7 @@ public class RestaurantActivity extends AppCompatActivity
         implements AdapterView.OnItemClickListener, OnLoadListener<ArrayList<Restaurant>>
 {
     GridView gridView;
+    String url;
     TextView tvEmpty;
     ArrayList<Restaurant> listRestaurant;
     RestaurantAdt adapter;
@@ -50,7 +55,7 @@ public class RestaurantActivity extends AppCompatActivity
 
         Intent intent = getIntent();
 
-        String url = "https://www.deliverynow.vn/ho-chi-minh/danh-sach-dia-diem-phuc-vu-" + intent.getStringExtra("url") + "-giao-tan-noi";
+        url = "https://www.deliverynow.vn/ho-chi-minh/danh-sach-dia-diem-phuc-vu-" + intent.getStringExtra("url") + "-giao-tan-noi";
         RestaurantAst asyncTask = new RestaurantAst(this.findViewById(android.R.id.content));
         asyncTask.setOnLoaded(this);
         asyncTask.execute(url);
@@ -102,6 +107,13 @@ public class RestaurantActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         if (item.getItemId() == android.R.id.home)
@@ -115,12 +127,19 @@ public class RestaurantActivity extends AppCompatActivity
                 finish();
             }
         }
+        else        // copy link
+        {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            clipboard.setPrimaryClip(ClipData.newPlainText("hehe", url));
+            Toast.makeText(this, "Đã copy link", Toast.LENGTH_SHORT).show();
+        }
         return super.onOptionsItemSelected(item);
     }
 
     void requestNewInterstitial()
     {
         AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice("95C26624BAF06BE43C74469300F76D9E")
                 .build();
 
         mInterstitialAd.loadAd(adRequest);

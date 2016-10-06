@@ -65,7 +65,6 @@
                     android:padding="7dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/micro"/>
-
             </LinearLayout>
         </android.support.v7.widget.Toolbar>
 
@@ -76,7 +75,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_marginBottom="86dp"
-            android:layout_marginRight="16dp"
+            android:layout_marginEnd="16dp"
             android:src="@drawable/location"/>
 
         <android.support.design.widget.FloatingActionButton

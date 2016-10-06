@@ -18,7 +18,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -77,18 +76,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         View.OnClickListener, View.OnLongClickListener,
         ExpandableListView.OnChildClickListener, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener
+
 {
     final int LOCATE_ON_START = 1;      //
     final int LOCATE_ON_REQUEST = 2;    // btnTrack click
     final int LOCATE_FOR_NEARBY = 3;      //
     final int LOCATE_FOR_DIRECTION = 4;    //
     final int LOCATE_TO_NOTIFY = 5;
-    /*final int LOCATE_ON_REQUEST = 2;    // btnTrack click
-    final int LOCATE_ON_START = 1;      //
-    final int LOCATE_ON_REQUEST = 2;    // btnTrack click*/
+
     GoogleMap map;
     GoogleApiClient mGoogleApiClient;
-    private LocationRequest mLocationRequest;
+    LocationRequest mLocationRequest;
 
     ProgressBar prbLoading;
     LatLng myLocation, destination;
@@ -148,8 +146,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         listSection.add(new MenuSection("Tiện ích", listMenu));
 
         listMenu = new ArrayList<>();
-        listMenu.add(new Menu("Tình trạng tắc đường", R.drawable.traffic_cone));
         listMenu.add(new Menu("Thông báo tắc đường", R.drawable.warning));
+        listMenu.add(new Menu("Tình trạng giao thông", R.drawable.traffic_cone));
+        //listMenu.add(new Menu("Tình trạng giao thông", R.drawable.traffic_cone));
         listSection.add(new MenuSection("Giao thông", listMenu));
 
         listMenu = new ArrayList<>();
@@ -162,13 +161,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         lvLeftmenu.setAdapter(adapter);
         lvLeftmenu.setOnChildClickListener(this);
     }
-
-    /*void setAdapter()
-    {
-        MenuAdt adapter = new MenuAdt(getApplicationContext(), R.layout.row_menu, R.layout.row_section, listSection);
-        lvLeftmenu.setAdapter(adapter);
-        lvLeftmenu.setOnChildClickListener(this);
-    }*/
 
     void initDatabase()
     {
@@ -209,7 +201,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         String myLat = sharedPref.getString("myLat", "");
         String myLng = sharedPref.getString("myLng", "");
         if (myLat.length() < 1 || myLng.length() < 1)
-        //myLocation = new LatLng(10.762689, 106.68233989999999);
         {
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(10.78261522192309, 106.69588862681348), 20));
         }
@@ -515,7 +506,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             }
                             Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                             sharingIntent.setType("text/plain");
-                            sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ từ Map Assistant.");
+                            sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ từ ứng dụng Map Assistant.");
                             sharingIntent.putExtra(Intent.EXTRA_TEXT, msg);
                             startActivity(Intent.createChooser(sharingIntent, "Chia sẻ địa điểm"));
                         }
@@ -532,14 +523,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 switch (childPosition)
                 {
                     case 0:     // load traffic jam
-                        loadTraffic();
+                        openGPS(LOCATE_TO_NOTIFY);
                         break;
 
                     case 1:     // notify traffic jam
-                    {
-                        openGPS(LOCATE_TO_NOTIFY);
+                        loadTraffic();
                         break;
-                    }
+
+                    case 2:
+                        startActivity(new Intent(this, ShortcutActivity.class));
+                        break;
                 }
                 break;
 
@@ -636,18 +629,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             listTraffic.add(new Traffic(lat, lng, vote));
                         }
                     }
-                    Log.d("123", "" + listTraffic.size());
+                    //Log.d("123", "" + listTraffic.size());
 
                     if (listTraffic.size() > 0)
                     {
                         map.clear();
-                        final Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                        AddTrafficAst asyncTask = new AddTrafficAst(listTraffic, map, geocoder);
+                        AddTrafficAst asyncTask = new AddTrafficAst(listTraffic, map);
                         asyncTask.setListener(new OnLoadListener<Boolean>()
                         {
                             @Override
                             public void onFinish(Boolean result)
                             {
+                                final Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
                                 map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
                                 {
                                     @Override
@@ -661,7 +654,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                             public void onFinish(String address)
                                             {
                                                 prbLoading.setVisibility(View.GONE);
-                                                Snackbar.make(findViewById(R.id.frameLayout), address, Snackbar.LENGTH_INDEFINITE).show();
+                                                Snackbar.make(findViewById(R.id.frameLayout), address, Snackbar.LENGTH_INDEFINITE)
+                                                        .setAction("Giải pháp", new View.OnClickListener()
+                                                        {
+                                                            @Override
+                                                            public void onClick(View v)
+                                                            {
+
+                                                            }
+                                                        })
+                                                        .show();
                                             }
                                         });
                                         LatLng position = marker.getPosition();
@@ -730,7 +732,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onDestroy()
     {
         super.onDestroy();
-        mGoogleApiClient.disconnect();
+        if (mGoogleApiClient != null)
+        {
+            mGoogleApiClient.disconnect();
+        }
     }
 
     @Override

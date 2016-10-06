@@ -5,10 +5,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
 import android.widget.ImageButton;
@@ -16,6 +19,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
@@ -28,42 +35,47 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.util.ArrayList;
-
 import asyncTask.DirectionAst;
 import listener.OnLoadListener;
 import model.Route;
+import model.Traffic;
+import utils.MapUtils;
+import utils.MarkerUtils;
 import utils.ServiceUtils;
+import utils.TrafficUtils;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
+import java.util.ArrayList;
+
 public class DirectionActivity extends AppCompatActivity
         implements View.OnClickListener, OnMapReadyCallback,
-        GoogleMap.OnMyLocationChangeListener
+        GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener
 {
+    FloatingActionButton btnTraffic;
     GoogleMap map;
     LatLng position;
-    Polyline route;
+    Polyline polyline;
     float zoom;
-    private int width;
-    private int height;
+    int width;
+    int height;
 
     LatLng myLocation;
     LatLng destination;
     String place, address;
 
-    //String restaurant;
+    Route route;
 
     TextView[] textView;
 
     LatLng[] latLng = new LatLng[2];
     Marker[] marker = new Marker[2];
+    ArrayList<Marker> waypoint;
 
     int request;
     final int CUSTOM_DIRECTION = 1;      //
@@ -77,11 +89,18 @@ public class DirectionActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_direction);
-        getSreenDimension();
+        Firebase.setAndroidContext(this);
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
 
         textView = new TextView[2];
         textView[0] = (TextView) findViewById(R.id.txtFrom);
         textView[1] = (TextView) findViewById(R.id.txtTo);
+
+        btnTraffic = (FloatingActionButton) findViewById(R.id.btnTraffic);
+        btnTraffic.setVisibility(View.GONE);
+        //btnTraffic.setOnClickListener(this);
 
         ImageButton btnBack = (ImageButton) findViewById(R.id.btnBack);
         ImageButton btnReverse = (ImageButton) findViewById(R.id.btnReverse);
@@ -108,8 +127,6 @@ public class DirectionActivity extends AppCompatActivity
                 break;
 
             case RESTAURANT_DIRECTION:
-                place = intent.getStringExtra("restaurant");
-                address = intent.getStringExtra("address");
                 break;
 
             case PLACE_DIRECTION:
@@ -119,6 +136,10 @@ public class DirectionActivity extends AppCompatActivity
                 address = intent.getStringExtra("address");
                 break;
         }
+
+        DisplayMetrics display = getResources().getDisplayMetrics();
+        width = display.widthPixels;
+        height = display.heightPixels;
     }
 
     @Override
@@ -131,6 +152,17 @@ public class DirectionActivity extends AppCompatActivity
         map.getUiSettings().setMyLocationButtonEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
 
+        map.setOnMarkerDragListener(this);
+        map.setOnMarkerClickListener(DirectionActivity.this);
+        map.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener()
+        {
+            @Override
+            public void onPolylineClick(Polyline polyline)
+            {
+                Snackbar.make(findViewById(R.id.frameLayout), route.getInformation(), Snackbar.LENGTH_INDEFINITE).show();
+            }
+        });
+
         switch (request)
         {
             case CUSTOM_DIRECTION:
@@ -138,11 +170,19 @@ public class DirectionActivity extends AppCompatActivity
                 break;
 
             case RESTAURANT_DIRECTION:
-            {
                 try
                 {
-                    Intent intent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(address).zzig(1).build(this);
-                    startActivityForResult(intent, 3);
+                    Intent intent = getIntent();
+                    place = intent.getStringExtra("restaurant");
+                    address = intent.getStringExtra("address");
+                    myLocation = intent.getParcelableExtra("my location");
+                    latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
+                    textView[0].setText("my location");
+                    MarkerOptions markerOptions = new MarkerOptions().position(latLng[0]).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
+                    marker[0] = map.addMarker(markerOptions.title("my location").snippet(intent.getStringExtra("my address")));
+
+                    Intent findPlaceIntent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(address).zzig(1).build(this);
+                    startActivityForResult(findPlaceIntent, 3);
                     //prbLoading.setVisibility(View.VISIBLE);
                 }
                 catch (GooglePlayServicesRepairableException e)
@@ -154,14 +194,14 @@ public class DirectionActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 break;
-            }
 
             case PLACE_DIRECTION:
                 latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
                 latLng[1] = new LatLng(destination.latitude, destination.longitude);
 
                 MarkerOptions markerOptions = new MarkerOptions().position(latLng[0]).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
-                marker[0] = map.addMarker(markerOptions.title("my location"));
+                marker[0] = map.addMarker(markerOptions.title("my location").draggable(true));
+
                 markerOptions = new MarkerOptions().position(latLng[1]).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
                 marker[1] = map.addMarker(markerOptions.title(place));
                 if (address != null)
@@ -174,25 +214,6 @@ public class DirectionActivity extends AppCompatActivity
 
                 navigate(latLng[0], latLng[1]);
                 break;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            if (ServiceUtils.checkServiceEnabled(this))
-            {
-                prbLoading.setVisibility(View.VISIBLE);
-                map.setMyLocationEnabled(true);
-                map.setOnMyLocationChangeListener(this);
-                //Toast.makeText(this, "Đang xác định vị trí của bạn", Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                Toast.makeText(this, "Bạn chưa mở GPS service", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 
@@ -218,6 +239,10 @@ public class DirectionActivity extends AppCompatActivity
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
             }
 
+            if (marker[requestCode] != null)
+            {
+                marker[requestCode].remove();
+            }
             MarkerOptions markerOptions = new MarkerOptions().position(latLng[requestCode]).icon(icon);
             marker[requestCode] = map.addMarker(markerOptions.title(place).snippet(address));
             map.animateCamera(CameraUpdateFactory.newLatLng(latLng[requestCode]));
@@ -231,30 +256,21 @@ public class DirectionActivity extends AppCompatActivity
         {
             if (resultCode == -1)
             {
-                Place place = PlaceAutocomplete.getPlace(this, data);
-                textView[1].setText(place.getName());
-                latLng[1] = place.getLatLng();
+                prbLoading.setVisibility(View.GONE);
+                Place restaurant = PlaceAutocomplete.getPlace(this, data);
+                textView[1].setText(restaurant.getName());
+                latLng[1] = restaurant.getLatLng();
+                MarkerOptions markerOptions = new MarkerOptions().position(latLng[1]).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+                marker[1] = map.addMarker(markerOptions.title(restaurant.getName().toString()));
+                if (place.length() > 0)
+                {
+                    marker[1].setSnippet(place);
+                }
 
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                {
-                    if (android.os.Build.VERSION.SDK_INT > 22)
-                    {
-                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-                    }
-                    return;
-                }
-                if (ServiceUtils.checkServiceEnabled(this))
-                {
-                    prbLoading.setVisibility(View.VISIBLE);
-                    map.setMyLocationEnabled(true);
-                    map.setOnMyLocationChangeListener(this);
-                    //Toast.makeText(this, "Đang xác định vị trí của bạn", Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
-                    prbLoading.setVisibility(View.GONE);
-                    Toast.makeText(this, "Bạn chưa mở GPS service", Toast.LENGTH_SHORT).show();
-                }
+                marker[0].setPosition(latLng[0]);
+                marker[1].setPosition(latLng[1]);
+
+                navigate(latLng[0], latLng[1]);
             }
             else if (resultCode == 2)
             {
@@ -263,16 +279,16 @@ public class DirectionActivity extends AppCompatActivity
         }
     }
 
-    void navigate(LatLng start, LatLng end)
+    void navigate(LatLng... point)
     {
         DirectionAst asyncTask = new DirectionAst();
         asyncTask.setOnLoadListener(new OnLoadListener<Route>()
         {
             @Override
-            public void onFinish(Route result)
+            public void onFinish(Route route)
             {
                 prbLoading.setVisibility(View.GONE);
-                if (result == null || result.lenght() < 1)
+                if (route == null || route.lenght() < 1)
                 {
                     Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_LONG).show();
                     return;
@@ -282,24 +298,26 @@ public class DirectionActivity extends AppCompatActivity
                 {
                     line.add(result.get(i));
                 }*/
-                option.addAll(result.getRoute());
-                if (route != null)
+                option.addAll(route.getRoute());
+                if (polyline != null)
                 {
-                    route.remove();
+                    polyline.remove();
                 }
 
-                route = map.addPolyline(option);
-                //route.setClickable(true);
-                //route.set
-                map.animateCamera(CameraUpdateFactory.newLatLngBounds(createLatLngBoundsObject(latLng[0], latLng[1]), width, height, 150));
+                polyline = map.addPolyline(option);
+                polyline.setClickable(true);
+
+                map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(latLng[0], latLng[1]), width, height, 150));
+
+                DirectionActivity.this.route = route;
             }
         });
-        asyncTask.execute(start, end);
+        asyncTask.execute(point);
         prbLoading.setVisibility(View.VISIBLE);
     }
 
     @Override
-    public void onClick(View v)
+    public void onClick(final View v)
     {
         switch (v.getId())
         {
@@ -330,8 +348,6 @@ public class DirectionActivity extends AppCompatActivity
                     marker[0].setTitle(marker[1].getTitle());
                     marker[1].setTitle(tmp);
 
-                    Log.d("234", marker[0].getSnippet() + "    " + marker[1].getSnippet());
-
                     tmp = marker[0].getSnippet();
                     marker[0].setSnippet(marker[1].getSnippet());
                     marker[1].setSnippet(tmp);
@@ -345,29 +361,50 @@ public class DirectionActivity extends AppCompatActivity
                     navigate(latLng[0], latLng[1]);
                 }
                 break;
+
+            case R.id.btnTraffic:
+            {
+                prbLoading.setVisibility(View.VISIBLE);
+                final Firebase ref = new Firebase(getResources().getString(R.string.database_traffic));
+                final ValueEventListener listener = new ValueEventListener()
+                {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot)
+                    {
+                        TrafficUtils trafficUtil = new TrafficUtils(route.getPath(), 300);
+                        int meta = ((Long) snapshot.child("meta").getValue()).intValue();
+                        DataSnapshot traffic = snapshot.child("rush");
+                        for (DataSnapshot jam : traffic.getChildren())
+                        {
+                            double lat = (double) jam.child("lat").getValue();
+                            double lng = (double) jam.child("lng").getValue();
+                            if (trafficUtil.isNear(lat, lng))
+                            {
+                                int vote = ((Long) jam.child("vote").getValue()).intValue();
+                                MarkerUtils markerUtil = new MarkerUtils(meta);
+                                MarkerOptions options = markerUtil.getOption(new Traffic(lat, lng, vote));
+                                map.addMarker(options);
+                            }
+                        }
+                        ref.removeEventListener(this);
+                        prbLoading.setVisibility(View.GONE);
+
+                        waypoint = new ArrayList<>();
+                    }
+
+                    @Override
+                    public void onCancelled(FirebaseError firebaseError)
+                    {
+                        ref.removeEventListener(this);
+                    }
+                };
+                ref.addValueEventListener(listener);
+            }
+            break;
         }
     }
 
-    private void getSreenDimension()
-    {
-        Display display = getWindowManager().getDefaultDisplay();
-        width = display.getWidth();
-        height = display.getHeight();
-    }
-
-    LatLngBounds createLatLngBoundsObject(LatLng firstLocation, LatLng secondLocation)
-    {
-        if (firstLocation != null && secondLocation != null)
-        {
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            builder.include(firstLocation).include(secondLocation);
-
-            return builder.build();
-        }
-        return null;
-    }
-
-    @Override
+    /*@Override
     public void onMyLocationChange(Location location)   // this callback only run for restaurant direction
     {
         map.setOnMyLocationChangeListener(null);
@@ -392,5 +429,48 @@ public class DirectionActivity extends AppCompatActivity
         marker[1].setPosition(latLng[1]);
 
         navigate(latLng[0], latLng[1]);
+    }*/
+
+    @Override
+    public void onMarkerDragStart(Marker marker)
+    {
+
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker)
+    {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker)
+    {
+        navigate(latLng[0], latLng[1], marker.getPosition());
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker)
+    {
+        if (marker.getTitle().equals("Ùn tắc giao thông") || marker.getTitle().equals("Kẹt xe"))
+        {
+            Snackbar.make(findViewById(R.id.frameLayout), marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
+                    .setAction("Tránh", new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            Marker sign = map.addMarker(new MarkerOptions()
+                                    .draggable(true).position(latLng[0])
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.sign)));
+                            sign.setTitle("Chọn tuyến đường khác");
+                            sign.setSnippet("Nhấn giữ để di chuyển");
+                            sign.showInfoWindow();
+
+                            waypoint.add(sign);
+                        }
+                    }).show();
+        }
+        return false;
     }
 }

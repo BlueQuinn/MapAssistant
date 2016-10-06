@@ -9,17 +9,15 @@ import asyncTask.ContactAst;
  */
 public class ContactFragment extends DestinationFragment
 {
-    ContentResolver contentResolver;
 
     public ContactFragment()
     {
-        contentResolver = getActivity().getContentResolver();
     }
 
     @Override
     void initAsyncTask()
     {
-        asyncTask = new ContactAst(contentResolver);
+        asyncTask = new ContactAst(getActivity().getContentResolver());
     }
 
     @Override

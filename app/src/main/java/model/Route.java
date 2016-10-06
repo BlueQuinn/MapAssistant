@@ -10,45 +10,74 @@ import java.util.ArrayList;
 public class Route
 {
     ArrayList<LatLng> route;
+    LatLng start, end;
 
-    public void setDuration(String duration)
+    ArrayList<LatLng[]> path;
+
+    public void setDuration(int duration)
     {
         this.duration = duration;
     }
 
-    public void setDistance(String distance)
+    public void setDistance(int distance)
     {
         this.distance = distance;
     }
 
-    String duration;
-    String distance;
+    int duration;       // meters
+    int distance;       // seconds
 
     public ArrayList<LatLng> getRoute()
     {
         return route;
     }
 
-    public String getDuration()
+    public int getDuration()
     {
         return duration;
     }
 
-    public String getDistance()
+    public int getDistance()
     {
         return distance;
     }
 
-    public Route(ArrayList<LatLng> route, String duration, String distance)
+    public String getInformation()
     {
-        this.route = route;
-        this.duration = duration;
-        this.distance = distance;
+        String time;
+        int hour = duration / 3600;
+        int minute = (duration - hour * 3600) / 60;
+
+        if (hour == 0)
+        {
+            time = Integer.toString(minute) + "p";
+        }
+        else
+        {
+            time = Integer.toString(hour) + "h";
+            if (minute != 0)
+            {
+                time += Integer.toString(minute) + "p";
+            }
+        }
+
+        String dtc;
+        if (distance < 1000)
+        {
+            dtc = Integer.toString(distance) + "m";
+        }
+        else
+        {
+            dtc = Float.toString(Math.round(distance * 1000) / 1000) + "km";
+        }
+
+        return dtc + " - " + time;
     }
 
     public Route()
     {
         route = new ArrayList<>();
+        path = new ArrayList<>();
     }
 
     public void add(LatLng point)
@@ -69,5 +98,25 @@ public class Route
     public LatLng get(int index)
     {
         return route.get(index);
+    }
+
+    public void setStart(LatLng start)
+    {
+        this.start = start;
+    }
+
+    public void setEnd(LatLng end)
+    {
+        this.end = end;
+    }
+
+    public LatLng[] getPath()
+{
+    return new LatLng[]{start, end};
+}
+
+    public void addPath(LatLng[] point)
+    {
+        path.add(point);
     }
 }

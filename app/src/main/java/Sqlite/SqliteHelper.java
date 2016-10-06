@@ -145,7 +145,7 @@ public class SqliteHelper extends SQLiteOpenHelper
     {
         if (db != null)
         {
-            Cursor cursor = db.rawQuery(String.format("select lat, lng from %s where Place = '%s'", table, place), null);
+            Cursor cursor = db.rawQuery(String.format("select Latitude, Longitude from %s where Place = '%s'", table, place), null);
             if (cursor.moveToFirst())
             {
                 double lat = cursor.getDouble(0);

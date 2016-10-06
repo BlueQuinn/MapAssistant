@@ -4,27 +4,11 @@
     tools:context="com.bluebirdaward.mapassistant.MainActivity">
 
     <item
-        android:id="@+id/item_nearby"
-        android:title="Find nearby"
+        android:title="copy link"
+        android:icon="@drawable/link"
+        android:id="@+id/link"
         android:orderInCategory="1"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
 
-    <item
-        android:id="@+id/item_normal"
-        android:title="Normal"
-        android:orderInCategory="1"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/item_satellite"
-        android:title="Satellite"
-        android:orderInCategory="1"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/item_terrain"
-        android:title="Terrain"
-        android:orderInCategory="1"
-        app:showAsAction="never" />
 
 </menu>

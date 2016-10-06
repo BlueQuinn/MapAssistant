@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/frameLayout"
     tools:context="com.bluebirdaward.mapassistant.DirectionActivity">
+
+    <include layout="@layout/content_main"/>
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
@@ -16,18 +20,67 @@
         app:contentInsetStart="0dp">
 
         <include layout="@layout/fragment_direction"/>
-
     </android.support.v7.widget.Toolbar>
 
-    <include layout="@layout/content_main" />
-
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/btnTrack"
+        android:layout_margin="16dp"
+        android:id="@+id/btnTraffic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="86dp"
-        android:layout_marginRight="16dp"
-        android:src="@drawable/location"/>
+        android:src="@drawable/traffic"/>
 
-</LinearLayout>
+</android.support.design.widget.CoordinatorLayout>
+
+
+
+<!--
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bgLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.bluebirdaward.mapassistant.DirectionActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingTop="24dp">
+
+
+            <android.support.v4.widget.NestedScrollView
+                android:id="@+id/bottom_sheet1"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:clipToPadding="true"
+                android:background="@android:color/holo_blue_bright"
+                app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="asdadasasdasdasdasdasd"
+                        android:textSize="16sp"
+                        android:textAllCaps="true"
+                        android:padding="16dp"/>
+
+                </LinearLayout>
+            </android.support.v4.widget.NestedScrollView>
+
+
+        </LinearLayout>
+    </ScrollView>
+</android.support.design.widget.CoordinatorLayout>-->

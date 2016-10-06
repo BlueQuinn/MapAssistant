@@ -59,7 +59,15 @@ public class DirectionAst extends AsyncTask<LatLng, Integer, Route>
     @Override
     protected Route doInBackground(LatLng... params)
     {
-        String url = DirectionAPI.createDirectionUrlRequest(params[0], params[1], mode);
+        String url;
+        if (params.length > 2)
+        {
+            url = DirectionAPI.createDirectionUrlRequest(params[0], params[1], mode);
+        }
+        else
+        {
+            url = DirectionAPI.createDirectionUrlRequest(params);
+        }
         return DirectionAPI.getDirection(JsonUtils.getJSON(url));
     }
 

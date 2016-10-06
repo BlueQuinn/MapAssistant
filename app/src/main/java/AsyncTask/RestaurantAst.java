@@ -27,7 +27,6 @@ import model.Restaurant;
  */
 public class RestaurantAst extends AsyncTask<String, Integer, ArrayList<Restaurant>>
 {
-
     ProgressBar prbLoading;
 
     public RestaurantAst(View view)

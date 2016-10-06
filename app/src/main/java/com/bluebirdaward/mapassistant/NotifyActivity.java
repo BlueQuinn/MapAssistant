@@ -29,8 +29,8 @@ import java.util.Map;
 
 import asyncTask.AddressAst;
 import model.Jam;
-import model.Position;
 import listener.OnLoadListener;
+import model.Position;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 import com.google.android.gms.maps.model.LatLng;
@@ -52,8 +52,8 @@ public class NotifyActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notify);
-
         Firebase.setAndroidContext(this);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setTitle("Thông báo tắc đường");
 
@@ -243,6 +243,7 @@ public class NotifyActivity extends AppCompatActivity
             public void onCancelled(FirebaseError firebaseError)
             {
                 System.out.println("The read failed: " + firebaseError.getMessage());
+                ref.removeEventListener(this);
             }
         });
     }
