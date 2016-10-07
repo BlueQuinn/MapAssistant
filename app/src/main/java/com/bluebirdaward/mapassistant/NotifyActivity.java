@@ -176,9 +176,9 @@ String info;
             double lat = Double.parseDouble(row.get("Lat"));
             double lng = Double.parseDouble(row.get("Lng"));
             float distance = getDistance(myLocation.latitude, myLocation.longitude, lat, lng);
-            Log.d("123", "lat = " + lat + " " + myLocation.latitude);
-            Log.d("123", "lng = " + lng + " " + myLocation.longitude);
-            Log.d("123", "distance = " + distance);
+            //Log.d("123", "lat = " + lat + " " + myLocation.latitude);
+            //Log.d("123", "lng = " + lng + " " + myLocation.longitude);
+            //Log.d("123", "distance = " + distance);
             if (distance >= 0 && distance <= 1000)
             {
                 return true;

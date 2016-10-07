@@ -61,7 +61,9 @@ public class AddTrafficAst extends AsyncTask<Integer, TrafficOption, Boolean>
     protected Boolean doInBackground(Integer... params)
     {
         int meta = params[0];
-        TrafficOptionUtils utils = new TrafficOptionUtils(meta);
+        int mediumColor = params[1];
+        int highColor = params[2];
+        TrafficOptionUtils utils = new TrafficOptionUtils(meta, mediumColor, highColor);
         for (Traffic traffic : listTraffic)
         {
             publishProgress(utils.getOption(traffic));

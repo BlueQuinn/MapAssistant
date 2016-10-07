@@ -628,7 +628,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 prbLoading.setVisibility(View.GONE);
                             }
                         });
-                        asyncTask.execute(meta);
+                        asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
                     }
                     else
                     {

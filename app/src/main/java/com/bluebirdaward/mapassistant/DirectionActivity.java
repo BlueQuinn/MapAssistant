@@ -381,7 +381,7 @@ public class DirectionActivity extends AppCompatActivity
                                 if (intersect != null)
                                 {
                                     // int vote = ((Long) jam.child("vote").getValue()).intValue();
-                                    TrafficOptionUtils optionUtils = new TrafficOptionUtils(meta);
+                                    TrafficOptionUtils optionUtils = new TrafficOptionUtils(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
                                     TrafficOption options = optionUtils.getOption(traffic);
                                     map.addMarker(options.getMarkerOptions());
                                     map.addPolyline(options.getPolylineOptions());

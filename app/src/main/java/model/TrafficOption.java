@@ -23,7 +23,6 @@ public class TrafficOption
 
     public TrafficOption(MarkerOptions markerOptions, PolylineOptions polylineOptions)
     {
-
         this.markerOptions = markerOptions;
         this.polylineOptions = polylineOptions;
     }

@@ -29,4 +29,6 @@
     <color name="blueGrey">#607D8B</color>
 
     <color name="green">#00E676</color>
+    <color name="yellowLight">#FDD835</color>
+    <color name="redLight">#FF6F00</color>
 </resources>
