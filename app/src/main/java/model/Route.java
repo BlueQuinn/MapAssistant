@@ -10,9 +10,8 @@ import java.util.ArrayList;
 public class Route
 {
     ArrayList<LatLng> route;
-    LatLng start, end;
-
     ArrayList<LatLng[]> path;
+    LatLng start, end;
 
     public void setDuration(int duration)
     {

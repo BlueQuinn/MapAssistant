@@ -62,11 +62,11 @@ public class DirectionAst extends AsyncTask<LatLng, Integer, Route>
         String url;
         if (params.length > 2)
         {
-            url = DirectionAPI.createDirectionUrlRequest(params[0], params[1], mode);
+            url = DirectionAPI.createDirectionUrlRequest(params);
         }
         else
         {
-            url = DirectionAPI.createDirectionUrlRequest(params);
+            url = DirectionAPI.createDirectionUrlRequest(params[0], params[1], mode);
         }
         return DirectionAPI.getDirection(JsonUtils.getJSON(url));
     }

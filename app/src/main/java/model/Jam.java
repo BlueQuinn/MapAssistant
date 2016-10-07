@@ -5,22 +5,17 @@ package model;
  */
 public class Jam
 {
-    String time;
+    String start, end;
     int vote;
 
-    public String getTime()
+    public void setStart(String start)
     {
-        return time;
+        this.start = start;
     }
 
-    public void setTime(String time)
+    public void setEnd(String end)
     {
-        this.time = time;
-    }
-
-    public int getVote()
-    {
-        return vote;
+        this.end = end;
     }
 
     public void setVote(int vote)
@@ -28,10 +23,27 @@ public class Jam
         this.vote = vote;
     }
 
-    public Jam(String time, int vote)
+    public String getStart()
     {
 
-        this.time = time;
+        return start;
+    }
+
+    public String getEnd()
+    {
+        return end;
+    }
+
+    public int getVote()
+    {
+        return vote;
+    }
+
+    public Jam(String start, String end, int vote)
+    {
+
+        this.start = start;
+        this.end = end;
         this.vote = vote;
     }
 }

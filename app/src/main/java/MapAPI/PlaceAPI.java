@@ -1,6 +1,5 @@
 package mapAPI;
 
-import android.content.Context;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -17,15 +16,15 @@ import com.bluebirdaward.mapassistant.gmmap.R;
  */
 public class PlaceAPI
 {
-    public static String createPlaceUrlRequest(Context context, double latitude, double longitude, String type, int radius)
+    public static String createPlaceUrlRequest(String apiKey, double latitude, double longitude, String type, int radius)
     {
-        StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-        googlePlacesUrl.append("location=" + latitude + "," + longitude);
-        googlePlacesUrl.append("&radius=" + radius * 1000);     // kilometer
-        googlePlacesUrl.append("&types=" + type);
-        googlePlacesUrl.append("&key=" + context.getResources().getString(R.string.google_maps_key));
-        Log.d("123", "url = " + googlePlacesUrl.toString());
-        return googlePlacesUrl.toString();
+        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        url.append("location=" + latitude + "," + longitude);
+        url.append("&radius=" + radius * 1000);     // kilometer
+        url.append("&types=" + type);
+        url.append("&key=" + apiKey);
+        //Log.d("123", "url = " + googlePlacesUrl.toString());
+        return url.toString();
     }
 
     public static ArrayList<Place> getPlaces(JSONObject object)

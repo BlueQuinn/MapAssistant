@@ -31,7 +31,7 @@ public class JsonUtils
         }
         catch (Exception e)
         {
-            Log.e("123", e.getMessage());
+            //Log.e("123", e.getMessage());
         }
 
         return null;

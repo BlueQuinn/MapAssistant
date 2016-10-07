@@ -423,7 +423,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onFinish(Nearby nearby)
             {
                 final int radius = nearby.getRadius();
-                FindPlaceAst asyncTask = new FindPlaceAst(getApplicationContext(), nearby.getPlaceType(), radius);
+                FindPlaceAst asyncTask = new FindPlaceAst(getResources().getString(R.string.google_maps_key), nearby.getPlaceType(), radius);
                 asyncTask.setOnLoadListener(new OnLoadListener<ArrayList<Place>>()
                 {
                     @Override

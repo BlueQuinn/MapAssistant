@@ -15,7 +15,7 @@ import utils.JsonUtils;
  */
 public class FindPlaceAst extends AsyncTask<Double, Integer, ArrayList<Place>>
 {
-    Context context;
+    String apiKey;
     OnLoadListener<ArrayList<Place>> listener;
     String type;
     int radius;
@@ -25,9 +25,9 @@ public class FindPlaceAst extends AsyncTask<Double, Integer, ArrayList<Place>>
         this.listener = listener;
     }
 
-    public FindPlaceAst(Context context, String type, int radius)
+    public FindPlaceAst(String apiKey, String type, int radius)     // radius in kilometer
     {
-        this.context = context;
+        this.apiKey = apiKey;
         this.type = type;
         this.radius = radius;
     }
@@ -54,7 +54,7 @@ public class FindPlaceAst extends AsyncTask<Double, Integer, ArrayList<Place>>
     @Override
     protected ArrayList<Place> doInBackground(Double... params)
     {
-        String url = PlaceAPI.createPlaceUrlRequest(context, params[0].doubleValue(), params[1].doubleValue(), type, radius);
+        String url = PlaceAPI.createPlaceUrlRequest(apiKey, params[0].doubleValue(), params[1].doubleValue(), type, radius);
         return PlaceAPI.getPlaces(JsonUtils.getJSON(url));
     }
 
