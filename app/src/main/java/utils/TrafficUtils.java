@@ -14,10 +14,12 @@ import model.Traffic;
 public class TrafficUtils
 {
     double a, b;
+    LatLng start, end;
 
     public TrafficUtils(LatLng[] point, double big)
     {
-
+        start = point[0];
+        end = point[1];
     }
 
     public boolean isNear(double lat, double lng)
@@ -27,6 +29,11 @@ public class TrafficUtils
             return true;
         }
         return false;
+    }
+
+    public LatLng intersect(LatLng A, LatLng B)
+    {
+        return null;
     }
 
 }

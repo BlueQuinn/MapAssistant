@@ -1,22 +1,20 @@
 package asyncTask;
 
-import android.location.Geocoder;
 import android.os.AsyncTask;
 
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
 import model.Traffic;
 import listener.OnLoadListener;
-import utils.MarkerUtils;
-import utils.TrafficUtils;
+import model.TrafficOption;
+import utils.TrafficOptionUtils;
 
 /**
  * Created by lequan on 8/29/2016.
  */
-public class AddTrafficAst extends AsyncTask<Integer, MarkerOptions, Boolean>
+public class AddTrafficAst extends AsyncTask<Integer, TrafficOption, Boolean>
 {
     ArrayList<Traffic> listTraffic;
     OnLoadListener<Boolean> listener;
@@ -47,13 +45,15 @@ public class AddTrafficAst extends AsyncTask<Integer, MarkerOptions, Boolean>
     }
 
     @Override
-    protected void onProgressUpdate(MarkerOptions... values)
+    protected void onProgressUpdate(TrafficOption... values)
     {
         super.onProgressUpdate(values);
 
         if (values.length > 0)
         {
-            map.addMarker(values[0]);
+            TrafficOption option = values[0];
+            map.addMarker(option.getMarkerOptions());
+            map.addPolyline(option.getPolylineOptions());
         }
     }
 
@@ -61,10 +61,10 @@ public class AddTrafficAst extends AsyncTask<Integer, MarkerOptions, Boolean>
     protected Boolean doInBackground(Integer... params)
     {
         int meta = params[0];
-        MarkerUtils marker = new MarkerUtils(meta);
+        TrafficOptionUtils utils = new TrafficOptionUtils(meta);
         for (Traffic traffic : listTraffic)
         {
-            publishProgress(marker.getOption(traffic));
+            publishProgress(utils.getOption(traffic));
         }
         return true;
     }

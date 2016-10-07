@@ -110,10 +110,20 @@ public class Route
         this.end = end;
     }
 
+    public LatLng[] getPath(int i)
+    {
+        return path.get(i);
+    }
+
     public LatLng[] getPath()
-{
-    return new LatLng[]{start, end};
-}
+    {
+        return new LatLng[]{start, end};
+    }
+
+    public int pathCount()
+    {
+        return path.size();
+    }
 
     public void addPath(LatLng[] point)
     {

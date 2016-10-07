@@ -1,18 +1,12 @@
 package com.bluebirdaward.mapassistant;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -44,9 +38,9 @@ import asyncTask.DirectionAst;
 import listener.OnLoadListener;
 import model.Route;
 import model.Traffic;
+import model.TrafficOption;
 import utils.MapUtils;
-import utils.MarkerUtils;
-import utils.ServiceUtils;
+import utils.TrafficOptionUtils;
 import utils.TrafficUtils;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
@@ -371,19 +365,27 @@ public class DirectionActivity extends AppCompatActivity
                     @Override
                     public void onDataChange(DataSnapshot snapshot)
                     {
-                        TrafficUtils trafficUtil = new TrafficUtils(route.getPath(), 300);
-                        int meta = ((Long) snapshot.child("meta").getValue()).intValue();
-                        DataSnapshot traffic = snapshot.child("rush");
-                        for (DataSnapshot jam : traffic.getChildren())
+                        for (int i = 0; i < route.pathCount(); ++i)
                         {
-                            double lat = (double) jam.child("lat").getValue();
-                            double lng = (double) jam.child("lng").getValue();
-                            if (trafficUtil.isNear(lat, lng))
+                            int meta = ((Long) snapshot.child("meta").getValue()).intValue();
+                            DataSnapshot rush = snapshot.child("rush");
+                            for (DataSnapshot jam : rush.getChildren())
                             {
+                                double lat1 = (double) jam.child("lat1").getValue();
+                                double lng1 = (double) jam.child("lng1").getValue();
+                                double lat2 = (double) jam.child("lat2").getValue();
+                                double lng2 = (double) jam.child("lng2").getValue();
                                 int vote = ((Long) jam.child("vote").getValue()).intValue();
-                                MarkerUtils markerUtil = new MarkerUtils(meta);
-                                MarkerOptions options = markerUtil.getOption(new Traffic(lat, lng, vote));
-                                map.addMarker(options);
+                                Traffic traffic = (new Traffic(lat1, lng1, lat2, lng2, vote));
+                                LatLng intersect = traffic.intersect(traffic.getStart(), traffic.getEnd());
+                                if (intersect != null)
+                                {
+                                    // int vote = ((Long) jam.child("vote").getValue()).intValue();
+                                    TrafficOptionUtils optionUtils = new TrafficOptionUtils(meta);
+                                    TrafficOption options = optionUtils.getOption(traffic);
+                                    map.addMarker(options.getMarkerOptions());
+                                    map.addPolyline(options.getPolylineOptions());
+                                }
                             }
                         }
                         ref.removeEventListener(this);

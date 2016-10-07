@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ProgressBar prbLoading;
     LatLng myLocation, destination;
 
-    //ImageButton btnMenu, btnVoice;
+    View root;
     TextView txtSearch;
     String place = "", address = "";
     public static SqliteHelper dbHelper;
@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
         Firebase.setAndroidContext(this);
 
+        root = findViewById(R.id.frameLayout);
         FloatingActionButton btnTrack = (FloatingActionButton) findViewById(R.id.btnTrack);
         FloatingActionButton btnFavourite = (FloatingActionButton) findViewById(R.id.btnFavourite);
         ImageButton btnMenu = (ImageButton) findViewById(R.id.btnMenu);
@@ -245,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         @Override
                         public boolean onMarkerClick(final Marker marker)
                         {
-                            Snackbar.make(findViewById(R.id.frameLayout), marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
+                            Snackbar.make(root, marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
                                     .setAction("Chỉ đường", new View.OnClickListener()
                                     {
                                         @Override
@@ -396,13 +397,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 address = marker.getSnippet();
                 destination = marker.getPosition();     // consider reference ???
 
-                Snackbar.make(findViewById(R.id.frameLayout), marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
+                Snackbar.make(root, marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
                         .setAction("Chỉ đường", new View.OnClickListener()
                         {
                             @Override
                             public void onClick(View view)
                             {
-                                //destination = marker.getPosition();
                                 Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
                                 intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
                                 intent.putExtra("myLocation", myLocation);
@@ -590,51 +590,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onDataChange(DataSnapshot snapshot)
             {
-                //prbLoading.setVisibility(View.VISIBLE);
-                try
-                {
-                    final ArrayList<Traffic> listTraffic = new ArrayList<>();
-                    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-                    Date date = new Date();
-                    int timeNow = 60 * date.getHours() + date.getMinutes();
+                prbLoading.setVisibility(View.VISIBLE);
 
-                    int meta = ((Long) snapshot.child("meta").getValue()).intValue();
-                    DataSnapshot traffic = snapshot.child("traffic");
-                    for (DataSnapshot item : traffic.getChildren())
+                    ArrayList<Traffic> traffic = new ArrayList<>();
+
+                    DataSnapshot rush = snapshot.child("rush");
+                    for (DataSnapshot jam : rush.getChildren())
                     {
-                        //ArrayList<Jam> jamList = new ArrayList<>();
-                        int vote = 0;
-                        DataSnapshot jamData = item.child("jam");
-                        for (DataSnapshot jam : jamData.getChildren())
-                        {
-                            String time = (String) jam.child("time").getValue();
-                            Date jamTime = formatter.parse(time);
-                            int span = timeNow - 60 * jamTime.getHours() - jamTime.getMinutes();
-                            if (span > -90 && span < 90)   // timespan between 90 minutes earlier or later
-                            {
-                                vote = ((Long) jam.child("vote").getValue()).intValue();
-                                if (vote > meta)
-                                {
-                                    break;
-                                }
-                                vote = 0;
-                            }
-                        }
-
-                        //Log.d("jam", "jam size = " + jamList.size());
-                        if (vote > 0)
-                        {
-                            double lat = (double) item.child("position/lat").getValue();
-                            double lng = (double) item.child("position/lng").getValue();
-                            listTraffic.add(new Traffic(lat, lng, vote));
-                        }
+                        double lat1 = (double) jam.child("lat1").getValue();
+                        double lng1 = (double) jam.child("lng1").getValue();
+                        double lat2 = (double) jam.child("lat2").getValue();
+                        double lng2 = (double) jam.child("lng2").getValue();
+                        int vote = ((Long) jam.child("vote").getValue()).intValue();
+                        traffic.add(new Traffic(lat1, lng1, lat2, lng2, vote));
                     }
-                    //Log.d("123", "" + listTraffic.size());
 
-                    if (listTraffic.size() > 0)
+                    if (traffic.size() > 0)
                     {
                         map.clear();
-                        AddTrafficAst asyncTask = new AddTrafficAst(listTraffic, map);
+                        int meta = ((Long) snapshot.child("meta").getValue()).intValue();
+                        AddTrafficAst asyncTask = new AddTrafficAst(traffic, map);
                         asyncTask.setListener(new OnLoadListener<Boolean>()
                         {
                             @Override
@@ -646,28 +621,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     @Override
                                     public boolean onMarkerClick(Marker marker)
                                     {
-                                        prbLoading.setVisibility(View.VISIBLE);
-                                        AddressAst asyncTask = new AddressAst(geocoder);
-                                        asyncTask.setListener(new OnLoadListener<String>()
-                                        {
-                                            @Override
-                                            public void onFinish(String address)
-                                            {
-                                                prbLoading.setVisibility(View.GONE);
-                                                Snackbar.make(findViewById(R.id.frameLayout), address, Snackbar.LENGTH_INDEFINITE)
-                                                        .setAction("Giải pháp", new View.OnClickListener()
-                                                        {
-                                                            @Override
-                                                            public void onClick(View v)
-                                                            {
-
-                                                            }
-                                                        })
-                                                        .show();
-                                            }
-                                        });
-                                        LatLng position = marker.getPosition();
-                                        asyncTask.execute(position.latitude, position.longitude);
+                                        loadAddress(geocoder, marker.getPosition());
                                         return false;
                                     }
                                 });
@@ -682,11 +636,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Toast.makeText(MainActivity.this, "Chưa có nơi nào tắc đường", Toast.LENGTH_SHORT).show();
                     }
                     ref.removeEventListener(this);
-                }
-                catch (ParseException e)
-                {
-                    e.printStackTrace();
-                }
+
             }
 
             @Override
@@ -799,6 +749,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 break;
             }
         }
+    }
+
+    void loadAddress(Geocoder geocoder, LatLng position)
+    {
+        prbLoading.setVisibility(View.VISIBLE);
+        AddressAst asyncTask = new AddressAst(geocoder);
+        asyncTask.setListener(new OnLoadListener<String>()
+        {
+            @Override
+            public void onFinish(String address)
+            {
+                prbLoading.setVisibility(View.GONE);
+                Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
+                        .setAction("Giải pháp", new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View v)
+                            {
+
+                            }
+                        })
+                        .show();
+            }
+        });
+        asyncTask.execute(position.latitude, position.longitude);
     }
 }
 
