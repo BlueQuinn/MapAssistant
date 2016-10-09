@@ -8,13 +8,19 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+
+import model.MyTraffic;
+import model.Shortcut;
 
 /**
  * Created by lequan on 9/20/15.
@@ -52,7 +58,9 @@ public class SqliteHelper extends SQLiteOpenHelper
     public synchronized void close()
     {
         if (db != null)
+        {
             db.close();
+        }
         super.close();
     }
 
@@ -82,37 +90,6 @@ public class SqliteHelper extends SQLiteOpenHelper
         }
     }
 
-    public ArrayList<HashMap<String, String>> getAll(String table)
-    {
-        return excuteQuery("select * from " + table);
-    }
-
-    public ArrayList<HashMap<String, String>> excuteQuery(String sql)   // place - address
-    {
-        ArrayList<HashMap<String, String>> listData = new ArrayList<HashMap<String, String>>();
-        if (db != null)
-        {
-            Cursor cursor = db.rawQuery(sql, null);
-            if (cursor != null)
-            {
-                String[] columnNames = cursor.getColumnNames();
-                cursor.moveToFirst();
-                while (!cursor.isAfterLast())
-                {
-                    HashMap<String, String> item = new HashMap<>();
-                    for (int i = 0; i < columnNames.length; ++i)
-                    {
-                        item.put(columnNames[i], cursor.getString(i));
-                    }
-                    listData.add(item);
-                    cursor.moveToNext();
-                }
-                cursor.close();
-            }
-        }
-        return listData;
-    }
-
     public boolean excute(String sql)
     {
         try
@@ -127,38 +104,6 @@ public class SqliteHelper extends SQLiteOpenHelper
             e.printStackTrace();
             return false;
         }
-    }
-
-    public void insert(String table, String place, String address)
-    {
-        excute(String.format("insert into %s values ('%s', '%s')", table, place, address));
-    }
-
-    public void insert(String table, String place, String address, double lat, double lng)
-    {
-        String latStr = Double.toString(lat);
-        String lngStr = Double.toString(lng);
-        excute(String.format("insert into %s values ('%s', '%s', '%s', '%s')", table, place, address, latStr, lngStr));
-    }
-
-    public double[] getPlace(String table, String place)
-    {
-        if (db != null)
-        {
-            Cursor cursor = db.rawQuery(String.format("select Latitude, Longitude from %s where Place = '%s'", table, place), null);
-            if (cursor.moveToFirst())
-            {
-                double lat = cursor.getDouble(0);
-                double lng = cursor.getDouble(1);
-                return new double[]{lat,lng};
-            }
-        }
-        return null;
-    }
-
-    public void delete(String table, String place)
-    {
-        db.delete(table, "Place = ?", new String[]{ place });
     }
 
     private void copyDataBase() throws IOException
@@ -190,9 +135,116 @@ public class SqliteHelper extends SQLiteOpenHelper
         db = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE);
     }
 
-    public void saveLocation(double lat, double lng)
+    public void saveLocation(double lat, double lng)    // consider '' again
     {
-        excute(String.format("insert into Location values (%s,%s)", Double.toString(lat), Double.toString(lng)));
+        String date = new Date().toString();
+        excute(String.format("insert into Location values (%d, '%s', '%s', '%s')", getNextID(), Double.toString(lat), Double.toString(lng), date));
     }
 
+
+    public void insert(String table, String place, String address, double lat, double lng)
+    {
+        String latStr = Double.toString(lat);
+        String lngStr = Double.toString(lng);
+        excute(String.format("insert into %s values ('%s', '%s', '%s', '%s')", table, place, address, latStr, lngStr));
+    }
+
+    public double[] getPlace(String table, String place)
+    {
+        if (db != null)
+        {
+            Cursor cursor = db.rawQuery(String.format("select Lat, Lng from %s where Place = '%s'", table, place), null);
+            if (cursor.moveToFirst())
+            {
+                double lat = cursor.getDouble(0);
+                double lng = cursor.getDouble(1);
+                return new double[]{lat, lng};
+            }
+        }
+        return null;
+    }
+
+    public void delete(String table, String place)
+    {
+        db.delete(table, "Place = ?", new String[]{place});
+    }
+
+    public ArrayList<HashMap<String, String>> getAll(String table)
+    {
+        return executeQuery("select * from " + table);
+    }
+
+    public ArrayList<HashMap<String, String>> executeQuery(String sql)   // place - address
+    {
+        ArrayList<HashMap<String, String>> listData = new ArrayList<HashMap<String, String>>();
+        if (db != null)
+        {
+            Cursor cursor = db.rawQuery(sql, null);
+            if (cursor != null)
+            {
+                String[] columnNames = cursor.getColumnNames();
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast())
+                {
+                    HashMap<String, String> item = new HashMap<>();
+                    for (int i = 0; i < columnNames.length; ++i)
+                    {
+                        item.put(columnNames[i], cursor.getString(i));
+                    }
+                    listData.add(item);
+                    cursor.moveToNext();
+                }
+                cursor.close();
+            }
+        }
+        return listData;
+    }
+
+    int getNextID()
+    {
+        Cursor cursor = db.rawQuery("select count(*) from Location", null);
+        if (cursor != null)
+        {
+            if (cursor.moveToFirst())
+            {
+                return cursor.getInt(0) + 1;
+            }
+            cursor.close();
+        }
+        return 1;
+    }
+
+    public boolean addShortcut(int ID, String route, int distance, int duration)
+    {
+        return excute(String.format("insert into Shortcut values (%d, '%s', %d, %d)", ID, route, distance, duration));
+    }
+
+    public ArrayList<Shortcut> getShortcut(int ID, LatLng location)
+    {
+        ArrayList<Shortcut> shortcuts = new ArrayList<>();
+        ArrayList<HashMap<String, String>> data = executeQuery("select * from Shortcut where ID = " + ID);
+        for (HashMap<String, String> row : data)
+        {
+            String route = row.get("Route");
+            int distance = Integer.parseInt(row.get("Distance"));
+            int duration = Integer.parseInt(row.get("Duration"));
+            shortcuts.add(new Shortcut(location.latitude, location.longitude, route, distance, duration, 1));
+        }
+        return shortcuts;
+    }
+
+    public ArrayList<MyTraffic> getMyTraffic()
+    {
+        ArrayList<MyTraffic> myTraffics = new ArrayList<>();
+        ArrayList<HashMap<String, String>> data = getAll("Location");
+        for (HashMap<String, String> row : data)
+        {
+            int id = Integer.parseInt(row.get("ID"));
+            String time = row.get("Time");
+            double lat = Double.parseDouble(row.get("Lat"));
+            double lng = Double.parseDouble(row.get("Lng"));
+            myTraffics.add(new MyTraffic(lat, lng, id, time));
+        }
+        return myTraffics;
+    }
 }

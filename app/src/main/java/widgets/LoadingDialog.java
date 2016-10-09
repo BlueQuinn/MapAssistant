@@ -16,7 +16,7 @@ public class LoadingDialog extends Dialog
         super(context);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.loading_dialog);
+        setContentView(R.layout.dialog_loading);
 
         setCanceledOnTouchOutside(false);
     }

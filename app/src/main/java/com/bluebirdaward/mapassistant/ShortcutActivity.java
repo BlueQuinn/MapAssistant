@@ -1,6 +1,7 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Geocoder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -21,6 +22,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -35,10 +38,11 @@ import asyncTask.AddressAst;
 import asyncTask.DirectionAst;
 import listener.OnLoadListener;
 import model.Route;
+import model.Shortcut;
 import utils.MapUtils;
 import utils.PolyUtils;
 
-public class ShortcutActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener
+public class ShortcutActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnPolylineClickListener
 {
     FloatingActionButton btnAdd, btnSubmit;
     GoogleMap map;
@@ -46,11 +50,14 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     MarkerOptions option;
     ProgressBar prbLoading;
     Polyline polyline;
-    LatLng start, end;
+    Marker start, end;
     int width, height;
+    int ID;
     LatLng jam;
     View root;
     Geocoder geocoder;
+    Route route;
+    int radius = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -59,6 +66,9 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
         setContentView(R.layout.activity_shortcut);
         Firebase.setAndroidContext(this);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Đề xuất đường đi tắt");
+
         root = findViewById(R.id.frameLayout);
         prbLoading = (ProgressBar) findViewById(R.id.prbLoading);
         btnAdd = (FloatingActionButton) findViewById(R.id.btnAdd);
@@ -66,11 +76,6 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
         btnAdd.setOnClickListener(this);
         btnSubmit.setOnClickListener(this);
 
-        Intent intent = getIntent();
-        //jam = intent.getParcelableExtra("jam");
-        jam = new LatLng(10.802355370747835, 106.64164245128632);
-        start = new LatLng(10.76353877327849, 106.68203115463257);
-        end = new LatLng(10.411269, 107.136072);
 
         geocoder = new Geocoder(this, Locale.getDefault());
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -86,23 +91,40 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     {
         if (v.getId() == R.id.btnAdd)
         {
-            LatLng position = new LatLng((start.latitude + end.latitude) / 2, (start.longitude + end.longitude) / 2);
+            LatLng position = new LatLng((start.getPosition().latitude + end.getPosition().latitude) / 2, (start.getPosition().longitude + end.getPosition().longitude) / 2);
             waypoint.add(map.addMarker(option.position(position)));
         }
-        else
+        else    // submit
         {
+            if (!route.inCircle(jam, radius))
+            {
+                Toast.makeText(this, "Đường đi này đã vượt ra ngoài phạm vi cho phép", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int acceptedLength = radius + 2000;
+            if (route.getDistance() > acceptedLength)
+            {
+                Toast.makeText(this, "Đường đi tắt phải ngắn hơn " + (acceptedLength / 1000) + "km", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic));
             firebase.addValueEventListener(new ValueEventListener()
             {
                 @Override
                 public void onDataChange(DataSnapshot snapshot)
                 {
-                    DataSnapshot shortcut = snapshot.child("shortcut");
-                    Firebase ref = shortcut.getRef();
+                    DataSnapshot data = snapshot.child("shortcut");
+                    Firebase ref = data.getRef();
 
-                    String route = PolyUtils.encode(polyline.getPoints());
-
+                    String polyRoute = PolyUtils.encode(polyline.getPoints());
+                    Shortcut shortcut = new Shortcut(jam.latitude, jam.longitude, polyRoute, 1, route.getDistance(), route.getDuration());
+                    ref.push().setValue(shortcut);
+                    MainActivity.dbHelper.addShortcut(ID, polyRoute, route.getDistance(), route.getDuration());
                     firebase.removeEventListener(this);
+
+                    //MainActivity.dbHelper.sa
                 }
 
                 @Override
@@ -112,6 +134,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                     firebase.removeEventListener(this);
                 }
             });
+
         }
     }
 
@@ -120,19 +143,30 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     {
         prbLoading.setVisibility(View.GONE);
 
+        Intent intent = getIntent();
+        jam = intent.getParcelableExtra("jam");
+        //jam = new LatLng(10.802355370747835, 106.64164245128632);
+        LatLng startPos = intent.getParcelableExtra("start");
+        LatLng endPos = intent.getParcelableExtra("end");
+        if (startPos == null)
+            startPos = new LatLng(10.76353877327849, 106.68203115463257);
+        if (endPos == null)
+            endPos = new LatLng(10.411269, 107.136072);
+
         map = googleMap;
-        map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(start, jam, end), 15));
-        map.addMarker(new MarkerOptions().position(jam).icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high)));
         map.setOnMarkerDragListener(this);
         map.setOnMarkerClickListener(this);
+        map.setOnPolylineClickListener(this);
 
-        option = new MarkerOptions().draggable(true)
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.sign));
+        map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(startPos, jam, endPos), 10));
+        map.addMarker(new MarkerOptions().position(jam).icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high)));
+        map.addCircle(new CircleOptions().center(jam).radius(radius).strokeColor(Color.RED));
+
+        option = new MarkerOptions().draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.sign));
+        start = map.addMarker(new MarkerOptions().draggable(true).position(startPos).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)).title("Điểm đầu"));
+        end = map.addMarker(new MarkerOptions().draggable(true).position(endPos).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag)).title("Điểm cuối"));
 
         waypoint = new ArrayList<>();
-        map.addMarker(new MarkerOptions().draggable(true).position(start).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)));
-        map.addMarker(new MarkerOptions().draggable(true).position(end).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag)));
-
         btnAdd.setClickable(true);
         btnSubmit.setClickable(true);
     }
@@ -152,18 +186,19 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onMarkerDragEnd(Marker marker)
     {
-        LatLng[] point = new LatLng[waypoint.size() + 2];
-        for (int i = 1; i < point.length - 1; ++i)
+        ArrayList<LatLng> point = new ArrayList<>();
+        point.add(end.getPosition());
+        point.add(start.getPosition());
+        for (Marker i : waypoint)
         {
-            point[i] = waypoint.get(i-1).getPosition();
+            point.add(i.getPosition());
         }
-        point[0] = new LatLng(start.latitude, start.longitude);
-        point[point.length - 1] = new LatLng(end.latitude, end.longitude);
-        navigate(point);
+        navigate(point.toArray(new LatLng[point.size()]));
     }
 
     void navigate(LatLng... point)
     {
+        prbLoading.setVisibility(View.VISIBLE);
         DirectionAst asyncTask = new DirectionAst();
         asyncTask.setOnLoadListener(new OnLoadListener<Route>()
         {
@@ -171,32 +206,27 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
             public void onFinish(Route route)
             {
                 prbLoading.setVisibility(View.GONE);
-                if (route == null || route.lenght() < 1)
+                if (route == null || route.pathCount() < 1)
                 {
                     Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_LONG).show();
                     return;
                 }
-                PolylineOptions option = new PolylineOptions().width(15).color(getResources().getColor(R.color.colorPrimary));
-                /*for (int i = 0; i < result.lenght(); i++)
-                {
-                    line.add(result.get(i));
-                }*/
-                option.addAll(route.getRoute());
+
                 if (polyline != null)
                 {
                     polyline.remove();
                 }
-
+                PolylineOptions option = new PolylineOptions().width(15).color(getResources().getColor(R.color.green));
+                option.addAll(route.getRoute());
                 polyline = map.addPolyline(option);
                 polyline.setClickable(true);
 
-                map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(start, end), width, height, 150));
-
+                map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(start.getPosition(), end.getPosition()), width, height, 10));
+                ShortcutActivity.this.route = route;
 
             }
         });
         asyncTask.execute(point);
-        prbLoading.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -211,7 +241,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
             {
                 prbLoading.setVisibility(View.GONE);
                 Snackbar snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE);
-                if (marker.getId().equals(waypoint.get(0).getId()) || marker.getId().equals(waypoint.get(waypoint.size()).getId()))     // must not remove start and end
+                if (marker.getId().equals(waypoint.get(0).getId()) || marker.getId().equals(waypoint.get(waypoint.size()-1).getId()))     // must not remove start and end
                 {
                     snackbar.setAction("Xóa", new View.OnClickListener()
                     {
@@ -227,5 +257,11 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
         LatLng position = marker.getPosition();
         asyncTask.execute(position.latitude, position.longitude);
         return false;
+    }
+
+    @Override
+    public void onPolylineClick(Polyline polyline)
+    {
+        Snackbar.make(root, route.getInformation(), Snackbar.LENGTH_INDEFINITE).show();
     }
 }

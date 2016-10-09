@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
+
 /**
  * Created by lequan on 5/15/2016.
  */
-public class Place
+public class Place implements Serializable
 {
     double lat,lng;
     String name, address;

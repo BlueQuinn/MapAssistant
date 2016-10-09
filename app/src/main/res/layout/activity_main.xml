@@ -81,11 +81,11 @@
         <android.support.design.widget.FloatingActionButton
             app:layout_behavior="widgets.FloatingActionButtonBehavior"
             android:layout_margin="16dp"
-            android:id="@+id/btnFavourite"
+            android:id="@+id/btnDirection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:src="@drawable/favourite"/>
+            android:src="@drawable/direction"/>
 
     </android.support.design.widget.CoordinatorLayout>
 

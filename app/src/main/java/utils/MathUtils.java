@@ -27,7 +27,7 @@ import static java.lang.Math.*;
 /**
  * Utility functions that are used my both PolyUtil and SphericalUtil.
  */
-class MathUtils
+public class MathUtils
 {
 
     public static LatLng[] getIntersection(LatLng pointA, LatLng pointB, LatLng center, double radius)

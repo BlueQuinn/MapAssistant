@@ -93,8 +93,8 @@ public class DirectionActivity extends AppCompatActivity
         textView[1] = (TextView) findViewById(R.id.txtTo);
 
         btnTraffic = (FloatingActionButton) findViewById(R.id.btnTraffic);
-        btnTraffic.setVisibility(View.GONE);
-        //btnTraffic.setOnClickListener(this);
+        //btnTraffic.setVisibility(View.GONE);
+        btnTraffic.setOnClickListener(this);
 
         ImageButton btnBack = (ImageButton) findViewById(R.id.btnBack);
         ImageButton btnReverse = (ImageButton) findViewById(R.id.btnReverse);
@@ -125,9 +125,10 @@ public class DirectionActivity extends AppCompatActivity
 
             case PLACE_DIRECTION:
                 myLocation = intent.getParcelableExtra("myLocation");
-                destination = intent.getParcelableExtra("destination");
-                place = intent.getStringExtra("place");
-                address = intent.getStringExtra("address");
+                model.Place dest = (model.Place)intent.getSerializableExtra("destination");
+                destination = new LatLng(dest.getLat(), dest.getLng());
+                place = dest.getName();
+                address = dest.getAddress();
                 break;
         }
 
@@ -282,7 +283,7 @@ public class DirectionActivity extends AppCompatActivity
             public void onFinish(Route route)
             {
                 prbLoading.setVisibility(View.GONE);
-                if (route == null || route.lenght() < 1)
+                if (route == null || route.pathCount() < 1)
                 {
                     Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_LONG).show();
                     return;

@@ -2,7 +2,6 @@ package com.bluebirdaward.mapassistant;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -18,6 +17,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -49,7 +49,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,16 +60,25 @@ import asyncTask.AddressAst;
 import asyncTask.FindPlaceAst;
 import model.MenuSection;
 import model.Menu;
+import model.MyTraffic;
 import model.Nearby;
+import model.Path;
 import model.Place;
+import model.Route;
+import model.Shortcut;
 import model.Traffic;
 import listener.OnLoadListener;
 import sqlite.SqliteHelper;
+import utils.MapUtils;
 import utils.RequestCode;
 import utils.ServiceUtils;
+import utils.TimeUtils;
 import widgets.PlacePickerDialog;
 
+import static utils.RequestCode.*;
+
 import com.bluebirdaward.mapassistant.gmmap.R;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         View.OnClickListener, View.OnLongClickListener,
@@ -78,24 +86,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         GoogleApiClient.OnConnectionFailedListener, LocationListener
 
 {
-    final int LOCATE_ON_START = 1;      //
-    final int LOCATE_ON_REQUEST = 2;    // btnTrack click
-    final int LOCATE_FOR_NEARBY = 3;      //
-    final int LOCATE_FOR_DIRECTION = 4;    //
-    final int LOCATE_TO_NOTIFY = 5;
+    Place destination;
 
     GoogleMap map;
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
 
     ProgressBar prbLoading;
-    LatLng myLocation, destination;
+    LatLng myLocation;//, destination;
 
     View root;
     TextView txtSearch;
-    String place = "", address = "";
+    //String place = "", address = "";
     public static SqliteHelper dbHelper;
-
+    Geocoder geocoder;
     ExpandableListView lvLeftmenu;
     DrawerLayout drawerLayout;
 
@@ -110,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         root = findViewById(R.id.frameLayout);
         FloatingActionButton btnTrack = (FloatingActionButton) findViewById(R.id.btnTrack);
-        FloatingActionButton btnFavourite = (FloatingActionButton) findViewById(R.id.btnFavourite);
+        FloatingActionButton btnFavourite = (FloatingActionButton) findViewById(R.id.btnDirection);
         ImageButton btnMenu = (ImageButton) findViewById(R.id.btnMenu);
         ImageButton btnVoice = (ImageButton) findViewById(R.id.btnVoice);
         txtSearch = (TextView) findViewById(R.id.txtSearch);
@@ -125,8 +129,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtSearch.setOnClickListener(this);
         prbLoading.setVisibility(View.GONE);
 
+        geocoder = new Geocoder(this, Locale.getDefault());
+
         initMenu();
-        //setAdapter();
         initDatabase();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -142,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         listMenu.add(new Menu("Tìm nhà hàng", R.drawable.restaurant));
         listMenu.add(new Menu("Tìm địa điểm", R.drawable.place));
-        listMenu.add(new Menu("Tìm đường đi", R.drawable.direction));
+        listMenu.add(new Menu("Thời tiết", R.drawable.weather));
         listMenu.add(new Menu("Chia sẻ", R.drawable.share));
         listSection.add(new MenuSection("Tiện ích", listMenu));
 
@@ -198,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map.getUiSettings().setMyLocationButtonEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
 
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = getSharedPreferences("myLocation", MODE_PRIVATE);
         String myLat = sharedPref.getString("myLat", "");
         String myLng = sharedPref.getString("myLng", "");
         if (myLat.length() < 1 || myLng.length() < 1)
@@ -210,17 +215,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(myLat), Double.parseDouble(myLng)), 19));
         }
 
-        //if (myLat.length() > 0 && myLng.length() > 0)
-        //{
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             //Toast.makeText(MainActivity.this, "Bạn chưa bật GPS Location", Toast.LENGTH_SHORT).show();
             requestLocation(LOCATE_ON_START);
-            return;
         }
-        //}
-        //map.setMyLocationEnabled(true);
-        //setMap();
     }
 
     @Override
@@ -233,33 +232,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             {
                 case RequestCode.SEARCH_DESTINATION:
                 {
-                    place = data.getStringExtra("place");
-                    address = data.getStringExtra("address");
+                    String place = data.getStringExtra("place");
+                    String address = data.getStringExtra("address");
                     txtSearch.setText(place);
 
                     LatLng position = data.getParcelableExtra("position");
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 16));
 
                     BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
-                    map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
-                    {
-                        @Override
-                        public boolean onMarkerClick(final Marker marker)
-                        {
-                            Snackbar.make(root, marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
-                                    .setAction("Chỉ đường", new View.OnClickListener()
-                                    {
-                                        @Override
-                                        public void onClick(View view)
-                                        {
-                                            destination = marker.getPosition();
-                                            openGPS(LOCATE_FOR_DIRECTION);
-                                        }
-                                    }).show();
-                            return true;
-                        }
-                    });
                     map.addMarker(new MarkerOptions().icon(icon).position(position).title(place).snippet(address));
+                    setFavouriteClick();
                     break;
                 }
 
@@ -271,6 +253,103 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         txtSearch.setText(result.get(0));
                         startActivityForResult(new Intent(this, DestinationActivity.class).putExtra("address", txtSearch.getText().toString()), RequestCode.SEARCH_DESTINATION);
                     }
+                    break;
+                }
+
+                case LOCATE_TO_NOTIFY:
+                {
+                    Route r = (Route) data.getSerializableExtra("route");
+                    int i = data.getIntExtra("i", 0);
+                    map.clear();
+                    PolylineOptions polylineOptions = new PolylineOptions().width(15).color(getResources().getColor(R.color.green)).addAll(r.getRoute());
+                    map.addPolyline(polylineOptions);
+                    MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high));
+                    Path p = r.getPath(i);
+                    map.addMarker(markerOptions.position(p.getStart()));
+                    map.addMarker(markerOptions.position(p.getEnd()));
+
+
+                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+                    double x = data.getDoubleExtra("lat1", 0);
+                    double g = data.getDoubleExtra("lng1", 0);
+                    double h = data.getDoubleExtra("lat2", 0);
+                    double b = data.getDoubleExtra("lng2", 0);
+
+                    map.addMarker(markerOptions.position(new LatLng(x, g)));
+                    map.addMarker(markerOptions.position(new LatLng(h, b)));
+                    Log.d("123", "" + new LatLng(x, g));
+                    Log.d("123", "" + new LatLng(h, b));
+                    Log.d("123", "" + p.getStart());
+                    Log.d("123", "" + p.getEnd());
+
+
+                    /*ArrayList<MyTraffic> traffic = dbHelper.getMyTraffic();
+                    if (traffic.size() > 0)
+                    {
+                        map.clear();
+                        MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high));
+                        LatLng[] points = new LatLng[traffic.size()];
+                        int j = 0;
+                        for (MyTraffic i : traffic)
+                        {
+                            points[j] = i.getLocation();
+                            j++;
+
+                            markerOptions.position(i.getLocation());
+                            map.addMarker(markerOptions);
+
+                            ArrayList<Shortcut> shortcuts = dbHelper.getShortcut(i.getId(), i.getLocation());
+                            for (Shortcut s : shortcuts)
+                            {
+                                PolylineOptions polylineOptions = new PolylineOptions().width(15).color(getResources().getColor(R.color.green));
+                                polylineOptions.addAll(s.getPolyRoute());
+                                map.addPolyline(polylineOptions);
+                            }
+                        }
+                        map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(points), 10));
+                        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+                        {
+                            @Override
+                            public boolean onMarkerClick(Marker marker)
+                            {
+                                loadAddress(marker.getPosition());
+                                return false;
+                            }
+                        });
+                    }
+                    else
+                    {
+                        Toast.makeText(this, "Bạn chưa thông báo điểm tắc đường nào", Toast.LENGTH_SHORT).show();
+                    }*/
+                    break;
+                }
+
+                case 9:
+                {
+
+                    Route r = (Route) data.getSerializableExtra("route");
+                    int i = data.getIntExtra("i", 0);
+                    map.clear();
+                    PolylineOptions polylineOptions = new PolylineOptions().width(15).color(getResources().getColor(R.color.green)).addAll(r.getRoute());
+                    map.addPolyline(polylineOptions);
+                    MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high));
+                    Path p = r.getPath(i);
+                    map.addMarker(markerOptions.position(p.getStart()));
+                    map.addMarker(markerOptions.position(p.getEnd()));
+
+
+                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+                    double x = data.getDoubleExtra("lat1", 0);
+                    double g = data.getDoubleExtra("lng1", 0);
+                    double h = data.getDoubleExtra("lat2", 0);
+                    double b = data.getDoubleExtra("lng2", 0);
+
+                    map.addMarker(markerOptions.position(new LatLng(x, g)));
+                    map.addMarker(markerOptions.position(new LatLng(h, b)));
+Log.d("123", "" + new LatLng(x, g));
+                    Log.d("123", "" + new LatLng(h, b));
+                    Log.d("123", "" + p.getStart());
+                    Log.d("123", "" + p.getEnd());
                     break;
                 }
             }
@@ -311,11 +390,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         {
             case R.id.btnTrack:
             {
-                /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                {
-                    requestLocation(LOCATE_ON_REQUEST);
-                    return;
-                }*/
                 openGPS(LOCATE_ON_REQUEST);
                 break;
             }
@@ -324,40 +398,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 startActivityForResult(new Intent(this, DestinationActivity.class).putExtra("address", txtSearch.getText().toString()), RequestCode.SEARCH_DESTINATION);
                 break;
 
-            case R.id.btnFavourite:
+            case R.id.btnDirection:
             {
-                if (address.length() > 1)
+                Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
+                if (destination != null)
                 {
-                    final Dialog dialog = new Dialog(this);
-                    dialog.setContentView(R.layout.dialog_save_favourite);
-                    dialog.setTitle("Lưu vào yêu thích với tên ");
-
-                    final EditText txtFavourite = (EditText) dialog.findViewById(R.id.txtFavourite);
-                    txtFavourite.setText(place);
-                    Button btnSave = (Button) dialog.findViewById(R.id.btnSave);
-                    btnSave.setOnClickListener(new View.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(View v)
-                        {
-                            String name = txtFavourite.getText().toString();
-                            if (name.length() > 0)
-                            {
-                                saveFavourite(name);
-                                dialog.dismiss();
-                            }
-                            else
-                            {
-                                Toast.makeText(getApplicationContext(), "Bạn chưa đặt tên cho địa chỉ này", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-                    dialog.show();
+                    intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
+                    intent.putExtra("myLocation", myLocation);
+                    intent.putExtra("destination", destination);
                 }
                 else
                 {
-                    Toast.makeText(getApplicationContext(), "Hãy chọn địa điểm trước", Toast.LENGTH_SHORT).show();
+                    intent.putExtra("position", myLocation);
+                    intent.putExtra("zoom", map.getCameraPosition().zoom);
                 }
+                startActivity(intent);
                 break;
             }
 
@@ -377,45 +432,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    void saveFavourite(String name)
-    {
-        dbHelper.delete("Favourite", name);
-        dbHelper.insert("Favourite", name, address, destination.latitude, destination.longitude);
-        Toast.makeText(getApplicationContext(), "Đã lưu vào Yêu thích", Toast.LENGTH_SHORT).show();
-    }
-
     void showDialog()
     {
-        final GoogleMap.OnMarkerClickListener listener = new GoogleMap.OnMarkerClickListener()
-        {
-            @Override
-            public boolean onMarkerClick(final Marker marker)
-            {
-                marker.hideInfoWindow();
-
-                place = marker.getTitle();
-                address = marker.getSnippet();
-                destination = marker.getPosition();     // consider reference ???
-
-                Snackbar.make(root, marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
-                        .setAction("Chỉ đường", new View.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(View view)
-                            {
-                                Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
-                                intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
-                                intent.putExtra("myLocation", myLocation);
-                                intent.putExtra("destination", destination);
-                                intent.putExtra("place", place);
-                                intent.putExtra("address", address);
-                                startActivity(intent);
-                            }
-                        }).show();
-                return false;
-            }
-        };
-
         final PlacePickerDialog dialog = new PlacePickerDialog(this);
         dialog.setOnPickListener(new OnLoadListener<Nearby>()
         {
@@ -446,10 +464,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             map.addMarker(options.position(position).title(place.getName()).snippet(place.getAddress()));
                             builder.include(position);
                         }
-                        map.addCircle(new CircleOptions().center(myLocation)
-                                .radius(1000 * radius).strokeColor(Color.RED));
+                        map.addCircle(new CircleOptions().center(myLocation).radius(1000 * radius).strokeColor(Color.RED));
                         map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 50));
-                        map.setOnMarkerClickListener(listener);
+                        setFavouriteClick();
                     }
                 });
                 asyncTask.execute(myLocation.latitude, myLocation.longitude);
@@ -480,40 +497,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         startActivity(i);
                         break;
                     }
-                    case 1:     // search nearby place by place type and radius
+                    case 1:     // search nearby place by place type and getLength
                         openGPS(LOCATE_FOR_NEARBY);
                         break;
                     case 2:     // direction
                     {
-                        Intent intent = new Intent(this, DirectionActivity.class);
-                        intent.putExtra("position", map.getCameraPosition().target);
-                        intent.putExtra("zoom", map.getCameraPosition().zoom);
-                        startActivity(intent);
+
                         break;
                     }
 
                     case 3:
-                        if (address.length() > 0)
-                        {
-                            String msg;
-                            if (place.length() > 0)
-                            {
-                                msg = "Tôi đang ở " + place + ".\nĐịa chỉ " + address;
-                            }
-                            else
-                            {
-                                msg = "Tôi đang ở địa chỉ " + address;
-                            }
-                            Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-                            sharingIntent.setType("text/plain");
-                            sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ từ ứng dụng Map Assistant.");
-                            sharingIntent.putExtra(Intent.EXTRA_TEXT, msg);
-                            startActivity(Intent.createChooser(sharingIntent, "Chia sẻ địa điểm"));
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(), "Hãy chọn địa điểm trước", Toast.LENGTH_SHORT).show();
-                        }
+                        openGPS(LOCATO_TO_SHARE);
                         break;
                 }
                 break;
@@ -583,7 +577,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     void loadTraffic()
     {
         prbLoading.setVisibility(View.VISIBLE);
-        //Toast.makeText(getApplicationContext(), "Đang tải dữ liệu", Toast.LENGTH_SHORT).show();
         final Firebase ref = new Firebase(getResources().getString(R.string.database_traffic));
         final ValueEventListener listener = new ValueEventListener()
         {
@@ -592,8 +585,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             {
                 prbLoading.setVisibility(View.VISIBLE);
 
-                    ArrayList<Traffic> traffic = new ArrayList<>();
-
+                ArrayList<Traffic> traffic = new ArrayList<>();
+                SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+                int time = TimeUtils.toMinutes(format.format(new Date()));
+                if ((time > 390 && time < 750) || (time > 990 && time < 1230))
+                {
                     DataSnapshot rush = snapshot.child("rush");
                     for (DataSnapshot jam : rush.getChildren())
                     {
@@ -604,38 +600,61 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         int vote = ((Long) jam.child("vote").getValue()).intValue();
                         traffic.add(new Traffic(lat1, lng1, lat2, lng2, vote));
                     }
+                    Log.d("234", "" + traffic.size());
 
-                    if (traffic.size() > 0)
+                    try
                     {
-                        map.clear();
-                        int meta = ((Long) snapshot.child("meta").getValue()).intValue();
-                        AddTrafficAst asyncTask = new AddTrafficAst(traffic, map);
-                        asyncTask.setListener(new OnLoadListener<Boolean>()
+                        if (time > 480 && time < 600)
                         {
-                            @Override
-                            public void onFinish(Boolean result)
-                            {
-                                final Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                                map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
-                                {
-                                    @Override
-                                    public boolean onMarkerClick(Marker marker)
-                                    {
-                                        loadAddress(geocoder, marker.getPosition());
-                                        return false;
-                                    }
-                                });
-                                prbLoading.setVisibility(View.GONE);
-                            }
-                        });
-                        asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
+                            traffic = (ArrayList<Traffic>) traffic.subList(traffic.size() / 4, traffic.size() / 2);
+                        }
+                        else if (time > 1140 && time < 1230)
+                        {
+                            traffic = (ArrayList<Traffic>) traffic.subList(0, traffic.size() / 2);
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        prbLoading.setVisibility(View.GONE);
-                        Toast.makeText(MainActivity.this, "Chưa có nơi nào tắc đường", Toast.LENGTH_SHORT).show();
+                        Log.d("234", "" + traffic.size());
+
                     }
-                    ref.removeEventListener(this);
+                    Log.d("234", "" + traffic.size());
+
+
+                }
+
+                if (traffic.size() > 0)
+                {
+                    map.clear();
+                    int meta = ((Long) snapshot.child("meta").getValue()).intValue();
+                    AddTrafficAst asyncTask = new AddTrafficAst(traffic, map);
+                    asyncTask.setListener(new OnLoadListener<Boolean>()
+                    {
+                        @Override
+                        public void onFinish(Boolean result)
+                        {
+                            destination = null;
+                            map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+                            {
+                                @Override
+                                public boolean onMarkerClick(Marker marker)
+                                {
+                                    loadAddress(marker.getPosition());
+                                    return false;
+                                }
+                            });
+                            prbLoading.setVisibility(View.GONE);
+                        }
+                    });
+                    asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
+                }
+                else
+                {
+                    map.clear();
+                    prbLoading.setVisibility(View.GONE);
+                    Toast.makeText(MainActivity.this, "Chưa có nơi nào tắc đường", Toast.LENGTH_SHORT).show();
+                }
+                ref.removeEventListener(this);
 
             }
 
@@ -689,6 +708,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+    protected void onStop()
+    {
+        super.onStop();
+        if (myLocation != null)
+        {
+            SharedPreferences.Editor editor = getSharedPreferences("myLocation", MODE_PRIVATE).edit();
+            editor.putString("myLat", Double.toString(myLocation.latitude));
+            editor.putString("myLng", Double.toString(myLocation.longitude));
+            editor.apply();
+        }
+    }
+
+    @Override
     public void onLocationChanged(Location location)
     {
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
@@ -705,17 +737,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             case LOCATE_ON_REQUEST:
             {
-                AddressAst asyncTask = new AddressAst(new Geocoder(this, Locale.getDefault()));
+                AddressAst asyncTask = new AddressAst(geocoder);
                 asyncTask.setListener(new OnLoadListener<String>()
                 {
                     @Override
-                    public void onFinish(String result)
+                    public void onFinish(String address)
                     {
                         prbLoading.setVisibility(View.GONE);
-                        destination = new LatLng(myLocation.latitude, myLocation.longitude);
-                        address = result;
                         txtSearch.setText(address);
+                        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
+                        map.addMarker(new MarkerOptions().icon(icon).position(new LatLng(myLocation.latitude, myLocation.longitude)).title(address));
                         map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 19));
+                        setFavouriteClick();
                     }
                 });
                 asyncTask.execute(myLocation.latitude, myLocation.longitude);
@@ -732,26 +765,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 prbLoading.setVisibility(View.GONE);
                 Intent intent = new Intent(this, NotifyActivity.class);
                 intent.putExtra("myLocation", myLocation);
-                startActivity(intent);
+                startActivityForResult(intent, LOCATE_TO_NOTIFY, null);
                 break;
             }
 
-            case LOCATE_FOR_DIRECTION:
+            case LOCATO_TO_SHARE:
             {
-                prbLoading.setVisibility(View.GONE);
-                Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
-                intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
-                intent.putExtra("myLocation", myLocation);
-                intent.putExtra("destination", destination);
-                intent.putExtra("place", place);
-                intent.putExtra("address", address);
-                startActivity(intent);
+                AddressAst asyncTask = new AddressAst(geocoder);
+                asyncTask.setListener(new OnLoadListener<String>()
+                {
+                    @Override
+                    public void onFinish(String address)
+                    {
+                        prbLoading.setVisibility(View.GONE);
+                        if (address.length() > 0)
+                        {
+                            String msg = "Tôi đang ở địa chỉ " + address;
+                            /*if (place.length() > 0)
+                            {
+                                msg = "Tôi đang ở " + place + ".\nĐịa chỉ " + address;
+                            }
+                            else
+                            {
+                                msg = "Tôi đang ở địa chỉ " + address;
+                            }*/
+                            Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+                            sharingIntent.setType("text/plain");
+                            sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Chia sẻ từ ứng dụng Map Assistant.");
+                            sharingIntent.putExtra(Intent.EXTRA_TEXT, msg);
+                            startActivity(Intent.createChooser(sharingIntent, "Chia sẻ địa điểm"));
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(), "Hãy chọn địa điểm trước", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                asyncTask.execute(myLocation.latitude, myLocation.longitude);
                 break;
             }
         }
     }
 
-    void loadAddress(Geocoder geocoder, LatLng position)
+    void loadAddress(final LatLng position)
     {
         prbLoading.setVisibility(View.VISIBLE);
         AddressAst asyncTask = new AddressAst(geocoder);
@@ -767,13 +823,76 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void onClick(View v)
                             {
+                                Intent intent = new Intent(MainActivity.this, ShortcutActivity.class);
 
+                                intent.putExtra("jam", position);
+
+                                startActivity(intent);
                             }
                         })
                         .show();
             }
         });
         asyncTask.execute(position.latitude, position.longitude);
+    }
+
+    void setFavouriteClick()
+    {
+        destination = null;
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+        {
+            @Override
+            public boolean onMarkerClick(final Marker marker)
+            {
+                destination = new Place(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle(), marker.getSnippet());
+                Snackbar.make(root, marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
+                        .setAction("Lưu", new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View view)
+                            {
+                                final String place = marker.getTitle();
+                                if (place.length() > 1)
+                                {
+                                    final Dialog dialog = new Dialog(MainActivity.this);
+                                    dialog.setContentView(R.layout.dialog_save_favourite);
+                                    dialog.setTitle("Lưu vào yêu thích với tên ");
+
+                                    final EditText txtFavourite = (EditText) dialog.findViewById(R.id.txtFavourite);
+                                    txtFavourite.setText(place);
+                                    Button btnSave = (Button) dialog.findViewById(R.id.btnSave);
+                                    btnSave.setOnClickListener(new View.OnClickListener()
+                                    {
+                                        @Override
+                                        public void onClick(View v)
+                                        {
+                                            String name = txtFavourite.getText().toString();
+                                            if (name.length() > 1)
+                                            {
+                                                //saveFavourite(name, marker.getSnippet(), marker.getPosition());
+                                                dbHelper.delete("Favourite", name);
+                                                dbHelper.insert("Favourite", name, marker.getSnippet(), marker.getPosition().latitude, marker.getPosition().longitude);
+                                                Toast.makeText(getApplicationContext(), "Đã lưu vào Yêu thích", Toast.LENGTH_SHORT).show();
+                                                dialog.dismiss();
+                                            }
+                                            else
+                                            {
+                                                Toast.makeText(getApplicationContext(), "Bạn chưa đặt tên cho địa chỉ này", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                    dialog.show();
+                                }
+                                else
+                                {
+                                    Toast.makeText(getApplicationContext(), "Hãy chọn địa điểm trước", Toast.LENGTH_SHORT).show();
+                                }
+                                //saveFavourite(marker.getTitle());
+                            }
+                        }).setActionTextColor(getResources().getColor(R.color.colorPrimaryLight)).show();
+                return true;
+            }
+        });
     }
 }
 

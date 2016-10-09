@@ -59,7 +59,6 @@ public class FoodActivity extends AppCompatActivity implements OnLoadListener<Ar
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_food);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
         restaurant = (Restaurant) intent.getSerializableExtra("restaurant");

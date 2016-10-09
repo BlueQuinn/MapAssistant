@@ -2,38 +2,51 @@ package model;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by lequan on 10/2/2016.
  */
-public class Route
+public class Route implements Serializable
 {
-    ArrayList<LatLng> route;
-    ArrayList<LatLng[]> path;
-    LatLng start, end;
+    ArrayList<Path> paths;
 
-    public void setDuration(int duration)
+    public Path getPath(int index)
     {
-        this.duration = duration;
+        return paths.get(index);
     }
 
-    public void setDistance(int distance)
+    public Route(ArrayList<Path> paths)
     {
-        this.distance = distance;
+        this.paths = paths;
+        distance = 0;
+        duration = 0;
+        for (Path i : paths)
+        {
+            distance += i.getDistance();
+            duration += i.getDuration();
+        }
     }
-
-    int duration;       // meters
-    int distance;       // seconds
 
     public ArrayList<LatLng> getRoute()
     {
+        ArrayList<LatLng> route = new ArrayList<>();
+        for (Path i : paths)
+        {
+            route.addAll(i.getPath());
+        }
         return route;
     }
 
-    public int getDuration()
+    public int pathCount()
     {
-        return duration;
+        return paths.size();
+    }
+
+    public String getInformation()
+    {
+        return getDuration(duration) + " - " + getDistance(distance);
     }
 
     public int getDistance()
@@ -41,12 +54,16 @@ public class Route
         return distance;
     }
 
-    public String getInformation()
+    public int getDuration()
+    {
+        return duration;
+    }
+
+    String getDuration(int duration)
     {
         String time;
         int hour = duration / 3600;
         int minute = (duration - hour * 3600) / 60;
-
         if (hour == 0)
         {
             time = Integer.toString(minute) + "p";
@@ -59,7 +76,11 @@ public class Route
                 time += Integer.toString(minute) + "p";
             }
         }
+        return time;
+    }
 
+    String getDistance(int distance)
+    {
         String dtc;
         if (distance < 1000)
         {
@@ -70,62 +91,30 @@ public class Route
             dtc = Float.toString(Math.round(distance * 1000) / 1000) + "km";
         }
 
-        return dtc + " - " + time;
+        return dtc;
     }
 
-    public Route()
+    int duration;       // seconds
+    int distance;       // meters
+
+    public boolean inCircle(LatLng center, double radius)
     {
-        route = new ArrayList<>();
-        path = new ArrayList<>();
+        if (distance(paths.get(0).getStart(), center) > radius)
+        {
+            return false;
+        }
+        for (Path i : paths)
+        {
+            if (distance(i.getEnd(), center) > radius)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
-    public void add(LatLng point)
+    public static double distance(LatLng A, LatLng B)
     {
-        route.add(point);
-    }
-
-    public void addAll(ArrayList<LatLng> points)
-    {
-        route.addAll(points);
-    }
-
-    public int lenght()
-    {
-        return route.size();
-    }
-
-    public LatLng get(int index)
-    {
-        return route.get(index);
-    }
-
-    public void setStart(LatLng start)
-    {
-        this.start = start;
-    }
-
-    public void setEnd(LatLng end)
-    {
-        this.end = end;
-    }
-
-    public LatLng[] getPath(int i)
-    {
-        return path.get(i);
-    }
-
-    public LatLng[] getPath()
-    {
-        return new LatLng[]{start, end};
-    }
-
-    public int pathCount()
-    {
-        return path.size();
-    }
-
-    public void addPath(LatLng[] point)
-    {
-        path.add(point);
+        return 1.0 * Math.sqrt((A.latitude * A.latitude - B.latitude * B.latitude) + (A.longitude * A.longitude - B.longitude * B.longitude));
     }
 }

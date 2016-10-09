@@ -7,137 +7,136 @@ public class UnicodeConverter
 {
     public static String convert(String s)
     {
-        s = s.replace("&#192;", "À");
-        s = s.replace("&#193;", "Á");
-        s = s.replace("&#194;","Â");
-        s = s.replace("&#195;","Ã");
-        s = s.replace("&#200;","È");
-        s = s.replace("&#201;","É");
-        s = s.replace("&#202;","Ê");
-        s = s.replace("&#204;","Ì");
-        s = s.replace("&#205;","Í");
-        s = s.replace("&#210;","Ò");
-        s = s.replace("&#211;","Ó");
-        s = s.replace("&#212;","Ô");
-        s = s.replace("&#213;","Õ");
-        s = s.replace("&#217;","Ù");
-        s = s.replace("&#218;","Ú");
-        s = s.replace("&#221;","Ý");
-        s = s.replace("&#224;","à");
-        s = s.replace("&#225;","á");
-        s = s.replace("&#226;","â");
-        s = s.replace("&#227;","ã");
-        s = s.replace("&#232;","è");
-        s = s.replace("&#233;","é");
-        s = s.replace("&#234;","ê");
-        s = s.replace("&#236;","ì");
-        s = s.replace("&#237;","í");
-        s = s.replace("&#242;","ò");
-        s = s.replace("&#243;","ó");
-        s = s.replace("&#244;","ô");
-        s = s.replace("&#245;","õ");
-        s = s.replace("&#249;","ù");
-        s = s.replace("&#250;","ú");
-        s = s.replace("&#253;","ý");
-        s = s.replace("&#7922;","Ỳ");
-        s = s.replace("&#7928;","Ỹ");
-        s = s.replace("&#7923;","ỳ");
-        s = s.replace("&#7929;","ỹ");
-        s = s.replace("&#7926;","Ỷ");
-        s = s.replace("&#7927;","ỷ");
-        s = s.replace("&#7924;","Ỵ");
-        s = s.replace("&#7925;","ỵ");
-        s = s.replace("&#7921;","ự");
-        s = s.replace("&#7920;","Ự");
-        s = s.replace("&#7917;","ử");
-        s = s.replace("&#7916;","Ử");
-        s = s.replace("&#7919;","ữ");
-        s = s.replace("&#7918;","Ữ");
-        s = s.replace("&#7915;","ừ");
-        s = s.replace("&#7914;","Ừ");
-        s = s.replace("&#7913;","ứ");
-        s = s.replace("&#7912;","Ứ");
-        s = s.replace("&#432;","ư");
-        s = s.replace("&#431;","Ư");
-        s = s.replace("&#7909;","ụ");
-        s = s.replace("&#7908;","Ụ");
-        s = s.replace("&#7911;","ủ");
-        s = s.replace("&#7910;","Ủ");
-        s = s.replace("&#361;","ũ");
-        s = s.replace("&#360;","Ũ");
-        s = s.replace("&#7907;","ợ");
-        s = s.replace("&#7906;","Ợ");
-        s = s.replace("&#7903;","ở");
-        s = s.replace("&#7902;","Ở");
-        s = s.replace("&#7905;","ỡ");
-        s = s.replace("&#7904;","Ỡ");
-        s = s.replace("&#7901;","ờ");
-        s = s.replace("&#7900;","Ờ");
-        s = s.replace("&#7899;","ớ");
-        s = s.replace("&#7898;","Ớ");
-        s = s.replace("&#417;","ơ");
-        s = s.replace("&#416;","Ơ");
-        s = s.replace("&#7897;","ộ");
-        s = s.replace("&#7896;","Ộ");
-        s = s.replace("&#7893;","ổ");
-        s = s.replace("&#7892;","Ổ");
-        s = s.replace("&#7895;","ỗ");
-        s = s.replace("&#7894;","Ỗ");
-        s = s.replace("&#7891;","ồ");
-        s = s.replace("&#7890;","Ồ");
-        s = s.replace("&#7889;","ố");
-        s = s.replace("&#7888;","Ố");
-        s = s.replace("&#7885;","ọ");
-        s = s.replace("&#7884;","Ọ");
-        s = s.replace("&#7887;","ỏ");
-        s = s.replace("&#7886;","Ỏ");
-        s = s.replace("&#7883;","ị");
-        s = s.replace("&#7882;","Ị");
-        s = s.replace("&#7881;","ỉ");
-        s = s.replace("&#7880;","Ỉ");
-        s = s.replace("&#297;","ĩ");
-        s = s.replace("&#296;","Ĩ");
-        s = s.replace("&#7879;","ệ");
-        s = s.replace("&#7878;","Ệ");
-        s = s.replace("&#7875;","ể");
-        s = s.replace("&#7874;","Ể");
-        s = s.replace("&#7877;","ễ");
-        s = s.replace("&#7876;","Ễ");
-        s = s.replace("&#7873;","ề");
-        s = s.replace("&#7872;","Ề");
-        s = s.replace("&#7871;","ế");
-        s = s.replace("&#7870;","Ế");
-        s = s.replace("&#7865;","ẹ");
-        s = s.replace("&#7864;","Ẹ");
-        s = s.replace("&#7867;","ẻ");
-        s = s.replace("&#7866;","Ẻ");
-        s = s.replace("&#7869;","ẽ");
-        s = s.replace("&#7868;","Ẽ");
-        s = s.replace("&#7863;","ặ");
-        s = s.replace("&#7862;","Ặ");
-        s = s.replace("&#7859;","ẳ");
-        s = s.replace("&#7858;","Ẳ");
-        s = s.replace("&#7861;","ẵ");
-        s = s.replace("&#7860;","Ẵ");
-        s = s.replace("&#7857;","ằ");
-        s = s.replace("&#7856;","Ằ");
-        s = s.replace("&#7855;","ắ");
-        s = s.replace("&#7854;","Ắ");
-        s = s.replace("&#259;","ă");
-        s = s.replace("&#258;","Ă");
-        s = s.replace("&#7853;","ậ");
-        s = s.replace("&#7852;","Ậ");
-        s = s.replace("&#7849;","ẩ");
-        s = s.replace("&#7848;","Ẩ");
-        s = s.replace("&#7851;","ẫ");
-        s = s.replace("&#7850;","Ẫ");
-        s = s.replace("&#7847;","ầ");
-        s = s.replace("&#7846;","Ầ");
-        s = s.replace("&#7845;","ấ");
-        s = s.replace("&#7844;","Ấ");
-        s = s.replace("&#7841;","ạ");
-        s = s.replace("&amp;","&");
-        s = s.replace("&#39;","'");
-        return  s;
+        return s.replace("&#192;", "À")
+                .replace("&#193;", "Á")
+                .replace("&#194;", "Â")
+                .replace("&#195;", "Ã")
+                .replace("&#200;", "È")
+                .replace("&#201;", "É")
+                .replace("&#202;", "Ê")
+                .replace("&#204;", "Ì")
+                .replace("&#205;", "Í")
+                .replace("&#210;", "Ò")
+                .replace("&#211;", "Ó")
+                .replace("&#212;", "Ô")
+                .replace("&#213;", "Õ")
+                .replace("&#217;", "Ù")
+                .replace("&#218;", "Ú")
+                .replace("&#221;", "Ý")
+                .replace("&#224;", "à")
+                .replace("&#225;", "á")
+                .replace("&#226;", "â")
+                .replace("&#227;", "ã")
+                .replace("&#232;", "è")
+                .replace("&#233;", "é")
+                .replace("&#234;", "ê")
+                .replace("&#236;", "ì")
+                .replace("&#237;", "í")
+                .replace("&#242;", "ò")
+                .replace("&#243;", "ó")
+                .replace("&#244;", "ô")
+                .replace("&#245;", "õ")
+                .replace("&#249;", "ù")
+                .replace("&#250;", "ú")
+                .replace("&#253;", "ý")
+                .replace("&#7922;", "Ỳ")
+                .replace("&#7928;", "Ỹ")
+                .replace("&#7923;", "ỳ")
+                .replace("&#7929;", "ỹ")
+                .replace("&#7926;", "Ỷ")
+                .replace("&#7927;", "ỷ")
+                .replace("&#7924;", "Ỵ")
+                .replace("&#7925;", "ỵ")
+                .replace("&#7921;", "ự")
+                .replace("&#7920;", "Ự")
+                .replace("&#7917;", "ử")
+                .replace("&#7916;", "Ử")
+                .replace("&#7919;", "ữ")
+                .replace("&#7918;", "Ữ")
+                .replace("&#7915;", "ừ")
+                .replace("&#7914;", "Ừ")
+                .replace("&#7913;", "ứ")
+                .replace("&#7912;", "Ứ")
+                .replace("&#432;", "ư")
+                .replace("&#431;", "Ư")
+                .replace("&#7909;", "ụ")
+                .replace("&#7908;", "Ụ")
+                .replace("&#7911;", "ủ")
+                .replace("&#7910;", "Ủ")
+                .replace("&#361;", "ũ")
+                .replace("&#360;", "Ũ")
+                .replace("&#7907;", "ợ")
+                .replace("&#7906;", "Ợ")
+                .replace("&#7903;", "ở")
+                .replace("&#7902;", "Ở")
+                .replace("&#7905;", "ỡ")
+                .replace("&#7904;", "Ỡ")
+                .replace("&#7901;", "ờ")
+                .replace("&#7900;", "Ờ")
+                .replace("&#7899;", "ớ")
+                .replace("&#7898;", "Ớ")
+                .replace("&#417;", "ơ")
+                .replace("&#416;", "Ơ")
+                .replace("&#7897;", "ộ")
+                .replace("&#7896;", "Ộ")
+                .replace("&#7893;", "ổ")
+                .replace("&#7892;", "Ổ")
+                .replace("&#7895;", "ỗ")
+                .replace("&#7894;", "Ỗ")
+                .replace("&#7891;", "ồ")
+                .replace("&#7890;", "Ồ")
+                .replace("&#7889;", "ố")
+                .replace("&#7888;", "Ố")
+                .replace("&#7885;", "ọ")
+                .replace("&#7884;", "Ọ")
+                .replace("&#7887;", "ỏ")
+                .replace("&#7886;", "Ỏ")
+                .replace("&#7883;", "ị")
+                .replace("&#7882;", "Ị")
+                .replace("&#7881;", "ỉ")
+                .replace("&#7880;", "Ỉ")
+                .replace("&#297;", "ĩ")
+                .replace("&#296;", "Ĩ")
+                .replace("&#7879;", "ệ")
+                .replace("&#7878;", "Ệ")
+                .replace("&#7875;", "ể")
+                .replace("&#7874;", "Ể")
+                .replace("&#7877;", "ễ")
+                .replace("&#7876;", "Ễ")
+                .replace("&#7873;", "ề")
+                .replace("&#7872;", "Ề")
+                .replace("&#7871;", "ế")
+                .replace("&#7870;", "Ế")
+                .replace("&#7865;", "ẹ")
+                .replace("&#7864;", "Ẹ")
+                .replace("&#7867;", "ẻ")
+                .replace("&#7866;", "Ẻ")
+                .replace("&#7869;", "ẽ")
+                .replace("&#7868;", "Ẽ")
+                .replace("&#7863;", "ặ")
+                .replace("&#7862;", "Ặ")
+                .replace("&#7859;", "ẳ")
+                .replace("&#7858;", "Ẳ")
+                .replace("&#7861;", "ẵ")
+                .replace("&#7860;", "Ẵ")
+                .replace("&#7857;", "ằ")
+                .replace("&#7856;", "Ằ")
+                .replace("&#7855;", "ắ")
+                .replace("&#7854;", "Ắ")
+                .replace("&#259;", "ă")
+                .replace("&#258;", "Ă")
+                .replace("&#7853;", "ậ")
+                .replace("&#7852;", "Ậ")
+                .replace("&#7849;", "ẩ")
+                .replace("&#7848;", "Ẩ")
+                .replace("&#7851;", "ẫ")
+                .replace("&#7850;", "Ẫ")
+                .replace("&#7847;", "ầ")
+                .replace("&#7846;", "Ầ")
+                .replace("&#7845;", "ấ")
+                .replace("&#7844;", "Ấ")
+                .replace("&#7841;", "ạ")
+                .replace("&amp;", "&")
+                .replace("&#39;", "'");
     }
 }

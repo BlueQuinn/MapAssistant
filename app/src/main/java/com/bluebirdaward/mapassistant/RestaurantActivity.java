@@ -139,7 +139,6 @@ public class RestaurantActivity extends AppCompatActivity
     void requestNewInterstitial()
     {
         AdRequest adRequest = new AdRequest.Builder()
-                .addTestDevice("95C26624BAF06BE43C74469300F76D9E")
                 .build();
 
         mInterstitialAd.loadAd(adRequest);

@@ -4,6 +4,13 @@
     tools:context="com.bluebirdaward.mapassistant.NotifyActivity">
 
     <item
+        android:title="traffic"
+        android:icon="@drawable/my_traffic"
+        android:id="@+id/mytraffic"
+        android:orderInCategory="1"
+        app:showAsAction="always" />
+
+    <item
         android:title="information"
         android:icon="@drawable/info"
         android:id="@+id/info"

@@ -50,7 +50,6 @@ public class TrafficOptionUtils
         markerOptions.position(traffic.getCenter())
                .title(level).snippet(Integer.toString(traffic.getVote()) + " người đã thông báo");
 
-
         return new TrafficOption(markerOptions, polylineOptions);
     }
 

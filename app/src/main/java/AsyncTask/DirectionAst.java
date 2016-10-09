@@ -1,6 +1,7 @@
 package asyncTask;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -38,22 +39,10 @@ public class DirectionAst extends AsyncTask<LatLng, Integer, Route>
     }
 
     @Override
-    protected void onPreExecute()
-    {
-        super.onPreExecute();
-    }
-
-    @Override
     protected void onPostExecute(Route result)
     {
         listener.onFinish(result);
         super.onPostExecute(result);
-    }
-
-    @Override
-    protected void onProgressUpdate(Integer... values)
-    {
-        super.onProgressUpdate(values);
     }
 
     @Override
@@ -68,6 +57,8 @@ public class DirectionAst extends AsyncTask<LatLng, Integer, Route>
         {
             url = DirectionAPI.createDirectionUrlRequest(params[0], params[1], mode);
         }
+        Log.d("123", url);
+        Log.d("123", " s " +params.length);
         return DirectionAPI.getDirection(JsonUtils.getJSON(url));
     }
 

@@ -1,7 +1,5 @@
 package com.bluebirdaward.mapassistant;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Geocoder;
@@ -18,7 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -33,15 +30,21 @@ import java.util.Locale;
 import java.util.Map;
 
 import asyncTask.AddressAst;
+import listener.DetectTrafficListener;
 import model.Jam;
 import listener.OnLoadListener;
-import model.Position;
+import model.MyTraffic;
+import model.Route;
+import model.Shortcut;
 import utils.MapUtils;
 import utils.PolyUtils;
+import utils.RequestCode;
 import widgets.LoadingDialog;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 import com.google.android.gms.maps.model.LatLng;
+
+import static utils.TimeUtils.*;
 
 public class NotifyActivity extends AppCompatActivity
         implements SeekBar.OnSeekBarChangeListener
@@ -52,7 +55,7 @@ public class NotifyActivity extends AppCompatActivity
     ProgressBar prbLoading;
     TextView tvAddress, tvRadius;
     SeekBar radiusPicker;
-String info;
+    String info;
 
     View.OnClickListener reloadListener, notifyListener;
 
@@ -67,7 +70,8 @@ String info;
         setTitle("Thông báo tắc đường");
         info = "Gửi thông tin về vị trí mà bạn đang bị tắc đường để mọi người có thể cập nhật tình trạng giao thông";
         Intent intent = getIntent();
-        myLocation = intent.getParcelableExtra("myLocation");
+        //myLocation = intent.getParcelableExtra("myLocation");
+        myLocation = new LatLng(10.769914, 106.670608);
 
         tvAddress = (TextView) findViewById(R.id.tvAddress);
         tvRadius = (TextView) findViewById(R.id.tvRadius);
@@ -75,7 +79,7 @@ String info;
         prbLoading = (ProgressBar) findViewById(R.id.prbLoading);
         layoutContent = (LinearLayout) findViewById(R.id.main_content);
         radiusPicker = (SeekBar) findViewById(R.id.radiusPicker);
-        radiusPicker.setProgress(100);    // default 200m
+        radiusPicker.setProgress(4);    // default 200m
         radiusPicker.setOnSeekBarChangeListener(this);
 
         reloadListener = new View.OnClickListener()
@@ -151,21 +155,6 @@ String info;
         return targetLocation.distanceTo(homeLocation);     // meters
     }
 
-    int toMinutes(String time)
-    {
-        String[] hourMin = time.split(":");
-        int hour = Integer.parseInt(hourMin[0]);
-        int mins = Integer.parseInt(hourMin[1]);
-        int hoursInMins = hour * 60;
-        return hoursInMins + mins;
-    }
-
-    String toTime(int minutes)
-    {
-        int hour = minutes / 60;
-        minutes = minutes - hour * 60;
-        return Integer.toString(hour) + ":" + Integer.toString(minutes);
-    }
 
     boolean checkLocation()
     {
@@ -181,13 +170,14 @@ String info;
             //Log.d("123", "distance = " + distance);
             if (distance >= 0 && distance <= 1000)
             {
-                return true;
+                return false;
             }
         }
         return false;
     }
 
-    /*boolean send= false;
+    boolean send = false;
+
     void saveFirebase()
     {
         final LoadingDialog dialog = new LoadingDialog(this);
@@ -205,7 +195,6 @@ String info;
                 String date = formatter.format(new Date());
                 final int timeNow = toMinutes(date);
 
-                boolean findPosition = false;
                 final DataSnapshot traffic = snapshot.child("traffic");
                 for (DataSnapshot item : traffic.getChildren())
                 {
@@ -219,8 +208,6 @@ String info;
 
                     if (PolyUtils.isLocationOnPath(myLocation, polyline, false, 100))     // kiểm tra xem trên Firebase đã tồn tại điểm nào ở gần điểm này mà bị tắc đường chưa (gần ở đây là dưới 300m)
                     {
-                        findPosition = true;
-                        //boolean findTime = false;
                         DataSnapshot jamList = item.child("jam");
                         for (DataSnapshot jamItem : jamList.getChildren())
                         {
@@ -236,26 +223,24 @@ String info;
                                 voteMap.put("vote", vote + 1);
                                 jamRef.updateChildren(voteMap);
                                 //findTime = true;
+                                send = true;
                                 break;
                             }
                         }
-                        *//*if (!findTime)
+                        if (send)
                         {
-                            Firebase trafficRef = item.getRef();
-                            Map<String, Object> jam = new HashMap<>();
-                            jam.put("time", formatter.format(date));
-                            jam.put("vote", 1);
-                            trafficRef.push().setValue(jam);
-                        }*//*
-                        break;
+                            break;
+                        }
                     }
                 }
-                if (!findPosition)
+                if (!send)
                 {
-                    MapUtils.getRoad(getResources().getString(R.string.google_maps_key), myLocation, radiusPicker.getProgress() + 100, new OnLoadListener<LatLng[]>()
+                    MapUtils utils = new MapUtils(getLength() / 2);
+                    utils.getRoad(getResources().getString(R.string.google_maps_key), myLocation, new DetectTrafficListener()
                     {
+
                         @Override
-                        public void onFinish(LatLng[] intersection)
+                        public void onFinish(Route route, int i, LatLng[] intersection)
                         {
                             if (intersection != null && intersection.length == 2)
                             {
@@ -270,17 +255,31 @@ String info;
                                 trafficItem.put("jam", jam);
                                 trafficRef.push().setValue(trafficItem);
                                 send = true;
+
+                                Intent intent = new Intent();
+                                intent.putExtra("route", route);
+                                intent.putExtra("lat1", intersection[0].latitude);
+                                intent.putExtra("lng1", intersection[0].longitude);
+                                intent.putExtra("lat2", intersection[1].latitude);
+                                intent.putExtra("lng2", intersection[1].longitude);
+                                intent.putExtra("i", i);
+                                setResult(RequestCode.LOCATE_TO_NOTIFY,intent);
                             }
+                            //Log.d("traffic", )
                         }
                     });
                 }
                 dialog.dismiss();
 
-                //MainActivity.dbHelper.saveLocation(myLocation.latitude, myLocation.longitude);
                 if (send)
-                showMessage("Thông báo của bạn đã được gửi đi");
+                {
+                    showMessage("Thông báo của bạn đã được gửi đi");
+                    MainActivity.dbHelper.saveLocation(myLocation.latitude, myLocation.longitude);
+                }
                 else
+                {
                     showMessage("Không thể gửi được thông báo này");
+                }
                 ref.removeEventListener(this);
                 //prbLoading.setVisibility(View.GONE);
             }
@@ -292,16 +291,14 @@ String info;
                 ref.removeEventListener(this);
             }
         });
-    }*/
+    }
 
 
-    void saveFirebase()
+    /*void saveFirebase()
     {
         MainActivity.dbHelper.saveLocation(myLocation.latitude, myLocation.longitude);
-            showMessage("Thông báo của bạn đã được gửi đi");
-        //ref.removeEventListener(this);
-        //prbLoading.setVisibility(View.GONE);
-    }
+        showMessage("Thông báo của bạn đã được gửi đi");
+    }*/
 
     void showMessage(String message)
     {
@@ -320,21 +317,36 @@ String info;
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        if (item.getItemId() == android.R.id.home)
+        switch (item.getItemId())
         {
-            finish();
-        }
-        else        // info
-        {
-            showMessage(info);
+            case android.R.id.home:
+                finish();
+                break;
+
+            case R.id.info:
+                showMessage(info);
+                break;
+
+            case R.id.mytraffic:
+            {
+                //Intent intent = new Intent();
+                setResult(RequestCode.LOCATE_TO_NOTIFY, new Intent());
+                finish();
+                break;
+            }
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    int getLength()
+    {
+        return (radiusPicker.getProgress() + 4) * 50;
     }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
-        tvRadius.setText("Ước tính phạm vi ùn tắc: " + (progress + 100) + "m");
+        tvRadius.setText("Ước tính phạm vi ùn tắc: " + ((progress + 4) * 50) + "m");
     }
 
     @Override

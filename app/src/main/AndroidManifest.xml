@@ -71,18 +71,10 @@
         <activity
             android:name="com.bluebirdaward.mapassistant.NotifyActivity"
             android:theme="@style/AppTheme">
-
-            <!--
-            <intent-filter>
-                &lt;!&ndash;<action android:name="android.intent.action.CREATE_SHORTCUT"/>
-
-                <category android:name="android.intent.category.LAUNCHER"/>&ndash;&gt;
-            </intent-filter>
-            -->
         </activity>
         <activity
             android:name="com.bluebirdaward.mapassistant.ShortcutActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
         </activity>
     </application>
 

@@ -1,5 +1,7 @@
 package mapAPI;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -8,6 +10,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import model.Path;
 import model.Route;
 import utils.PolyUtils;
 
@@ -18,26 +21,26 @@ public class DirectionAPI
 {
     public static String createDirectionUrlRequest(LatLng start, LatLng end, String mode)
     {
-        String urlString = "http://maps.googleapis.com/maps/api/directions/json?"
+        String url = "http://maps.googleapis.com/maps/api/directions/json?"
                 + "origin=" + start.latitude + "," + start.longitude
                 + "&destination=" + end.latitude + "," + end.longitude
                 + "&sensor=false&units=metric&mode=" + mode;
-        return urlString;
+        return url;
     }
 
-    public static String createDirectionUrlRequest(LatLng... waypoint)
+    public static String createDirectionUrlRequest(LatLng... waypoint)      // two first points will be origin and destination
     {
-        String urlString = "http://maps.googleapis.com/maps/api/directions/json?"
+        String url = "http://maps.googleapis.com/maps/api/directions/json?"
                 + "origin=" + waypoint[0].latitude + "," + waypoint[0].longitude
                 + "&destination=" + waypoint[1].latitude + "," + waypoint[1].longitude
-                + "&sensor=false&units=metric&mode="
-                + "&waypoint=";
+                + "&sensor=false&units=metric&mode=driving"
+                + "&waypoints=";
         for (int i = 2; i < waypoint.length; ++i)
         {
-            urlString += waypoint[i].latitude + "," + waypoint[i].longitude + "&";
+            url += waypoint[i].latitude + "," + waypoint[i].longitude + "|";
         }
-        urlString = urlString.substring(0, urlString.length() - 1);
-        return urlString;
+        url = url.substring(0, url.length() - 1);
+        return url;
     }
 
     public static Route getDirection(JSONObject object)
@@ -47,20 +50,19 @@ public class DirectionAPI
             return null;
         }
 
-        Route route = new Route();
+        Route route = null;
         try
         {
             JSONArray direction = object.getJSONArray("routes").getJSONObject(0).getJSONArray("legs");
-            route.setDistance(0);
-            route.setDuration(0);
-            Route[] path = new Route[direction.length()];
+            ArrayList<Path> path = new ArrayList<>();
             for (int i = 0; i < direction.length(); ++i)
             {
-                path[i] = getPath(direction.getJSONObject(i));
-                route.addAll(path[i].getRoute());
-                route.setDistance(route.getDistance() + path[i].getDistance());
-                route.setDuration(route.getDuration() + path[i].getDuration());
-                route.addPath(path[i].getPath());
+                path.add(getPath(direction.getJSONObject(i)));
+            }
+            if (path.size() > 0)
+            {
+                route = new Route(path);
+                Log.d("123", "pathsize " + path.size());
             }
         }
         catch (JSONException e)
@@ -71,9 +73,9 @@ public class DirectionAPI
         return route;
     }
 
-    static Route getPath(JSONObject path) throws JSONException
+    static Path getPath(JSONObject path) throws JSONException
     {
-        Route route = new Route();
+        Path route = new Path();
 
         // distance
         JSONObject distance = path.getJSONObject("distance");
@@ -85,28 +87,28 @@ public class DirectionAPI
 
         // start
         JSONObject start = path.getJSONObject("start_location");
-        //double lat = start.getDouble("lat");
-        //double lng = start.getDouble("lng");
         LatLng point = new LatLng(start.getDouble("lat"), start.getDouble("lng"));
         route.add(point);
-        route.setStart(point);
 
         // steps
         JSONArray steps = path.getJSONArray("steps");
         for (int i = 0; i < steps.length(); ++i)
         {
             String polyline = steps.getJSONObject(i).getJSONObject("polyline").getString("points");
+
+            //long startTime = System.currentTimeMillis();
             ArrayList<LatLng> points = PolyUtils.decode(polyline);
+            //long elapsedTime = System.currentTimeMillis() - startTime;
+            //Log.d("time", "time = " + elapsedTime);
+            //Log.d("time", "size = " + points.size());
+
             route.addAll(points);
         }
 
         // end
         JSONObject end = path.getJSONObject("end_location");
-        //lat = end.getDouble("lat");
-        //lng = end.getDouble("lng");
         point = new LatLng(end.getDouble("lat"), end.getDouble("lng"));
         route.add(point);
-        route.setEnd(point);
 
         return route;
     }

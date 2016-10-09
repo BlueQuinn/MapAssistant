@@ -25,13 +25,13 @@ public class Traffic
         return end;
     }
 
-    public Traffic(LatLng start, LatLng end, int vote)
+    /*public Traffic(LatLng start, LatLng end, int vote)
     {
         this.start = start;
         this.end = end;
         this.vote = vote;
     }
-
+*/
     public Traffic(double lat1, double lng1, double lat2, double lng2, int vote)
     {
         start = new LatLng(lat1, lng1);
