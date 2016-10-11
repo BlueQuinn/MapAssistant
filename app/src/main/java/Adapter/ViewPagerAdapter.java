@@ -12,8 +12,8 @@ import java.util.List;
  */
 public class ViewPagerAdapter extends FragmentStatePagerAdapter
 {
-    private final List<Fragment> mFragmentList = new ArrayList<>();
-    private final List<String> mFragmentTitleList = new ArrayList<>();
+    private final List<Fragment> fragments = new ArrayList<>();
+    private final List<String> titles = new ArrayList<>();
 
     public ViewPagerAdapter(FragmentManager manager) {
         super(manager);
@@ -21,22 +21,22 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter
 
     @Override
     public Fragment getItem(int position) {
-        return mFragmentList.get(position);
+        return fragments.get(position);
     }
 
     @Override
     public int getCount() {
-        return mFragmentList.size();
+        return fragments.size();
     }
 
     public void addFragment(Fragment fragment, String title) {
-        mFragmentList.add(fragment);
-        mFragmentTitleList.add(title);
+        fragments.add(fragment);
+        titles.add(title);
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return mFragmentTitleList.get(position);
+        return titles.get(position);
     }
 }
 

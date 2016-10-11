@@ -50,8 +50,11 @@ public class MapUtils
                             {
                                 A = a;
                                 B = b;
+                                break;
                             }
                         }
+                        if (A!= null)
+                            break;
                     }
 
                     if (A == null)      // or B == null

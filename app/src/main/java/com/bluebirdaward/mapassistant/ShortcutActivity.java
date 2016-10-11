@@ -8,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -263,5 +264,15 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     public void onPolylineClick(Polyline polyline)
     {
         Snackbar.make(root, route.getInformation(), Snackbar.LENGTH_INDEFINITE).show();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        if (item.getItemId() == android.R.id.home)
+        {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

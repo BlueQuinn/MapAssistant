@@ -20,5 +20,5 @@
         android:textSize="17dp"
         android:id="@+id/tvSubTitle"
         android:textColor="@android:color/black"
-        android:gravity="center|left"/>
+        android:gravity="center|start"/>
 </LinearLayout>

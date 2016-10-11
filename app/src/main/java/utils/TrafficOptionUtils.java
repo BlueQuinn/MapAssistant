@@ -1,15 +1,12 @@
 package utils;
 
-import android.content.res.Resources;
-
 import com.bluebirdaward.mapassistant.gmmap.R;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import model.Traffic;
+import model.TrafficLine;
 import model.TrafficOption;
 
 /**
@@ -29,12 +26,12 @@ public class TrafficOptionUtils
         this.highColor = highColor;
     }
 
-    public TrafficOption getOption(Traffic traffic)
+    public TrafficOption getOption(TrafficLine trafficLine)
     {
         MarkerOptions markerOptions;
         PolylineOptions polylineOptions = new PolylineOptions()
-                .add(traffic.getStart()).add(traffic.getEnd()).width(15);
-        if (traffic.getVote() < 2 * meta)
+                .add(trafficLine.getStart()).add(trafficLine.getEnd()).width(15);
+        if (trafficLine.getVote() < 2 * meta)
         {
             icon = BitmapDescriptorFactory.fromResource(R.drawable.traffic_medium);
             level = "Ùn tắc giao thông";
@@ -47,8 +44,8 @@ public class TrafficOptionUtils
             polylineOptions.color(highColor);
         }
         markerOptions = new MarkerOptions().icon(icon);
-        markerOptions.position(traffic.getCenter())
-               .title(level).snippet(Integer.toString(traffic.getVote()) + " người đã thông báo");
+        markerOptions.position(trafficLine.getCenter())
+               .title(level).snippet(Integer.toString(trafficLine.getVote()) + " người đã thông báo");
 
         return new TrafficOption(markerOptions, polylineOptions);
     }

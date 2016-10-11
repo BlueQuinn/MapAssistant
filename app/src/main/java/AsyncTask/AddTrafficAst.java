@@ -6,7 +6,7 @@ import com.google.android.gms.maps.GoogleMap;
 
 import java.util.ArrayList;
 
-import model.Traffic;
+import model.TrafficLine;
 import listener.OnLoadListener;
 import model.TrafficOption;
 import utils.TrafficOptionUtils;
@@ -16,13 +16,13 @@ import utils.TrafficOptionUtils;
  */
 public class AddTrafficAst extends AsyncTask<Integer, TrafficOption, Boolean>
 {
-    ArrayList<Traffic> listTraffic;
+    ArrayList<TrafficLine> listTrafficLine;
     OnLoadListener<Boolean> listener;
     GoogleMap map;
 
-    public AddTrafficAst(ArrayList<Traffic> listTraffic, GoogleMap map)
+    public AddTrafficAst(ArrayList<TrafficLine> listTrafficLine, GoogleMap map)
     {
-        this.listTraffic = listTraffic;
+        this.listTrafficLine = listTrafficLine;
         this.map = map;
     }
 
@@ -64,9 +64,9 @@ public class AddTrafficAst extends AsyncTask<Integer, TrafficOption, Boolean>
         int mediumColor = params[1];
         int highColor = params[2];
         TrafficOptionUtils utils = new TrafficOptionUtils(meta, mediumColor, highColor);
-        for (Traffic traffic : listTraffic)
+        for (TrafficLine trafficLine : listTrafficLine)
         {
-            publishProgress(utils.getOption(traffic));
+            publishProgress(utils.getOption(trafficLine));
         }
         return true;
     }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_margin="25dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/prbLoading"
+        android:textColor="@color/colorAccent"
+        android:gravity="center"
+        android:text="Thông báo của bạn đã được gửi đi\nCảm ơn bạn đã chia sẻ thông báo này cho mọi người cùng biết"
+        android:textSize="16dp"/>
+</RelativeLayout>

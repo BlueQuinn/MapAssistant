@@ -60,17 +60,12 @@ import asyncTask.AddressAst;
 import asyncTask.FindPlaceAst;
 import model.MenuSection;
 import model.Menu;
-import model.MyTraffic;
 import model.Nearby;
-import model.Path;
 import model.Place;
-import model.Route;
-import model.Shortcut;
-import model.Traffic;
+import model.TrafficLine;
 import listener.OnLoadListener;
+import model.TrafficCircle;
 import sqlite.SqliteHelper;
-import utils.MapUtils;
-import utils.RequestCode;
 import utils.ServiceUtils;
 import utils.TimeUtils;
 import widgets.PlacePickerDialog;
@@ -78,7 +73,6 @@ import widgets.PlacePickerDialog;
 import static utils.RequestCode.*;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         View.OnClickListener, View.OnLongClickListener,
@@ -148,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         listMenu.add(new Menu("Tìm nhà hàng", R.drawable.restaurant));
         listMenu.add(new Menu("Tìm địa điểm", R.drawable.place));
         listMenu.add(new Menu("Thời tiết", R.drawable.weather));
+        listMenu.add(new Menu("Giá xăng dầu", R.drawable.petrol));
         listMenu.add(new Menu("Chia sẻ", R.drawable.share));
         listSection.add(new MenuSection("Tiện ích", listMenu));
 
@@ -230,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             map.clear();
             switch (requestCode)
             {
-                case RequestCode.SEARCH_DESTINATION:
+                case SEARCH_DESTINATION:
                 {
                     String place = data.getStringExtra("place");
                     String address = data.getStringExtra("address");
@@ -245,20 +240,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     break;
                 }
 
-                case RequestCode.VOICE_SEARCH:
+                case VOICE_SEARCH:
                 {
                     if (resultCode == RESULT_OK)
                     {
                         ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                         txtSearch.setText(result.get(0));
-                        startActivityForResult(new Intent(this, DestinationActivity.class).putExtra("address", txtSearch.getText().toString()), RequestCode.SEARCH_DESTINATION);
+                        startActivityForResult(new Intent(this, DestinationActivity.class).putExtra("address", txtSearch.getText().toString()), SEARCH_DESTINATION);
                     }
                     break;
                 }
 
                 case LOCATE_TO_NOTIFY:
                 {
-                    Route r = (Route) data.getSerializableExtra("route");
+                    /*Route r = data.getParcelableExtra("route");
                     int i = data.getIntExtra("i", 0);
                     map.clear();
                     PolylineOptions polylineOptions = new PolylineOptions().width(15).color(getResources().getColor(R.color.green)).addAll(r.getRoute());
@@ -280,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Log.d("123", "" + new LatLng(x, g));
                     Log.d("123", "" + new LatLng(h, b));
                     Log.d("123", "" + p.getStart());
-                    Log.d("123", "" + p.getEnd());
+                    Log.d("123", "" + p.getEnd());*/
 
 
                     /*ArrayList<MyTraffic> traffic = dbHelper.getMyTraffic();
@@ -324,34 +319,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     break;
                 }
 
-                case 9:
-                {
 
-                    Route r = (Route) data.getSerializableExtra("route");
-                    int i = data.getIntExtra("i", 0);
-                    map.clear();
-                    PolylineOptions polylineOptions = new PolylineOptions().width(15).color(getResources().getColor(R.color.green)).addAll(r.getRoute());
-                    map.addPolyline(polylineOptions);
-                    MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high));
-                    Path p = r.getPath(i);
-                    map.addMarker(markerOptions.position(p.getStart()));
-                    map.addMarker(markerOptions.position(p.getEnd()));
-
-
-                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
-                    double x = data.getDoubleExtra("lat1", 0);
-                    double g = data.getDoubleExtra("lng1", 0);
-                    double h = data.getDoubleExtra("lat2", 0);
-                    double b = data.getDoubleExtra("lng2", 0);
-
-                    map.addMarker(markerOptions.position(new LatLng(x, g)));
-                    map.addMarker(markerOptions.position(new LatLng(h, b)));
-Log.d("123", "" + new LatLng(x, g));
-                    Log.d("123", "" + new LatLng(h, b));
-                    Log.d("123", "" + p.getStart());
-                    Log.d("123", "" + p.getEnd());
-                    break;
-                }
             }
         }
     }
@@ -395,7 +363,7 @@ Log.d("123", "" + new LatLng(x, g));
             }
 
             case R.id.txtSearch:
-                startActivityForResult(new Intent(this, DestinationActivity.class).putExtra("address", txtSearch.getText().toString()), RequestCode.SEARCH_DESTINATION);
+                startActivityForResult(new Intent(this, DestinationActivity.class).putExtra("address", txtSearch.getText().toString()), SEARCH_DESTINATION);
                 break;
 
             case R.id.btnDirection:
@@ -409,7 +377,14 @@ Log.d("123", "" + new LatLng(x, g));
                 }
                 else
                 {
-                    intent.putExtra("position", myLocation);
+                    if (myLocation == null)
+                    {
+                        intent.putExtra("position", new LatLng(10.78261522192309, 106.69588862681348));
+                    }
+                    else
+                    {
+                        intent.putExtra("position", myLocation);
+                    }
                     intent.putExtra("zoom", map.getCameraPosition().zoom);
                 }
                 startActivity(intent);
@@ -422,7 +397,7 @@ Log.d("123", "" + new LatLng(x, g));
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
                 intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Bạn cần tìm gì ?");
-                startActivityForResult(intent, RequestCode.VOICE_SEARCH);
+                startActivityForResult(intent, VOICE_SEARCH);
                 break;
             }
 
@@ -492,21 +467,23 @@ Log.d("123", "" + new LatLng(x, g));
                 switch (childPosition)
                 {
                     case 0:     // restaurant
-                    {
-                        Intent i = new Intent(this, PlaceActivity.class);
-                        startActivity(i);
+                        startActivity(new Intent(this, PlaceActivity.class));
                         break;
-                    }
+
                     case 1:     // search nearby place by place type and getLength
                         openGPS(LOCATE_FOR_NEARBY);
                         break;
-                    case 2:     // direction
+                    case 2:     // weather
                     {
-
+                        startActivity(new Intent(this, WeatherActivity.class));
                         break;
                     }
 
                     case 3:
+                        startActivity(new Intent(this, PetrolActivity.class));
+                        break;
+
+                    case 4:     //share
                         openGPS(LOCATO_TO_SHARE);
                         break;
                 }
@@ -585,49 +562,47 @@ Log.d("123", "" + new LatLng(x, g));
             {
                 prbLoading.setVisibility(View.VISIBLE);
 
-                ArrayList<Traffic> traffic = new ArrayList<>();
+
                 SimpleDateFormat format = new SimpleDateFormat("HH:mm");
                 int time = TimeUtils.toMinutes(format.format(new Date()));
-                if ((time > 390 && time < 750) || (time > 990 && time < 1230))
-                {
-                    DataSnapshot rush = snapshot.child("rush");
-                    for (DataSnapshot jam : rush.getChildren())
-                    {
-                        double lat1 = (double) jam.child("lat1").getValue();
-                        double lng1 = (double) jam.child("lng1").getValue();
-                        double lat2 = (double) jam.child("lat2").getValue();
-                        double lng2 = (double) jam.child("lng2").getValue();
-                        int vote = ((Long) jam.child("vote").getValue()).intValue();
-                        traffic.add(new Traffic(lat1, lng1, lat2, lng2, vote));
-                    }
-                    Log.d("234", "" + traffic.size());
+                int t = time / 30, tDown = t * 30, tUp = (t + 1) * 30;
 
-                    try
-                    {
-                        if (time > 480 && time < 600)
+                DataSnapshot upNode = snapshot.child(Integer.toString(tUp));
+                DataSnapshot downNode = snapshot.child(Integer.toString(tDown));
+
+                ArrayList<TrafficCircle> trafficCircles = new ArrayList<>();
+                trafficCircles.addAll(getTrafficCircle(upNode));
+                trafficCircles.addAll(getTrafficCircle(downNode));
+
+                ArrayList<TrafficLine> trafficLine = new ArrayList<>();
+                trafficLine.addAll(getTrafficLine(upNode));
+                trafficLine.addAll(getTrafficLine(downNode));
+
+                Log.d("traffic", "line size" + trafficLine.size());
+                Log.d("traffic", "circle size" + trafficCircles.size());
+                try
+                {
+                       /* if (time > 480 && time < 600)
                         {
-                            traffic = (ArrayList<Traffic>) traffic.subList(traffic.size() / 4, traffic.size() / 2);
+                            trafficLine = (ArrayList<TrafficLine>) trafficLine.subList(trafficLine.size() / 4, trafficLine.size() / 2);
                         }
                         else if (time > 1140 && time < 1230)
                         {
-                            traffic = (ArrayList<Traffic>) traffic.subList(0, traffic.size() / 2);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Log.d("234", "" + traffic.size());
-
-                    }
-                    Log.d("234", "" + traffic.size());
-
+                            trafficLine = (ArrayList<TrafficLine>) trafficLine.subList(0, trafficLine.size() / 2);
+                        }*/
+                }
+                catch (Exception e)
+                {
+                    Log.d("234", "" + trafficLine.size());
 
                 }
+                Log.d("234", "" + trafficLine.size());
 
-                if (traffic.size() > 0)
+                if (trafficLine.size() > 0)
                 {
                     map.clear();
                     int meta = ((Long) snapshot.child("meta").getValue()).intValue();
-                    AddTrafficAst asyncTask = new AddTrafficAst(traffic, map);
+                    AddTrafficAst asyncTask = new AddTrafficAst(trafficLine, map);
                     asyncTask.setListener(new OnLoadListener<Boolean>()
                     {
                         @Override
@@ -667,6 +642,37 @@ Log.d("123", "" + new LatLng(x, g));
             }
         };
         ref.addValueEventListener(listener);
+    }
+
+    ArrayList<TrafficCircle> getTrafficCircle(DataSnapshot data)
+    {
+        ArrayList<TrafficCircle> trafficCircles = new ArrayList<>();
+        DataSnapshot circle = data.child("circle");
+        for (DataSnapshot c : circle.getChildren())
+        {
+            double lat = (double) c.child("lat").getValue();
+            double lng = (double) c.child("lng").getValue();
+            int radius = (int) c.child("radius").getValue();
+            int rate = (int) c.child("rate").getValue();
+            trafficCircles.add(new TrafficCircle(new LatLng(lat, lng), radius, rate)));
+        }
+        return trafficCircles;
+    }
+
+    ArrayList<TrafficLine> getTrafficLine(DataSnapshot data)
+    {
+        ArrayList<TrafficLine> trafficLine = new ArrayList<>();
+        DataSnapshot line = data.child("line");
+        for (DataSnapshot l : line.getChildren())
+        {
+            double lat1 = (double) l.child("lat1").getValue();
+            double lng1 = (double) l.child("lng1").getValue();
+            double lat2 = (double) l.child("lat2").getValue();
+            double lng2 = (double) l.child("lng2").getValue();
+            int rate = ((Long) l.child("rate").getValue()).intValue();
+            trafficLine.add(new TrafficLine(lat1, lng1, lat2, lng2, rate));
+        }
+        return trafficLine;
     }
 
     @Override

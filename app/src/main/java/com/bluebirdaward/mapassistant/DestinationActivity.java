@@ -29,7 +29,7 @@ public class DestinationActivity extends AppCompatActivity
         implements OnPlaceSelectedListener, DestinationListener
 {
     PlacePickerFragment fragmentPlace;
-    private ViewPager viewPager;
+    ViewPager viewPager;
     ViewPagerAdapter adapter;
 
     @Override

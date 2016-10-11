@@ -37,11 +37,10 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import asyncTask.DirectionAst;
 import listener.OnLoadListener;
 import model.Route;
-import model.Traffic;
+import model.TrafficLine;
 import model.TrafficOption;
 import utils.MapUtils;
 import utils.TrafficOptionUtils;
-import utils.TrafficUtils;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
@@ -377,13 +376,13 @@ public class DirectionActivity extends AppCompatActivity
                                 double lat2 = (double) jam.child("lat2").getValue();
                                 double lng2 = (double) jam.child("lng2").getValue();
                                 int vote = ((Long) jam.child("vote").getValue()).intValue();
-                                Traffic traffic = (new Traffic(lat1, lng1, lat2, lng2, vote));
-                                LatLng intersect = traffic.intersect(traffic.getStart(), traffic.getEnd());
+                                TrafficLine trafficLine = (new TrafficLine(lat1, lng1, lat2, lng2, vote));
+                                LatLng intersect = trafficLine.intersect(trafficLine.getStart(), trafficLine.getEnd());
                                 if (intersect != null)
                                 {
                                     // int vote = ((Long) jam.child("vote").getValue()).intValue();
                                     TrafficOptionUtils optionUtils = new TrafficOptionUtils(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
-                                    TrafficOption options = optionUtils.getOption(traffic);
+                                    TrafficOption options = optionUtils.getOption(trafficLine);
                                     map.addMarker(options.getMarkerOptions());
                                     map.addPolyline(options.getPolylineOptions());
                                 }

@@ -1,5 +1,8 @@
 package model;
 
+import android.os.Parcel;
+
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.Serializable;
@@ -8,7 +11,7 @@ import java.util.ArrayList;
 /**
  * Created by lequan on 10/2/2016.
  */
-public class Route implements Serializable
+public class Route implements SafeParcelable
 {
     ArrayList<Path> paths;
 
@@ -117,4 +120,38 @@ public class Route implements Serializable
     {
         return 1.0 * Math.sqrt((A.latitude * A.latitude - B.latitude * B.latitude) + (A.longitude * A.longitude - B.longitude * B.longitude));
     }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeList(paths);
+        dest.writeInt(duration);
+        dest.writeInt(distance);
+    }
+
+    Route(Parcel in)
+    {
+        paths = in.readArrayList(Route.class.getClassLoader());
+        duration = in.readInt();
+        distance = in.readInt();
+    }
+
+    public static final SafeParcelable.Creator CREATOR = new SafeParcelable.Creator()
+    {
+        public Route createFromParcel(Parcel in)
+        {
+            return new Route(in);
+        }
+
+        public Route[] newArray(int size)
+        {
+            return new Route[size];
+        }
+    };
 }
