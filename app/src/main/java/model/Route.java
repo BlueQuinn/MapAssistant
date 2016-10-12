@@ -5,8 +5,9 @@ import android.os.Parcel;
 import com.google.android.gms.common.internal.safeparcel.SafeParcelable;
 import com.google.android.gms.maps.model.LatLng;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+
+import utils.MapUtils;
 
 /**
  * Created by lequan on 10/2/2016.
@@ -102,23 +103,18 @@ public class Route implements SafeParcelable
 
     public boolean inCircle(LatLng center, double radius)
     {
-        if (distance(paths.get(0).getStart(), center) > radius)
+        if (MapUtils.distance(paths.get(0).getStart(), center) > radius)
         {
             return false;
         }
         for (Path i : paths)
         {
-            if (distance(i.getEnd(), center) > radius)
+            if (MapUtils.distance(i.getEnd(), center) > radius)
             {
                 return false;
             }
         }
         return true;
-    }
-
-    public static double distance(LatLng A, LatLng B)
-    {
-        return 1.0 * Math.sqrt((A.latitude * A.latitude - B.latitude * B.latitude) + (A.longitude * A.longitude - B.longitude * B.longitude));
     }
 
     @Override

@@ -1,11 +1,11 @@
 package utils;
 
+import android.location.Location;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import asyncTask.DirectionAst;
@@ -26,6 +26,18 @@ public class MapUtils
     public MapUtils(int length)
     {
         this.length = length;
+    }
+
+    public static boolean inCircle(LatLng myLocation, LatLng center, int radius)
+    {
+        return distance(myLocation, center) <= radius;
+    }
+
+    public static float distance(LatLng A, LatLng B)
+    {
+        float[] distance = new float[2];
+        Location.distanceBetween(A.latitude, A.longitude, B.latitude, B.longitude, distance);
+        return distance[0];
     }
 
     public void getRoad(String apiKey, final LatLng point, final DetectTrafficListener listener)
@@ -128,7 +140,7 @@ public class MapUtils
         return new LatLng[]{A, B};
     }
 
-    static double distance(LatLng A, LatLng B)       // not so sure about this
+   /* static double distance(LatLng A, LatLng B)       // not so sure about this
     {
         //double lat_a, double lng_a, double lat_b, double lng_b
         double earthRadius = 3958.75;
@@ -143,7 +155,7 @@ public class MapUtils
         int meterConversion = 1609;
 
         return distance * meterConversion;
-    }
+    }*/
 
     public static LatLngBounds getBound(LatLng... point)
     {

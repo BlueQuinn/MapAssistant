@@ -1,32 +1,45 @@
 package asyncTask;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import model.TrafficCircle;
 import model.TrafficLine;
 import listener.OnLoadListener;
 import model.TrafficOption;
-import utils.TrafficOptionUtils;
+import model.TrafficType;
+import utils.TrafficCircleUtils;
+import utils.TrafficLineUtils;
 
 /**
  * Created by lequan on 8/29/2016.
  */
-public class AddTrafficAst extends AsyncTask<Integer, TrafficOption, Boolean>
+public class AddTrafficAst extends AsyncTask<Integer, Object, HashMap<String, TrafficType>>
 {
-    ArrayList<TrafficLine> listTrafficLine;
-    OnLoadListener<Boolean> listener;
+    ArrayList<TrafficLine> listLine;
+    ArrayList<TrafficCircle> listCircle;
+    OnLoadListener<HashMap<String, TrafficType>> listener;
     GoogleMap map;
+    boolean type = true;
+    HashMap<String, TrafficType> hashMapType;
 
-    public AddTrafficAst(ArrayList<TrafficLine> listTrafficLine, GoogleMap map)
+    public AddTrafficAst(ArrayList<TrafficLine> listLine, ArrayList<TrafficCircle> listCircle, GoogleMap map)
     {
-        this.listTrafficLine = listTrafficLine;
+        this.listLine = listLine;
+        this.listCircle = listCircle;
         this.map = map;
+
+        hashMapType = new HashMap<>();
     }
 
-    public void setListener(OnLoadListener<Boolean> listener)
+    public void setListener(OnLoadListener<HashMap<String, TrafficType>> listener)
     {
         this.listener = listener;
     }
@@ -38,36 +51,61 @@ public class AddTrafficAst extends AsyncTask<Integer, TrafficOption, Boolean>
     }
 
     @Override
-    protected void onPostExecute(Boolean result)
+    protected void onPostExecute(HashMap<String, TrafficType> result)
     {
-        listener.onFinish(true);
         super.onPostExecute(result);
+        listener.onFinish(result);
     }
 
     @Override
-    protected void onProgressUpdate(TrafficOption... values)
+    protected void onProgressUpdate(Object... values)
     {
         super.onProgressUpdate(values);
-
+        Marker marker;
+        Log.d("time", "this shit 3");
         if (values.length > 0)
         {
-            TrafficOption option = values[0];
-            map.addMarker(option.getMarkerOptions());
-            map.addPolyline(option.getPolylineOptions());
+            TrafficType traffic = (TrafficType) values[1];
+            Log.d("time", "this shit 4" + traffic.isLine());
+            if (traffic.isLine())
+            {
+                TrafficOption option = (TrafficOption) values[0];
+                marker = map.addMarker(option.getMarkerOptions());
+                map.addPolyline(option.getPolylineOptions());
+            }
+            else
+            {
+                MarkerOptions option = (MarkerOptions) values[0];
+                marker = map.addMarker(option);
+            }
+            hashMapType.put(marker.getId(), traffic);
         }
     }
 
     @Override
-    protected Boolean doInBackground(Integer... params)
+    protected HashMap<String, TrafficType> doInBackground(Integer... params)
     {
         int meta = params[0];
         int mediumColor = params[1];
         int highColor = params[2];
-        TrafficOptionUtils utils = new TrafficOptionUtils(meta, mediumColor, highColor);
-        for (TrafficLine trafficLine : listTrafficLine)
+        TrafficLineUtils lineUtils = new TrafficLineUtils(meta, mediumColor, highColor);
+        TrafficCircleUtils circleUtils = new TrafficCircleUtils(meta);
+        /*int length = listCircle.size() > listLine.size() ? listCircle.size() : listLine.size();
+        for (int i=0;i<length;++i)
         {
-            publishProgress(utils.getOption(trafficLine));
+
+        }*/
+
+        for (int i = 0; i < listLine.size(); ++i)
+        {
+            publishProgress(lineUtils.getOption(listLine.get(i)), new TrafficType(true, i));
         }
-        return true;
+
+        for (int i = 0; i < listCircle.size(); ++i)
+        {
+            publishProgress(circleUtils.getOption(listCircle.get(i)), new TrafficType(false, i));
+        }
+
+        return hashMapType;
     }
 }

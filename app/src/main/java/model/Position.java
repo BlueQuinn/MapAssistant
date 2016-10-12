@@ -29,7 +29,6 @@ public class Position
 
     public Position(double lat, double lng)
     {
-
         this.lat = lat;
         this.lng = lng;
     }

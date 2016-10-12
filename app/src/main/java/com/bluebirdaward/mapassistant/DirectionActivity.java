@@ -40,7 +40,7 @@ import model.Route;
 import model.TrafficLine;
 import model.TrafficOption;
 import utils.MapUtils;
-import utils.TrafficOptionUtils;
+import utils.TrafficLineUtils;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
@@ -381,7 +381,7 @@ public class DirectionActivity extends AppCompatActivity
                                 if (intersect != null)
                                 {
                                     // int vote = ((Long) jam.child("vote").getValue()).intValue();
-                                    TrafficOptionUtils optionUtils = new TrafficOptionUtils(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
+                                    TrafficLineUtils optionUtils = new TrafficLineUtils(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
                                     TrafficOption options = optionUtils.getOption(trafficLine);
                                     map.addMarker(options.getMarkerOptions());
                                     map.addPolyline(options.getPolylineOptions());

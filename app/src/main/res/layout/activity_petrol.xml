@@ -11,9 +11,9 @@
         android:layout_margin="13dp"
         android:id="@+id/lvPetrol"
         android:background="@drawable/card"
-        android:divider="@color/colorGray"
+        android:divider="@color/colorPrimaryLight"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
     </ListView>
 
 </RelativeLayout>

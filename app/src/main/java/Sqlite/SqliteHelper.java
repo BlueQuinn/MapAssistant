@@ -18,9 +18,14 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 import model.MyTraffic;
 import model.Shortcut;
+import model.TrafficCircle;
+import model.TrafficLine;
+import utils.MapUtils;
+import utils.PolyUtils;
 
 /**
  * Created by lequan on 9/20/15.
@@ -135,12 +140,12 @@ public class SqliteHelper extends SQLiteOpenHelper
         db = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE);
     }
 
-    public void saveLocation(double lat, double lng)    // consider '' again
+    public boolean saveTraffic(double lat, double lng, int radius, String address)
     {
         String date = new Date().toString();
-        excute(String.format("insert into Location values (%d, '%s', '%s', '%s')", getNextID(), Double.toString(lat), Double.toString(lng), date));
+        return excute(String.format(Locale.US, "insert into Location values (%d, '%s', '%s', %d, '%s', '%s')",
+                                    getNextID(), Double.toString(lat), Double.toString(lng), radius, date, address));
     }
-
 
     public void insert(String table, String place, String address, double lat, double lng)
     {
@@ -202,7 +207,7 @@ public class SqliteHelper extends SQLiteOpenHelper
 
     int getNextID()
     {
-        Cursor cursor = db.rawQuery("select count(*) from Location", null);
+        Cursor cursor = db.rawQuery("select max(ID) from Location", null);
         if (cursor != null)
         {
             if (cursor.moveToFirst())
@@ -216,7 +221,8 @@ public class SqliteHelper extends SQLiteOpenHelper
 
     public boolean addShortcut(int ID, String route, int distance, int duration)
     {
-        return excute(String.format("insert into Shortcut values (%d, '%s', %d, %d)", ID, route, distance, duration));
+        return excute(String.format(Locale.US, "insert into Shortcut values (%d, '%s', %d, %d)",
+                                    ID, route, distance, duration));
     }
 
     public ArrayList<Shortcut> getShortcut(int ID, LatLng location)
@@ -243,8 +249,46 @@ public class SqliteHelper extends SQLiteOpenHelper
             String time = row.get("Time");
             double lat = Double.parseDouble(row.get("Lat"));
             double lng = Double.parseDouble(row.get("Lng"));
-            myTraffics.add(new MyTraffic(lat, lng, id, time));
+            int radius = Integer.parseInt(row.get("Radius"));
+            String address = row.get("Address");
+            myTraffics.add(new MyTraffic(id, lat, lng, radius, time, address));
         }
         return myTraffics;
+    }
+
+    public ArrayList<MyTraffic> getMyLocation()
+    {
+        ArrayList<MyTraffic> myTraffics = new ArrayList<>();
+        ArrayList<HashMap<String, String>> data = getAll("Location");
+        for (HashMap<String, String> row : data)
+        {
+            int ID = Integer.parseInt(row.get("ID"));
+            double lat = Double.parseDouble(row.get("Lat"));
+            double lng = Double.parseDouble(row.get("Lng"));
+            myTraffics.add(new MyTraffic(ID, lat, lng, 0, "", ""));
+        }
+        return myTraffics;
+    }
+
+    public int haveStucked(TrafficCircle traffic)
+    {
+        ArrayList<MyTraffic> myLocation = getMyLocation();
+        for (MyTraffic i : myLocation)
+        {
+            if (MapUtils.inCircle(i.getLocation(), traffic.getCenter(), traffic.getRadius()))
+                return i.getId();
+        }
+        return -1;
+    }
+
+    public int haveStucked(TrafficLine traffic)
+    {
+        ArrayList<MyTraffic> myLocation = getMyLocation();
+        for (MyTraffic i : myLocation)
+        {
+            if (PolyUtils.isLocationOnPath(i.getLocation(), traffic.getPolyline(), false, 100))
+                return i.getId();
+        }
+        return -1;
     }
 }

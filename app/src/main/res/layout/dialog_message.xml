@@ -1,17 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="200dp"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_margin="25dp"
+    <LinearLayout
+        android:id="@+id/layoutTitle"
+        android:background="@color/colorPrimary"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/prbLoading"
-        android:textColor="@color/colorAccent"
-        android:gravity="center"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:scaleType="fitCenter"
+            android:padding="12dp"
+            android:layout_gravity="center"
+            android:src="@drawable/submit"
+            android:id="@+id/imvIcon"
+            android:layout_width="60dp"
+            android:layout_height="60dp"/>
+
+        <TextView
+            android:id="@+id/txtTitle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            android:text="Thông báo thành công"
+            android:textSize="17dp"/>
+    </LinearLayout>
+
+    <TextView
+        android:padding="15dp"
+        android:id="@+id/txtInfo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textColor="@android:color/black"
+        android:layout_gravity="center"
         android:text="Thông báo của bạn đã được gửi đi\nCảm ơn bạn đã chia sẻ thông báo này cho mọi người cùng biết"
-        android:textSize="16dp"/>
-</RelativeLayout>
+        android:textSize="16dp"
+        android:lineSpacingExtra="3dp"/>
+</LinearLayout>

@@ -1,12 +1,20 @@
 package model;
 
+import android.os.Parcel;
+
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable;
 import com.google.android.gms.maps.model.LatLng;
 
 /**
  * Created by lequan on 10/11/2016.
  */
-public class TrafficCircle
+public class TrafficCircle implements SafeParcelable
 {
+    public static int getRadius(int radius)
+    {
+        return 50 * (radius + 4);
+    }
+
     LatLng center;
 
     public LatLng getCenter()
@@ -14,25 +22,58 @@ public class TrafficCircle
         return center;
     }
 
-    public TrafficCircle(LatLng center, int radius, int rate)
+    public TrafficCircle(LatLng center, int radius, int rating)
     {
 
         this.center = center;
         this.radius = radius;
-        this.rate = rate;
+        this.rating = rating;
     }
 
-    int radius, rate;
+    int radius, rating;
 
 
     public int getRadius()
     {
-        return radius;
+        return 50 * (radius + 4);
     }
 
-    public int getRate()
+    public int getRating()
     {
-        return rate;
+        return rating;
     }
 
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeParcelable(center, flags);
+        dest.writeInt(radius);
+        dest.writeInt(rating);
+    }
+
+    TrafficCircle(Parcel in)
+    {
+        center = in.readParcelable(TrafficCircle.class.getClassLoader());
+        radius = in.readInt();
+        rating = in.readInt();
+    }
+
+    public static final SafeParcelable.Creator CREATOR = new SafeParcelable.Creator()
+    {
+        public TrafficCircle createFromParcel(Parcel in)
+        {
+            return new TrafficCircle(in);
+        }
+
+        public TrafficCircle[] newArray(int size)
+        {
+            return new TrafficCircle[size];
+        }
+    };
 }

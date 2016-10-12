@@ -3,11 +3,13 @@ package com.bluebirdaward.mapassistant;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Geocoder;
+import android.location.Location;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -23,10 +25,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -40,8 +40,11 @@ import asyncTask.DirectionAst;
 import listener.OnLoadListener;
 import model.Route;
 import model.Shortcut;
+import model.TrafficCircle;
+import model.TrafficLine;
 import utils.MapUtils;
 import utils.PolyUtils;
+import widgets.MessageDialog;
 
 public class ShortcutActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnPolylineClickListener
 {
@@ -58,7 +61,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     View root;
     Geocoder geocoder;
     Route route;
-    int radius = 1000;
+    int radius;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -110,6 +113,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                 return;
             }
 
+            prbLoading.setVisibility(View.VISIBLE);
             final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic));
             firebase.addValueEventListener(new ValueEventListener()
             {
@@ -122,10 +126,12 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                     String polyRoute = PolyUtils.encode(polyline.getPoints());
                     Shortcut shortcut = new Shortcut(jam.latitude, jam.longitude, polyRoute, 1, route.getDistance(), route.getDuration());
                     ref.push().setValue(shortcut);
-                    MainActivity.dbHelper.addShortcut(ID, polyRoute, route.getDistance(), route.getDuration());
                     firebase.removeEventListener(this);
 
-                    //MainActivity.dbHelper.sa
+                    prbLoading.setVisibility(View.GONE);
+                    MainActivity.sqlite.addShortcut(ID, polyRoute, route.getDistance(), route.getDuration());
+
+                    MessageDialog.showMessage(ShortcutActivity.this, R.color.lime, R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
                 }
 
                 @Override
@@ -144,15 +150,32 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     {
         prbLoading.setVisibility(View.GONE);
 
+        LatLng startPos;
+        LatLng endPos;
+
         Intent intent = getIntent();
-        jam = intent.getParcelableExtra("jam");
-        //jam = new LatLng(10.802355370747835, 106.64164245128632);
-        LatLng startPos = intent.getParcelableExtra("start");
-        LatLng endPos = intent.getParcelableExtra("end");
-        if (startPos == null)
+        ID = intent.getIntExtra("ID", 0);
+        boolean jamType= intent.getBooleanExtra("jamType", true);
+        if (jamType)
+        {
+         TrafficLine line = intent.getParcelableExtra("jam");
+            jam = line.getCenter();
+            radius = (int) MapUtils.distance(jam, line.getStart());
+
+            startPos  = line.getStart();
+            endPos = line.getEnd();
+        }
+        else
+        {
+            TrafficCircle circle = intent.getParcelableExtra("jam");
+            jam = circle.getCenter();
+            radius = circle.getRadius();
+
+            Log.d("shortcut", "" + radius);
+
             startPos = new LatLng(10.76353877327849, 106.68203115463257);
-        if (endPos == null)
             endPos = new LatLng(10.411269, 107.136072);
+        }
 
         map = googleMap;
         map.setOnMarkerDragListener(this);

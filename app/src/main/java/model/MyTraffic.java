@@ -12,17 +12,30 @@ public class MyTraffic
         return location;
     }
 
-    public MyTraffic(LatLng location, int id, String time)
-    {
+    int id;
+    LatLng location;
 
-        this.location = location;
-        this.id = id;
-        this.time = time;
+    public int getRadius()
+    {
+        return radius;
     }
 
-    LatLng location;
-    int id;
-    String time;
+    public String getAddress()
+    {
+        return address;
+    }
+
+    public MyTraffic(int id, double lat, double lng, int radius, String time, String address)
+    {
+        this.id = id;
+        this.location = new LatLng(lat, lng);
+        this.radius = radius;
+        this.time = time;
+        this.address = address;
+    }
+
+    int radius;
+    String time, address;
 
     public int getId()
     {
@@ -32,13 +45,6 @@ public class MyTraffic
     public String getTime()
     {
         return time;
-    }
-
-    public MyTraffic(double lat, double lng, int id, String time)
-    {
-        location = new LatLng(lat, lng);
-        this.id = id;
-        this.time = time;
     }
 
 }

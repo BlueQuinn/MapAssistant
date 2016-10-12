@@ -138,7 +138,7 @@ public class DestinationActivity extends AppCompatActivity
     @Override
     public void onSelected(String fragment, String name, String address)
     {
-        double[] position = MainActivity.dbHelper.getPlace(fragment, name);
+        double[] position = MainActivity.sqlite.getPlace(fragment, name);
 
         historyFragment.save(name, address, position[0], position[1]);
 

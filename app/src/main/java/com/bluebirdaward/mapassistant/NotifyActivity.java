@@ -1,6 +1,5 @@
 package com.bluebirdaward.mapassistant;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Geocoder;
@@ -31,13 +30,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import asyncTask.AddressAst;
-import listener.DetectTrafficListener;
-import model.Jam;
 import listener.OnLoadListener;
-import model.MyTraffic;
-import model.Route;
-import model.Shortcut;
-import utils.MapUtils;
+import model.TrafficCircle;
 import utils.PolyUtils;
 import utils.RequestCode;
 import widgets.LoadingDialog;
@@ -106,7 +100,7 @@ public class NotifyActivity extends AppCompatActivity
                 }
                 else
                 {
-                    saveFirebase();
+                    saveTraffic();
                 }
                 info = "Thông tin của bạn đang được server xử lý";
             }
@@ -162,7 +156,7 @@ public class NotifyActivity extends AppCompatActivity
 
     boolean checkLocation()
     {
-        ArrayList<HashMap<String, String>> listRow = MainActivity.dbHelper.getAll("Location");
+        ArrayList<HashMap<String, String>> listRow = MainActivity.sqlite.getAll("Location");
         //Log.d("123", "size " + listRow.size());
         for (HashMap<String, String> row : listRow)
         {
@@ -184,17 +178,30 @@ public class NotifyActivity extends AppCompatActivity
     Firebase ref;
     LoadingDialog dialog;
 
-    void saveFirebase()
+    void saveTraffic()
     {
         dialog = new LoadingDialog(this);
         dialog.show();
-        //prbLoading.setVisibility(View.VISIBLE);
-        ref = new Firebase(getResources().getString(R.string.database_traffic));
+
+        String date = new SimpleDateFormat("HH:mm").format(new Date());
+        final int timeNow = toMinutes(date);
+        int t = timeNow / 30, tDown = t * 30, tUp = (t + 1) * 30;
+        int time;
+        if (timeNow - tDown < tUp - timeNow)
+        {
+            time = tDown;
+        }
+        else
+        {
+            time = tUp;
+        }
+        Log.d("time", "" + time);
+        ref = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time));
         ref.addValueEventListener(this);
     }
-    /*void saveFirebase()
+    /*void saveTraffic()
     {
-        MainActivity.dbHelper.saveLocation(myLocation.latitude, myLocation.longitude);
+        MainActivity.dbHelper.saveTraffic(myLocation.latitude, myLocation.longitude);
         showMessage("Thông báo của bạn đã được gửi đi");
     }*/
 
@@ -244,7 +251,7 @@ public class NotifyActivity extends AppCompatActivity
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
-        tvRadius.setText("Ước tính phạm vi ùn tắc: " + ((progress + 4) * 50) + "m");
+        tvRadius.setText("Ước tính phạm vi ùn tắc: " + TrafficCircle.getRadius(progress) + "m");
     }
 
     @Override
@@ -269,102 +276,114 @@ public class NotifyActivity extends AppCompatActivity
     @Override
     public void onDataChange(DataSnapshot snapshot)
     {
-        send = false;
-        final SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
-        //final Date date = new Date();
-        String date = formatter.format(new Date());
-        final int timeNow = toMinutes(date);
-
-        final DataSnapshot traffic = snapshot.child("traffic");
-        for (DataSnapshot item : traffic.getChildren())
+        //send = false;
+        boolean find = false;
+        DataSnapshot lineData = snapshot.child("line");
+        for (DataSnapshot i : lineData.getChildren())
         {
-            double lat1 = (double) item.child("lat1").getValue();
-            double lng1 = (double) item.child("lng1").getValue();
-            double lat2 = (double) item.child("lat2").getValue();
-            double lng2 = (double) item.child("lng2").getValue();
-            ArrayList<LatLng> polyline = new ArrayList<>();
-            polyline.add(new LatLng(lat1, lng1));
-            polyline.add(new LatLng(lat2, lng2));
-
-            if (PolyUtils.isLocationOnPath(myLocation, polyline, false, 100))     // kiểm tra xem trên Firebase đã tồn tại điểm nào ở gần điểm này mà bị tắc đường chưa (gần ở đây là dưới 300m)
+            double lat1 = (double) i.child("lat1").getValue();
+            double lng1 = (double) i.child("lng1").getValue();
+            double lat2 = (double) i.child("lat2").getValue();
+            double lng2 = (double) i.child("lng2").getValue();
+            ArrayList<LatLng> list = new ArrayList<>();
+            list.add(new LatLng(lat1, lng1));
+            list.add(new LatLng(lat2, lng2));
+            if (PolyUtils.isLocationOnPath(myLocation, list, false, 100))
             {
-                DataSnapshot jamList = item.child("jam");
-                for (DataSnapshot jamItem : jamList.getChildren())
+                int rate = ((Long) i.child("rate").getValue()).intValue();
+                Firebase ref = i.getRef();
+                Map<String, Object> rateNode = new HashMap<>();
+                rateNode.put("rate", rate + 1);
+                ref.updateChildren(rateNode);
+                find = true;
+                break;
+            }
+        }
+
+        DataSnapshot circleData = snapshot.child("circle");
+        if (!find)
+        {
+            for (DataSnapshot i : circleData.getChildren())
+            {
+                double lat = (double) i.child("lat").getValue();
+                double lng = (double) i.child("lng").getValue();
+                int radius = ((Long) i.child("radius").getValue()).intValue();
+                float[] distance = new float[2];
+                Location.distanceBetween(myLocation.latitude, myLocation.longitude, lat, lng, distance);
+                if (distance[0] <= radius)
                 {
-                    String start = (String) jamItem.child("start").getValue();
-                    String end = (String) jamItem.child("end").getValue();
-                    int startMins = toMinutes(start);
-                    int endMins = toMinutes(end);
-                    if (timeNow >= startMins && timeNow <= endMins)
-                    {
-                        int vote = ((Long) jamItem.child("vote").getValue()).intValue();
-                        Firebase jamRef = jamItem.getRef();
-                        Map<String, Object> voteMap = new HashMap<>();
-                        voteMap.put("vote", vote + 1);
-                        jamRef.updateChildren(voteMap);
-                        send = true;
-                        break;
-                    }
-                }
-                if (send)
-                {
+                    int rate = ((Long) i.child("rate").getValue()).intValue();
+                    Firebase ref = i.getRef();
+                    Map<String, Object> rateNode = new HashMap<>();
+                    rateNode.put("rate", rate + 1);
+                    ref.updateChildren(rateNode);
+                    find = true;
                     break;
                 }
             }
         }
 
-        if (send)
+        //ArrayList<Float> listDistance = new ArrayList<>();
+        if (!find)
         {
-            MessageDialog messageDialog = new MessageDialog(NotifyActivity.this);
+            int myRadius = TrafficCircle.getRadius(radiusPicker.getProgress() / 2);
+            for (DataSnapshot i : circleData.getChildren())
+            {
+                double lat = (double) i.child("lat").getValue();
+                double lng = (double) i.child("lng").getValue();
+                int radius = ((Long) i.child("radius").getValue()).intValue();
+                float[] distance = new float[2];
+                Location.distanceBetween(myLocation.latitude, myLocation.longitude, lat, lng, distance);
+                if (distance[0] > radius + myRadius)      // no intersect --> create new circle
+                {
+                    Map<String, Object> circleNode = new HashMap<>();
+                    circleNode.put("lat", myLocation.latitude);
+                    circleNode.put("lng", myLocation.longitude);
+                    circleNode.put("radius", myRadius);
+                    circleNode.put("rate", 1);
+
+                    Firebase ref = circleData.getRef();
+                    ref.push().setValue(circleNode);
+
+                    find = true;
+                    break;
+                }
+                //listDistance.add(distance[0]);
+            }
+
+            // I have no idea what i'm gonna do with this shit
+            /*if (!find)
+            {
+                distan
+                DirectionAst asyncTask = new DirectionAst();
+                asyncTask.setOnLoadListener(new OnLoadListener()
+                {
+                    @Override
+                    public void onFinish(Object o)
+                    {
+
+                    }
+                });
+                asyncTask.execute(myLocation, new LatLng())
+            }*/
+        }
+        dialog.dismiss();
+
+
+        ref.removeEventListener(this);
+        if (find)
+        {
+            String address = tvAddress.getText().toString();
+            address = address.substring(12);
+            MainActivity.sqlite.saveTraffic(myLocation.latitude, myLocation.longitude, TrafficCircle.getRadius(radiusPicker.getProgress()) / 2, address);
+            MessageDialog messageDialog = new MessageDialog(this, R.color.lime, R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông cho tất cả mọi người cùng được biết");
             messageDialog.show();
-            MainActivity.dbHelper.saveLocation(myLocation.latitude, myLocation.longitude);
-            ref.removeEventListener(this);
         }
         else
         {
-            MapUtils utils = new MapUtils(getLength() / 2);
-            utils.getRoad(getResources().getString(R.string.google_maps_key), myLocation, new DetectTrafficListener()
-            {
-                @Override
-                public void onFinish(Route route, int i, LatLng[] intersection)
-                {
-                    if (intersection != null && intersection.length == 2)
-                    {
-                        Firebase trafficRef = traffic.getRef();
-                        //Strin start date.getTime() / 1000;
-                        Jam[] jam = new Jam[]{new Jam(toTime(timeNow - 30), toTime(timeNow + 30), 1)};
-                        Map<String, Object> trafficItem = new HashMap<>();
-                        trafficItem.put("lat1", intersection[0].latitude);
-                        trafficItem.put("lng1", intersection[0].longitude);
-                        trafficItem.put("lat2", intersection[1].latitude);
-                        trafficItem.put("lng2", intersection[1].longitude);
-                        trafficItem.put("jam", jam);
-                        trafficRef.push().setValue(trafficItem);
-                        send = true;
-
-                        Intent intent = new Intent();
-                        intent.putExtra("route", route);
-                        intent.putExtra("lat1", intersection[0].latitude);
-                        intent.putExtra("lng1", intersection[0].longitude);
-                        intent.putExtra("lat2", intersection[1].latitude);
-                        intent.putExtra("lng2", intersection[1].longitude);
-                        intent.putExtra("i", i);
-                        setResult(RequestCode.LOCATE_TO_NOTIFY, intent);
-
-                        MessageDialog messageDialog = new MessageDialog(NotifyActivity.this);
-                        messageDialog.show();
-                        MainActivity.dbHelper.saveLocation(myLocation.latitude, myLocation.longitude);
-                        //finish();
-                    }
-                    else
-                    {
-                        showMessage("Không thể gửi được thông báo này");
-                    }
-                    ref.removeEventListener(NotifyActivity.this);
-                }
-            });
+            MessageDialog messageDialog = new MessageDialog(this, R.color.colorPrimaryDark, R.drawable.error, "Chưa gửi được thông báo", "Xin hãy thử lại");
+            messageDialog.show();
         }
-        dialog.dismiss();
     }
 
     @Override

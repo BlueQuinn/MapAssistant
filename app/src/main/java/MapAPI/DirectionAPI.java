@@ -62,7 +62,6 @@ public class DirectionAPI
             if (path.size() > 0)
             {
                 route = new Route(path);
-                Log.d("123", "pathsize " + path.size());
             }
         }
         catch (JSONException e)

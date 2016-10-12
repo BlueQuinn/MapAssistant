@@ -44,7 +44,8 @@ public class WeatherActivity extends AppCompatActivity
         tabLayout.setupWithViewPager(viewPager);
 
         tabLayout.getTabAt(0).setIcon(R.drawable.weather_today);
-        tabLayout.getTabAt(1).setIcon(R.drawable.calendar);
+        tabLayout.getTabAt(1).setIcon(R.drawable.clock);
+        tabLayout.getTabAt(2).setIcon(R.drawable.calendar);
     }
 
     @Override

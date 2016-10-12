@@ -58,7 +58,7 @@ public class DestinationAst extends AsyncTask<Void, Integer, ArrayList<Destinati
     ArrayList<Destination> loadDestination()
     {
         ArrayList<Destination> list = new ArrayList<>();
-        ArrayList<HashMap<String, String>> listRow = MainActivity.dbHelper.getAll(table);
+        ArrayList<HashMap<String, String>> listRow = MainActivity.sqlite.getAll(table);
         for (HashMap<String, String> row : listRow)
         {
             list.add(new Destination(row.get("Place"), row.get("Address")));
