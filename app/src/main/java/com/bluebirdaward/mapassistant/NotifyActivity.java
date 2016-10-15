@@ -31,9 +31,11 @@ import java.util.Map;
 
 import asyncTask.AddressAst;
 import listener.OnLoadListener;
+import model.Traffic;
 import model.TrafficCircle;
 import utils.PolyUtils;
 import utils.RequestCode;
+import utils.TrafficUtils;
 import widgets.LoadingDialog;
 import widgets.MessageDialog;
 
@@ -68,8 +70,8 @@ public class NotifyActivity extends AppCompatActivity
         setTitle("Thông báo tắc đường");
         info = "Gửi thông tin về vị trí mà bạn đang bị tắc đường để mọi người có thể cập nhật tình trạng giao thông";
         Intent intent = getIntent();
-        //myLocation = intent.getParcelableExtra("myLocation");
-        myLocation = new LatLng(10.769914, 106.670608);
+        myLocation = intent.getParcelableExtra("myLocation");
+        // myLocation = new LatLng(10.769914, 106.670608);
 
         tvAddress = (TextView) findViewById(R.id.tvAddress);
         tvRadius = (TextView) findViewById(R.id.tvRadius);
@@ -96,7 +98,7 @@ public class NotifyActivity extends AppCompatActivity
             {
                 if (checkLocation())
                 {
-                    showMessage("Không thể gửi thông báo !!!\nBạn đã từng thông báo ở vị trí này từ trước đó rồi");
+                    MessageDialog.showMessage(NotifyActivity.this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Không thể gửi thông báo", "Bạn đã từng thông báo ở gần vị trí này từ trước đó rồi");
                 }
                 else
                 {
@@ -153,10 +155,9 @@ public class NotifyActivity extends AppCompatActivity
         return targetLocation.distanceTo(homeLocation);     // meters
     }
 
-
     boolean checkLocation()
     {
-        ArrayList<HashMap<String, String>> listRow = MainActivity.sqlite.getAll("Location");
+        ArrayList<HashMap<String, String>> listRow = MainActivity.sqlite.getAll("MyTraffic");
         //Log.d("123", "size " + listRow.size());
         for (HashMap<String, String> row : listRow)
         {
@@ -168,7 +169,7 @@ public class NotifyActivity extends AppCompatActivity
             //Log.d("123", "distance = " + distance);
             if (distance >= 0 && distance <= 1000)
             {
-                return false;
+                return true;
             }
         }
         return false;
@@ -176,34 +177,8 @@ public class NotifyActivity extends AppCompatActivity
 
     boolean send = false;
     Firebase ref;
-    LoadingDialog dialog;
+    MessageDialog dialog;
 
-    void saveTraffic()
-    {
-        dialog = new LoadingDialog(this);
-        dialog.show();
-
-        String date = new SimpleDateFormat("HH:mm").format(new Date());
-        final int timeNow = toMinutes(date);
-        int t = timeNow / 30, tDown = t * 30, tUp = (t + 1) * 30;
-        int time;
-        if (timeNow - tDown < tUp - timeNow)
-        {
-            time = tDown;
-        }
-        else
-        {
-            time = tUp;
-        }
-        Log.d("time", "" + time);
-        ref = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time));
-        ref.addValueEventListener(this);
-    }
-    /*void saveTraffic()
-    {
-        MainActivity.dbHelper.saveTraffic(myLocation.latitude, myLocation.longitude);
-        showMessage("Thông báo của bạn đã được gửi đi");
-    }*/
 
     void showMessage(String message)
     {
@@ -273,13 +248,25 @@ public class NotifyActivity extends AppCompatActivity
         return true;
     }
 
+    String time;
+    void saveTraffic()
+    {
+        dialog = new MessageDialog(this);
+        dialog.show();
+
+        time = TrafficUtils.getTimeNode();
+        ref = new Firebase(getResources().getString(R.string.database_traffic)).child(time);
+        ref.addValueEventListener(this);
+    }
+
     @Override
     public void onDataChange(DataSnapshot snapshot)
     {
-        //send = false;
         boolean find = false;
+        String jamType = Traffic.MY_TRAFFIC;
+        int id = -1;
         DataSnapshot lineData = snapshot.child("line");
-        for (DataSnapshot i : lineData.getChildren())
+        for (DataSnapshot i : lineData.getChildren())       // put to existing line
         {
             double lat1 = (double) i.child("lat1").getValue();
             double lng1 = (double) i.child("lng1").getValue();
@@ -295,22 +282,27 @@ public class NotifyActivity extends AppCompatActivity
                 Map<String, Object> rateNode = new HashMap<>();
                 rateNode.put("rate", rate + 1);
                 ref.updateChildren(rateNode);
+                id = ((Long) i.child("id").getValue()).intValue();
                 find = true;
+                jamType= Traffic.LINE;
                 break;
             }
         }
 
+        boolean intersect = false;
+        int myRadius = TrafficCircle.getRadius(radiusPicker.getProgress()) / 2;
         DataSnapshot circleData = snapshot.child("circle");
-        if (!find)
+        if (!find)      // put to existing circle
         {
             for (DataSnapshot i : circleData.getChildren())
             {
                 double lat = (double) i.child("lat").getValue();
                 double lng = (double) i.child("lng").getValue();
                 int radius = ((Long) i.child("radius").getValue()).intValue();
+                id = ((Long) i.child("id").getValue()).intValue();
                 float[] distance = new float[2];
                 Location.distanceBetween(myLocation.latitude, myLocation.longitude, lat, lng, distance);
-                if (distance[0] <= radius)
+                if (distance[0] <= radius)      // in circle
                 {
                     int rate = ((Long) i.child("rate").getValue()).intValue();
                     Firebase ref = i.getRef();
@@ -318,71 +310,60 @@ public class NotifyActivity extends AppCompatActivity
                     rateNode.put("rate", rate + 1);
                     ref.updateChildren(rateNode);
                     find = true;
+                    jamType= Traffic.CIRCLE;
                     break;
+                }
+                else        // out of circle
+                {
+                    if (!intersect)
+                    {
+                        if (distance[0] < radius + myRadius)      // check intersect
+                        {
+                            intersect = true;
+                        }
+                    }
                 }
             }
         }
 
-        //ArrayList<Float> listDistance = new ArrayList<>();
         if (!find)
         {
-            int myRadius = TrafficCircle.getRadius(radiusPicker.getProgress() / 2);
-            for (DataSnapshot i : circleData.getChildren())
+            if (intersect)     // is intersect = true
             {
-                double lat = (double) i.child("lat").getValue();
-                double lng = (double) i.child("lng").getValue();
-                int radius = ((Long) i.child("radius").getValue()).intValue();
-                float[] distance = new float[2];
-                Location.distanceBetween(myLocation.latitude, myLocation.longitude, lat, lng, distance);
-                if (distance[0] > radius + myRadius)      // no intersect --> create new circle
-                {
-                    Map<String, Object> circleNode = new HashMap<>();
-                    circleNode.put("lat", myLocation.latitude);
-                    circleNode.put("lng", myLocation.longitude);
-                    circleNode.put("radius", myRadius);
-                    circleNode.put("rate", 1);
 
-                    Firebase ref = circleData.getRef();
-                    ref.push().setValue(circleNode);
-
-                    find = true;
-                    break;
-                }
-                //listDistance.add(distance[0]);
             }
-
-            // I have no idea what i'm gonna do with this shit
-            /*if (!find)
+            else    // no intersect, create new circle --> my traffic
             {
-                distan
-                DirectionAst asyncTask = new DirectionAst();
-                asyncTask.setOnLoadListener(new OnLoadListener()
-                {
-                    @Override
-                    public void onFinish(Object o)
-                    {
+                id = (int) circleData.getChildrenCount();
+                Map<String, Object> circleNode = new HashMap<>();
+                circleNode.put("lat", myLocation.latitude);
+                circleNode.put("lng", myLocation.longitude);
+                circleNode.put("radius", myRadius);
+                circleNode.put("rate", 1);
+                circleNode.put("id", id);
 
-                    }
-                });
-                asyncTask.execute(myLocation, new LatLng())
-            }*/
+                Firebase ref = circleData.getRef();
+                ref.push().setValue(circleNode);
+                find = true;
+                jamType= Traffic.MY_TRAFFIC;
+            }
         }
-        dialog.dismiss();
-
+        // chưa có new line
 
         ref.removeEventListener(this);
         if (find)
         {
             String address = tvAddress.getText().toString();
             address = address.substring(12);
-            MainActivity.sqlite.saveTraffic(myLocation.latitude, myLocation.longitude, TrafficCircle.getRadius(radiusPicker.getProgress()) / 2, address);
-            MessageDialog messageDialog = new MessageDialog(this, R.color.lime, R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông cho tất cả mọi người cùng được biết");
-            messageDialog.show();
+            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, myRadius, address, Integer.parseInt(time), jamType);
+            dialog.show(getResources().getColor(R.color.lime), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông cho tất cả mọi người cùng được biết");
+
+
+            Log.d("traffic", "notift " + time + " " + jamType);
         }
         else
         {
-            MessageDialog messageDialog = new MessageDialog(this, R.color.colorPrimaryDark, R.drawable.error, "Chưa gửi được thông báo", "Xin hãy thử lại");
-            messageDialog.show();
+            dialog.show(getResources().getColor(R.color.colorPrimary), R.drawable.error, "Chưa gửi được thông báo", "Xin hãy thử lại");
         }
     }
 

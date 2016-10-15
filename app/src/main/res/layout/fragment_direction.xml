@@ -24,7 +24,7 @@
 
         <TextView
             android:hint="From"
-            android:textColorHint="@color/colorGray"
+            android:textColorHint="@color/grey"
             android:layout_margin="4dp"
             android:background="@color/colorPrimaryLight"
             android:textColor="@android:color/white"
@@ -39,7 +39,7 @@
             android:singleLine="true"/>
         <TextView
             android:hint="Choose destination"
-            android:textColorHint="@color/colorGray"
+            android:textColorHint="@color/grey"
             android:layout_margin="4dp"
             android:background="@color/colorPrimaryLight"
             android:textColor="@android:color/white"

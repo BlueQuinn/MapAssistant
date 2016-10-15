@@ -1,92 +1,58 @@
 package model;
 
+import android.os.Parcel;
+
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
 import utils.PolyUtils;
+import utils.RouteUtils;
 
 /**
  * Created by lequan on 10/8/2016.
  */
-public class Shortcut
+public class Shortcut implements SafeParcelable
 {
-    double lat,lng;
-    String route;
-    int rate;
+    String routeString;
+    int rating;
     int duration, distance;
+    ArrayList<LatLng> route;
 
-    public double getLat()
+    public ArrayList<LatLng> getRoute()
     {
-        return lat;
-    }
-
-    public double getLng()
-    {
-        return lng;
-    }
-
-    public String getRoute()
-    {
+        if (route == null)
+            route = PolyUtils.decode(routeString);
         return route;
     }
 
-    public ArrayList<LatLng> getPolyRoute()
+    public LatLng getStart()
     {
-        return PolyUtils.decode(route);
+        if (route == null)
+        {
+            route = PolyUtils.decode(routeString);
+        }
+        return route.get(0);
     }
 
-    public int getRate()
+    public LatLng getEnd()
     {
-        return rate;
+        if (route == null)
+        {
+            route = PolyUtils.decode(routeString);
+        }
+        return route.get(route.size() - 1);
     }
 
-    public int getDuration()
+    public String getRouteString()
     {
-        return duration;
+        return routeString;
     }
 
-    public int getDistance()
+    public int getRating()
     {
-        return distance;
-    }
-
-    public Shortcut(double lat, double lng, String route, int rate, int duration, int distance)
-    {
-        this.lat = lat;
-        this.lng = lng;
-        this.route = route;
-        this.rate = rate;
-        this.duration = duration;
-        this.distance = distance;
-    }
-}
-
-/*public class Shortcut implements SafeParcelable
-{
-    double lat,lng;
-    String route;
-    int rate;
-    int duration, distance;
-
-    public double getLat()
-    {
-        return lat;
-    }
-
-    public double getLng()
-    {
-        return lng;
-    }
-
-    public ArrayList<LatLng> getPolyRoute()
-    {
-        return PolyUtils.decode(route);
-    }
-
-    public int getRate()
-    {
-        return rate;
+        return rating;
     }
 
     public int getDuration()
@@ -99,14 +65,17 @@ public class Shortcut
         return distance;
     }
 
-    public Shortcut(double lat, double lng, String route, int rate, int duration, int distance)
+    public Shortcut(String routeString, int rating, int duration, int distance)
     {
-        this.lat = lat;
-        this.lng = lng;
-        this.route = route;
-        this.rate = rate;
+        this.routeString = routeString;
+        this.rating = rating;
         this.duration = duration;
         this.distance = distance;
+    }
+
+    public String getInfo()
+    {
+        return RouteUtils.getInformation(duration, distance);
     }
 
     @Override
@@ -118,23 +87,30 @@ public class Shortcut
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
-
+        dest.writeString(routeString);
+        dest.writeInt(rating);
+        dest.writeInt(duration);
+        dest.writeInt(distance);
     }
 
-    int mData;
-
-    Shortcut(Parcel in) {
-        mData = in.readInt();
+    Shortcut(Parcel in)
+    {
+        routeString = in.readString();
+        rating = in.readInt();
+        duration = in.readInt();
+        distance = in.readInt();
     }
 
-    public static final SafeParcelable.Creator<Shortcut> CREATOR
-            = new SafeParcelable.Creator<Shortcut>() {
-        public Shortcut createFromParcel(Parcel in) {
+    public static final SafeParcelable.Creator CREATOR = new SafeParcelable.Creator()
+    {
+        public Shortcut createFromParcel(Parcel in)
+        {
             return new Shortcut(in);
         }
 
-        public Shortcut[] newArray(int size) {
+        public Shortcut[] newArray(int size)
+        {
             return new Shortcut[size];
         }
     };
-}*/
+}

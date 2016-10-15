@@ -1,43 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="220dp"
     android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/layoutTitle"
-        android:background="@color/colorPrimary"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <ImageView
-            android:scaleType="fitCenter"
-            android:padding="12dp"
-            android:layout_gravity="center"
-            android:src="@drawable/submit"
-            android:id="@+id/imvIcon"
-            android:layout_width="60dp"
-            android:layout_height="60dp"/>
-
-        <TextView
-            android:id="@+id/txtTitle"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textColor="@android:color/white"
-            android:gravity="center"
-            android:text="Thông báo thành công"
-            android:textSize="17dp"/>
-    </LinearLayout>
-
-    <TextView
-        android:padding="15dp"
-        android:id="@+id/txtInfo"
+        android:visibility="gone"
+        android:id="@+id/contentLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="@android:color/black"
-        android:layout_gravity="center"
-        android:text="Thông báo của bạn đã được gửi đi\nCảm ơn bạn đã chia sẻ thông báo này cho mọi người cùng biết"
-        android:textSize="16dp"
-        android:lineSpacingExtra="3dp"/>
-</LinearLayout>
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/layoutTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/imvIcon"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_gravity="center"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/submit"/>
+
+            <TextView
+                android:id="@+id/txtTitle"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="@android:color/white"
+                android:textSize="17dp"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txtInfo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:lineSpacingExtra="3dp"
+            android:padding="15dp"
+            android:textColor="@android:color/black"
+            android:textSize="16dp"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/loadingLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <ProgressBar
+            android:id="@+id/prbLoading"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="10dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/prbLoading"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="Đang gửi thông báo . . ."
+            android:textSize="17dp"/>
+    </RelativeLayout>
+</RelativeLayout>

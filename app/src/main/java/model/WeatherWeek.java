@@ -1,60 +1,63 @@
 package model;
 
+
+import com.bluebirdaward.mapassistant.gmmap.R;
+
 /**
- * Created by lequan on 10/10/2016.
+ * Created by SonPham on 10/13/2016.
  */
-public class WeatherWeek
-{
+public class WeatherWeek {
+
     String date;
-
-    public String getDate()
-    {
-        return date;
-    }
-
-    public String getInfo()
-    {
-        return info;
-    }
-
-    public String getRain()
-    {
-        return "Lượng mưa: " + rain;
-    }
-
-    public int getMaxTemp()
-    {
-        return maxTemp;
-    }
-
-    public int getMinTemp()
-    {
-        return minTemp;
-    }
-
-    public String getTemperature()
-    {
-        return "Nhiệt độ: " + maxTemp + (char) 0x00B0 + "C - " + minTemp + (char) 0x00B0 + "C";
-    }
-
     String info;
     String rain;
-    int maxTemp, minTemp;
     int icon;
+    int maxTemp;
+    int minTemp;
 
-    public int getIcon()
+    public WeatherWeek(String date, String info, String rain, int minTemp, int maxTemp)
     {
-        return icon;
-    }
-
-    public WeatherWeek(String date, String info, String rain, int maxTemp, int minTemp, int icon)
-    {
-
         this.date = date;
         this.info = info;
         this.rain = rain;
         this.maxTemp = maxTemp;
         this.minTemp = minTemp;
-        this.icon = icon;
+
+
+        if (info.contains("mưa to") || info.contains("mưa lớn"))
+            icon = R.drawable.heavyrain;
+        else if (info.contains("mưa") && info.contains("nắng"))
+            icon = R.drawable.sun_rain;
+        else if (info.contains("nắng") && info.contains("mây"))
+            icon = R.drawable.sun_clound;
+        else if (info.contains("sấm") || info.contains("chốp"))
+            icon = R.drawable.thunder;
+        else if (info.contains("mây"))
+            icon = R.drawable.cloud;
+        else if (info.contains("mưa"))
+            icon = R.drawable.rain;
+        else if (info.contains("nắng"))
+            icon = R.drawable.sun;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public String getRain() {
+        return rain;
+    }
+
+    public int getIcon() {
+        return icon;
+    }
+
+    public String getTemperature()
+    {
+        return "Nhiệt độ: " + maxTemp + (char) 0x00B0 + "C - " + minTemp + (char) 0x00B0 + "C";
     }
 }

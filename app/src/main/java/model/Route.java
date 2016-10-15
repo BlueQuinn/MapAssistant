@@ -8,11 +8,13 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 
 import utils.MapUtils;
+import utils.RouteUtils;
 
 /**
  * Created by lequan on 10/2/2016.
  */
 public class Route implements SafeParcelable
+
 {
     ArrayList<Path> paths;
 
@@ -48,9 +50,9 @@ public class Route implements SafeParcelable
         return paths.size();
     }
 
-    public String getInformation()
+    public String getInfo()
     {
-        return getDuration(duration) + " - " + getDistance(distance);
+        return RouteUtils.getInformation(duration, distance);
     }
 
     public int getDistance()
@@ -63,40 +65,7 @@ public class Route implements SafeParcelable
         return duration;
     }
 
-    String getDuration(int duration)
-    {
-        String time;
-        int hour = duration / 3600;
-        int minute = (duration - hour * 3600) / 60;
-        if (hour == 0)
-        {
-            time = Integer.toString(minute) + "p";
-        }
-        else
-        {
-            time = Integer.toString(hour) + "h";
-            if (minute != 0)
-            {
-                time += Integer.toString(minute) + "p";
-            }
-        }
-        return time;
-    }
 
-    String getDistance(int distance)
-    {
-        String dtc;
-        if (distance < 1000)
-        {
-            dtc = Integer.toString(distance) + "m";
-        }
-        else
-        {
-            dtc = Float.toString(Math.round(distance * 1000) / 1000) + "km";
-        }
-
-        return dtc;
-    }
 
     int duration;       // seconds
     int distance;       // meters

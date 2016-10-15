@@ -10,7 +10,8 @@ import android.view.MenuItem;
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 import adapter.ViewPagerAdapter;
-import fragment.WeatherTodayFragment;
+import fragment.WeatherTimeFragment;
+import fragment.WeatherDateFragment;
 import fragment.WeatherWeekFragment;
 
 public class WeatherActivity extends AppCompatActivity
@@ -31,10 +32,12 @@ public class WeatherActivity extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
-        WeatherTodayFragment todayFragment = new WeatherTodayFragment();
+        WeatherDateFragment dateFragment = new WeatherDateFragment();
+        WeatherTimeFragment timeFragment = new WeatherTimeFragment();
         WeatherWeekFragment weekFragment = new WeatherWeekFragment();
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(todayFragment,"");
+        adapter.addFragment(dateFragment,"");
+        adapter.addFragment(timeFragment,"");
         adapter.addFragment(weekFragment,"");
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);

@@ -30,7 +30,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="86dp"
         android:layout_marginEnd="16dp"
-        android:src="@drawable/location"/>
+        android:src="@drawable/traffic_light"/>
 
     <android.support.design.widget.FloatingActionButton
         app:layout_behavior="widgets.FloatingActionButtonBehavior"

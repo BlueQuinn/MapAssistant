@@ -7,11 +7,20 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
+import utils.MapUtils;
+
 /**
  * Created by lequan on 5/14/2016.
  */
 public class TrafficLine implements SafeParcelable
 {
+    int id;
+
+    public int getId()
+    {
+        return id;
+    }
+
     LatLng start, end;
     int rating;
 
@@ -30,18 +39,19 @@ public class TrafficLine implements SafeParcelable
         return end;
     }
 
-    /*public TrafficLine(LatLng start, LatLng end, int vote)
+    public double length()
     {
-        this.start = start;
-        this.end = end;
-        this.vote = vote;
+        return MapUtils.distance(start, end);
     }
-*/
-    public TrafficLine(double lat1, double lng1, double lat2, double lng2, int rating)
+
+    public TrafficLine(int id, double lat1, double lng1, double lat2, double lng2, int rating, ArrayList<Shortcut> shortcuts)
     {
+        this.id = id;
         start = new LatLng(lat1, lng1);
         end = new LatLng(lat2, lng2);
         this.rating = rating;
+
+        this.shortcuts = shortcuts;
     }
 
     public LatLng getCenter()
@@ -74,6 +84,7 @@ public class TrafficLine implements SafeParcelable
         dest.writeParcelable(start, flags);
         dest.writeParcelable(end, flags);
         dest.writeInt(rating);
+        dest.writeTypedList(shortcuts);
     }
 
     TrafficLine(Parcel in)
@@ -81,6 +92,8 @@ public class TrafficLine implements SafeParcelable
         start = in.readParcelable(TrafficCircle.class.getClassLoader());
         end = in.readParcelable(TrafficCircle.class.getClassLoader());
         rating = in.readInt();
+        shortcuts = new ArrayList<>();
+        in.readTypedList(shortcuts, Shortcut.CREATOR);
     }
 
     public static final SafeParcelable.Creator CREATOR = new SafeParcelable.Creator()
@@ -95,4 +108,12 @@ public class TrafficLine implements SafeParcelable
             return new TrafficLine[size];
         }
     };
+
+
+    ArrayList<Shortcut> shortcuts;
+
+    public ArrayList<Shortcut> getShortcuts()
+    {
+        return shortcuts;
+    }
 }

@@ -6,7 +6,7 @@
     android:orientation="vertical">
 
     <ProgressBar
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="20dp"
         android:id="@+id/prbLoading"
         style="?android:attr/progressBarStyle"

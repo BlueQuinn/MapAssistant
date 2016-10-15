@@ -1,6 +1,5 @@
 package asyncTask;
 
-import android.content.Context;
 import android.os.AsyncTask;
 
 import java.util.ArrayList;

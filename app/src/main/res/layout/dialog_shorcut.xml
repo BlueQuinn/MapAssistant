@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="250dp">
+
+    <LinearLayout
+        android:background="@color/colorAccent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:scaleType="fitCenter"
+            android:padding="12dp"
+            android:layout_gravity="center"
+            android:src="@drawable/shortcut"
+            android:layout_width="60dp"
+            android:layout_height="60dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            android:text="Đường đi tắt"
+            android:textSize="17dp"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/colorAccent"
+        android:id="@+id/txtRating"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@android:color/black"
+        android:id="@+id/txtDistance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@android:color/black"
+        android:id="@+id/txtDuration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageButton
+        android:visibility="gone"
+        android:scaleType="fitXY"
+        android:layout_gravity="center"
+        android:background="@color/colorPrimaryLight"
+        android:src="@drawable/dislike"
+        android:id="@+id/btnDislike"
+        android:layout_weight="0.5"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"/>
+
+    <ImageButton
+        android:padding="25dp"
+        android:scaleType="fitCenter"
+        android:layout_gravity="center"
+        android:background="@color/colorAccent"
+        android:src="@drawable/like"
+        android:id="@+id/btnLike"
+        android:layout_weight="0.5"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"/>
+
+    <ImageButton
+        android:padding="20dp"
+        android:scaleType="fitCenter"
+        android:layout_gravity="center"
+        android:background="@color/green"
+        android:src="@drawable/shortcut"
+        android:id="@+id/btnAdd"
+        android:layout_weight="0.5"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"/>
+    </LinearLayout>
+</LinearLayout>

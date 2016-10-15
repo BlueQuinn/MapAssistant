@@ -15,7 +15,7 @@ public class HistoryFragment extends DestinationFragment
     public void save(String place, String address, double lat, double lng)
     {
         MainActivity.sqlite.delete("History", place);
-        MainActivity.sqlite.insert("History", place, address, lat, lng);
+        MainActivity.sqlite.insertDestination("History", place, address, lat, lng);
     }
 
 }

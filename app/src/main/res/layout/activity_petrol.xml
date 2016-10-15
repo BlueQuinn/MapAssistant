@@ -4,8 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorGray"
+    android:background="@color/grey"
     tools:context="com.bluebirdaward.mapassistant.PetrolActivity">
+
+    <TextView
+        android:id="@+id/txtLatest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
     <ListView
         android:layout_margin="13dp"
@@ -15,5 +20,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
     </ListView>
+
+    <include
+        android:layout_centerVertical="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        layout="@layout/progress_bar"/>
 
 </RelativeLayout>

@@ -5,6 +5,8 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
+import model.Route;
+import model.Shortcut;
 import model.TrafficCircle;
 import model.TrafficLine;
 
@@ -13,33 +15,63 @@ import model.TrafficLine;
  */
 public class FirebaseUtils
 {
-    public static ArrayList<TrafficCircle> getTrafficCircle(DataSnapshot data)
+    public static ArrayList<TrafficCircle> getTrafficCircle(DataSnapshot dataSnapshot, int meta)
     {
         ArrayList<TrafficCircle> trafficCircles = new ArrayList<>();
-        DataSnapshot circle = data.child("circle");
-        for (DataSnapshot c : circle.getChildren())
+        DataSnapshot circle = dataSnapshot.child("circle");
+        for (DataSnapshot data : circle.getChildren())
         {
-            double lat = (double) c.child("lat").getValue();
-            double lng = (double) c.child("lng").getValue();
-            int radius = ((Long) c.child("radius").getValue()).intValue();
-            int rate = ((Long) c.child("rate").getValue()).intValue();
-            trafficCircles.add(new TrafficCircle(new LatLng(lat, lng), radius, rate));
+            int rate = ((Long) data.child("rate").getValue()).intValue();
+            if (rate > meta)
+            {
+                int id = ((Long) data.child("id").getValue()).intValue();
+                double lat = (double) data.child("lat").getValue();
+                double lng = (double) data.child("lng").getValue();
+                int radius = ((Long) data.child("radius").getValue()).intValue();
+
+                DataSnapshot shortcutData  = data.child("shortcut");
+                ArrayList<Shortcut> shortcuts = new ArrayList<>();
+                for (DataSnapshot i : shortcutData.getChildren())
+                {
+                    int distance = ((Long) data.child("distance").getValue()).intValue();
+                    int duration = ((Long) data.child("duration").getValue()).intValue();
+                    String route = (String) data.child("route").getValue();
+                    int like = ((Long) data.child("like").getValue()).intValue();
+                    shortcuts.add(new Shortcut(route, like, duration, distance));
+                }
+                trafficCircles.add(new TrafficCircle(id, new LatLng(lat, lng), radius, rate, shortcuts));
+            }
         }
         return trafficCircles;
     }
 
-    public static ArrayList<TrafficLine> getTrafficLine(DataSnapshot data)
+    public static ArrayList<TrafficLine> getTrafficLine(DataSnapshot dataSnapshot, int meta)
     {
         ArrayList<TrafficLine> trafficLine = new ArrayList<>();
-        DataSnapshot line = data.child("line");
-        for (DataSnapshot l : line.getChildren())
+        DataSnapshot line = dataSnapshot.child("line");
+        for (DataSnapshot data : line.getChildren())
         {
-            double lat1 = (double) l.child("lat1").getValue();
-            double lng1 = (double) l.child("lng1").getValue();
-            double lat2 = (double) l.child("lat2").getValue();
-            double lng2 = (double) l.child("lng2").getValue();
-            int rate = ((Long) l.child("rate").getValue()).intValue();
-            trafficLine.add(new TrafficLine(lat1, lng1, lat2, lng2, rate));
+            int rate = ((Long) data.child("rate").getValue()).intValue();
+            if (rate > meta)
+            {
+                int id = ((Long) data.child("id").getValue()).intValue();
+                double lat1 = (double) data.child("lat1").getValue();
+                double lng1 = (double) data.child("lng1").getValue();
+                double lat2 = (double) data.child("lat2").getValue();
+                double lng2 = (double) data.child("lng2").getValue();
+
+                DataSnapshot shortcutData  = data.child("shortcut");
+                ArrayList<Shortcut> shortcuts = new ArrayList<>();
+                for (DataSnapshot i : shortcutData.getChildren())
+                {
+                    int distance = ((Long) data.child("distance").getValue()).intValue();
+                    int duration = ((Long) data.child("duration").getValue()).intValue();
+                    String route = (String) data.child("route").getValue();
+                    int like = ((Long) data.child("like").getValue()).intValue();
+                    shortcuts.add(new Shortcut(route, like, duration, distance));
+                }
+                trafficLine.add(new TrafficLine(id, lat1, lng1, lat2, lng2, rate, shortcuts));
+            }
         }
         return trafficLine;
     }

@@ -1,29 +1,50 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by lequan on 10/11/2016.
  */
 public class Traffic
 {
-    ArrayList<TrafficLine> listLine;
-    ArrayList<TrafficCircle> listCircle;
+    HashMap<String, TrafficLine> listLine;
+    HashMap<String, TrafficCircle> listCircle;
 
-    public ArrayList<TrafficLine> getListLine()
+
+    public Traffic()
     {
-        return listLine;
+        listLine = new HashMap<>();
+        listCircle = new HashMap<>();
     }
 
-    public ArrayList<TrafficCircle> getListCircle()
+    public boolean isLine(String id)
     {
-        return listCircle;
+        return listLine.get(id) != null;
     }
 
-    public Traffic(ArrayList<TrafficLine> listLine, ArrayList<TrafficCircle> listCircle)
+    public TrafficCircle getCircle(String id)
     {
-
-        this.listLine = listLine;
-        this.listCircle = listCircle;
+        return listCircle.get(id);
     }
+
+    public TrafficLine getLine(String id)
+    {
+        return listLine.get(id);
+    }
+
+    public void addCircle(String id, TrafficCircle circle)
+    {
+        listCircle.put(id, circle);
+    }
+
+    public void addLine(String id, TrafficLine line)
+    {
+        listLine.put(id, line);
+    }
+
+    public static final String MY_TRAFFIC = "my_traffic";
+    public static final String CIRCLE = "circle";
+    public static final String LINE = "line";
+
 }

@@ -1,6 +1,7 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
+import android.location.Geocoder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -34,27 +36,36 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import asyncTask.AddTrafficAst;
+import asyncTask.AddressAst;
 import asyncTask.DirectionAst;
 import listener.OnLoadListener;
 import model.Route;
+import model.Shortcut;
+import model.Traffic;
+import model.TrafficCircle;
 import model.TrafficLine;
-import model.TrafficOption;
 import utils.MapUtils;
-import utils.TrafficLineUtils;
+import utils.TrafficUtils;
+import widgets.ShortcutDialog;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import static utils.FirebaseUtils.getTrafficCircle;
+import static utils.FirebaseUtils.getTrafficLine;
 
 public class DirectionActivity extends AppCompatActivity
         implements View.OnClickListener, OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener
 {
-    FloatingActionButton btnTraffic;
+    View root;
     GoogleMap map;
-    LatLng position;
     Polyline polyline;
-    float zoom;
     int width;
     int height;
 
@@ -63,6 +74,7 @@ public class DirectionActivity extends AppCompatActivity
     String place, address;
 
     Route route;
+    Geocoder geocoder;
 
     TextView[] textView;
 
@@ -70,12 +82,21 @@ public class DirectionActivity extends AppCompatActivity
     Marker[] marker = new Marker[2];
     ArrayList<Marker> waypoint;
 
+    Traffic hmTraffic;
+    ArrayList<TrafficCircle> trafficCircles;
+    ArrayList<TrafficLine> trafficLines;
+    HashMap<String, Shortcut> hmShortcut;
+
     int request;
     final int CUSTOM_DIRECTION = 1;      //
     public static final int RESTAURANT_DIRECTION = 2;    // btnTrack click
     public static final int PLACE_DIRECTION = 3;
 
     ProgressBar prbLoading;
+    int colorGreen, colorLime;
+
+    int time;
+    MarkerOptions waypointOption;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -87,13 +108,18 @@ public class DirectionActivity extends AppCompatActivity
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
+        root = findViewById(R.id.frameLayout);
+        colorGreen = getResources().getColor(R.color.green);
+        colorLime = getResources().getColor(R.color.lime);
+
         textView = new TextView[2];
         textView[0] = (TextView) findViewById(R.id.txtFrom);
         textView[1] = (TextView) findViewById(R.id.txtTo);
 
-        btnTraffic = (FloatingActionButton) findViewById(R.id.btnTraffic);
-        //btnTraffic.setVisibility(View.GONE);
+        FloatingActionButton btnTraffic = (FloatingActionButton) findViewById(R.id.btnTraffic);
+        FloatingActionButton btnAdd = (FloatingActionButton) findViewById(R.id.btnAdd);
         btnTraffic.setOnClickListener(this);
+        btnAdd.setOnClickListener(this);
 
         ImageButton btnBack = (ImageButton) findViewById(R.id.btnBack);
         ImageButton btnReverse = (ImageButton) findViewById(R.id.btnReverse);
@@ -115,8 +141,6 @@ public class DirectionActivity extends AppCompatActivity
         switch (request)
         {
             case CUSTOM_DIRECTION:
-                position = intent.getParcelableExtra("position");
-                zoom = intent.getFloatExtra("zoom", 15);
                 break;
 
             case RESTAURANT_DIRECTION:
@@ -124,7 +148,7 @@ public class DirectionActivity extends AppCompatActivity
 
             case PLACE_DIRECTION:
                 myLocation = intent.getParcelableExtra("myLocation");
-                model.Place dest = (model.Place)intent.getSerializableExtra("destination");
+                model.Place dest = (model.Place) intent.getSerializableExtra("destination");
                 destination = new LatLng(dest.getLat(), dest.getLng());
                 place = dest.getName();
                 address = dest.getAddress();
@@ -134,6 +158,8 @@ public class DirectionActivity extends AppCompatActivity
         DisplayMetrics display = getResources().getDisplayMetrics();
         width = display.widthPixels;
         height = display.heightPixels;
+
+        waypointOption = new MarkerOptions().draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.sign));
     }
 
     @Override
@@ -153,15 +179,22 @@ public class DirectionActivity extends AppCompatActivity
             @Override
             public void onPolylineClick(Polyline polyline)
             {
-                Snackbar.make(findViewById(R.id.frameLayout), route.getInformation(), Snackbar.LENGTH_INDEFINITE).show();
+                Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).show();
             }
         });
+
+        geocoder = new Geocoder(this, Locale.getDefault());
 
         switch (request)
         {
             case CUSTOM_DIRECTION:
+            {
+                Intent intent = getIntent();
+                LatLng position = intent.getParcelableExtra("position");
+                float zoom = intent.getFloatExtra("zoom", 15);
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
                 break;
+            }
 
             case RESTAURANT_DIRECTION:
                 try
@@ -177,7 +210,6 @@ public class DirectionActivity extends AppCompatActivity
 
                     Intent findPlaceIntent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(address).zzig(1).build(this);
                     startActivityForResult(findPlaceIntent, 3);
-                    //prbLoading.setVisibility(View.VISIBLE);
                 }
                 catch (GooglePlayServicesRepairableException e)
                 {
@@ -206,6 +238,7 @@ public class DirectionActivity extends AppCompatActivity
                 textView[0].setText("my location");
                 textView[1].setText(place);
 
+                waypoint = new ArrayList<>();
                 navigate(latLng[0], latLng[1]);
                 break;
         }
@@ -214,6 +247,8 @@ public class DirectionActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
+        waypoint = new ArrayList<>();
+
         if ((requestCode == 0 || requestCode == 1) && data != null)     // between 2 custom place
         {
             prbLoading.setVisibility(View.GONE);
@@ -279,7 +314,7 @@ public class DirectionActivity extends AppCompatActivity
         asyncTask.setOnLoadListener(new OnLoadListener<Route>()
         {
             @Override
-            public void onFinish(Route route)
+            public void onFinish(final Route route)
             {
                 prbLoading.setVisibility(View.GONE);
                 if (route == null || route.pathCount() < 1)
@@ -302,7 +337,14 @@ public class DirectionActivity extends AppCompatActivity
                 polyline.setClickable(true);
 
                 map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(latLng[0], latLng[1]), width, height, 150));
-
+                map.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener()
+                {
+                    @Override
+                    public void onPolylineClick(Polyline polyline)
+                    {
+                        Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime).show();
+                    }
+                });
                 DirectionActivity.this.route = route;
             }
         });
@@ -352,86 +394,99 @@ public class DirectionActivity extends AppCompatActivity
                     marker[0].hideInfoWindow();
                     marker[1].hideInfoWindow();
 
+                    //MarkerOptions options = new MarkerOptions().
+
+                    for (Marker m : waypoint)
+                    {
+                        m.remove();
+                    }
                     navigate(latLng[0], latLng[1]);
                 }
                 break;
 
-            case R.id.btnTraffic:
-            {
-                prbLoading.setVisibility(View.VISIBLE);
-                final Firebase ref = new Firebase(getResources().getString(R.string.database_traffic));
-                final ValueEventListener listener = new ValueEventListener()
+            case R.id.btnAdd:
+                if (textView[0].getText().length() > 0 && textView[1].getText().length() > 0)
                 {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot)
-                    {
-                        for (int i = 0; i < route.pathCount(); ++i)
-                        {
-                            int meta = ((Long) snapshot.child("meta").getValue()).intValue();
-                            DataSnapshot rush = snapshot.child("rush");
-                            for (DataSnapshot jam : rush.getChildren())
-                            {
-                                double lat1 = (double) jam.child("lat1").getValue();
-                                double lng1 = (double) jam.child("lng1").getValue();
-                                double lat2 = (double) jam.child("lat2").getValue();
-                                double lng2 = (double) jam.child("lng2").getValue();
-                                int vote = ((Long) jam.child("vote").getValue()).intValue();
-                                TrafficLine trafficLine = (new TrafficLine(lat1, lng1, lat2, lng2, vote));
-                                LatLng intersect = trafficLine.intersect(trafficLine.getStart(), trafficLine.getEnd());
-                                if (intersect != null)
-                                {
-                                    // int vote = ((Long) jam.child("vote").getValue()).intValue();
-                                    TrafficLineUtils optionUtils = new TrafficLineUtils(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
-                                    TrafficOption options = optionUtils.getOption(trafficLine);
-                                    map.addMarker(options.getMarkerOptions());
-                                    map.addPolyline(options.getPolylineOptions());
-                                }
-                            }
-                        }
-                        ref.removeEventListener(this);
-                        prbLoading.setVisibility(View.GONE);
+                    LatLng position = new LatLng((latLng[0].latitude + latLng[1].latitude) / 2, (latLng[0].longitude + latLng[1].longitude) / 2);
+                    waypoint.add(map.addMarker(waypointOption.position(position)));
+                }
+                else
+                {
+                    Toast.makeText(this, "Hãy chọn địa điểm trước", Toast.LENGTH_SHORT).show();
+                }
+                break;
 
-                        waypoint = new ArrayList<>();
-                    }
-
-                    @Override
-                    public void onCancelled(FirebaseError firebaseError)
-                    {
-                        ref.removeEventListener(this);
-                    }
-                };
-                ref.addValueEventListener(listener);
-            }
-            break;
+            case R.id.btnTraffic:
+                if (textView[0].getText().length() > 0 && textView[1].getText().length() > 0)
+                {
+                    prbLoading.setVisibility(View.VISIBLE);
+                    loadTraffic();
+                }
+                else
+                {
+                    Toast.makeText(this, "Hãy chọn địa điểm trước", Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
     }
 
-    /*@Override
-    public void onMyLocationChange(Location location)   // this callback only run for restaurant direction
+    void loadTraffic()
     {
-        map.setOnMyLocationChangeListener(null);
-        prbLoading.setVisibility(View.GONE);
-        myLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
-        textView[0].setText("my location");
-
-        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.marker);
-        MarkerOptions markerOptions = new MarkerOptions().position(latLng[0]).icon(icon);
-        marker[0] = map.addMarker(markerOptions.title("my location"));
-
-        icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
-        markerOptions = new MarkerOptions().position(latLng[1]).icon(icon);
-        marker[1] = map.addMarker(markerOptions.title(textView[1].getText().toString()));
-        if (place.length() > 0)
+        time = Integer.parseInt(TrafficUtils.getTimeNode());
+        if ((time >= 390 && time <= 720) || (time >= 990 && time <= 1170))
         {
-            marker[1].setSnippet(place);
+            prbLoading.setVisibility(View.VISIBLE);
+            final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time));
+            final ValueEventListener listener = new ValueEventListener()    // chưa load downNode
+            {
+                @Override
+                public void onDataChange(DataSnapshot snapshot)
+                {
+                    prbLoading.setVisibility(View.VISIBLE);
+                    int meta = ((Long) snapshot.child("meta").getValue()).intValue();
+
+                    trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(snapshot, meta), route);
+                    trafficLines = TrafficUtils.getLineJam(getTrafficLine(snapshot, meta), route);
+
+                    if (trafficLines.size() > 0 || trafficCircles.size() > 0)
+                    {
+                        //map.clear();
+                        AddTrafficAst asyncTask = new AddTrafficAst(trafficLines, trafficCircles, map);
+                        asyncTask.setListener(new OnLoadListener<Traffic>()
+                        {
+                            @Override
+                            public void onFinish(Traffic result)
+                            {
+                                hmTraffic = result;
+                                getShorcut();
+                                prbLoading.setVisibility(View.GONE);
+                            }
+                        });
+                        asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
+                    }
+                    else
+                    {
+                        prbLoading.setVisibility(View.GONE);
+                        Toast.makeText(DirectionActivity.this, "Chưa có nơi nào tắc đường", Toast.LENGTH_SHORT).show();
+                    }
+                    firebase.removeEventListener(this);
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError)
+                {
+                    System.out.println("The read failed: " + firebaseError.getMessage());
+                    prbLoading.setVisibility(View.GONE);
+                    firebase.removeEventListener(this);
+                }
+            };
+            firebase.addValueEventListener(listener);
         }
-
-        marker[0].setPosition(latLng[0]);
-        marker[1].setPosition(latLng[1]);
-
-        navigate(latLng[0], latLng[1]);
-    }*/
+        else
+        {
+            Toast.makeText(this, "Hiện chưa có điểm kẹt xe nào", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     @Override
     public void onMarkerDragStart(Marker marker)
@@ -448,7 +503,14 @@ public class DirectionActivity extends AppCompatActivity
     @Override
     public void onMarkerDragEnd(Marker marker)
     {
-        navigate(latLng[0], latLng[1], marker.getPosition());
+        ArrayList<LatLng> point = new ArrayList<>();
+        point.add(latLng[0]);
+        point.add(latLng[1]);
+        for (Marker i : waypoint)
+        {
+            point.add(i.getPosition());
+        }
+        navigate(point.toArray(new LatLng[point.size()]));
     }
 
     @Override
@@ -475,4 +537,151 @@ public class DirectionActivity extends AppCompatActivity
         }
         return false;
     }
+
+    void getShorcut()
+    {
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+        {
+            @Override
+            public boolean onMarkerClick(final Marker marker)
+            {
+                AddressAst asyncTask = new AddressAst(geocoder);
+                asyncTask.setListener(new OnLoadListener<String>()
+                {
+                    @Override
+                    public void onFinish(String address)
+                    {
+                        prbLoading.setVisibility(View.GONE);
+                        Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
+                                .setAction("Gợi ý đường tắt", new View.OnClickListener()
+                                {
+                                    @Override
+                                    public void onClick(View v)
+                                    {
+                                        prbLoading.setVisibility(View.VISIBLE);
+
+                                        hmShortcut = new HashMap<>();
+                                        ArrayList<Shortcut> shortcuts;
+                                        final String jamType;
+                                        final int ID;
+                                        if (hmTraffic.isLine(marker.getId()))
+                                        {
+                                            TrafficLine line = hmTraffic.getLine(marker.getId());
+                                            shortcuts = line.getShortcuts();
+                                            jamType = Traffic.LINE;
+                                            ID = line.getId();
+                                        }
+                                        else
+                                        {
+                                            TrafficCircle circle = hmTraffic.getCircle(marker.getId());
+                                            shortcuts = circle.getShortcuts();
+                                            jamType = Traffic.CIRCLE;
+                                            ID = circle.getId();
+                                        }
+
+                                        if (shortcuts.size() > 0)
+                                        {
+                                            for (Shortcut i : shortcuts)
+                                            {
+                                                PolylineOptions options = new PolylineOptions().color(colorGreen).width(15);
+                                                options.addAll(i.getRoute());
+                                                Polyline polyline = map.addPolyline(options);
+                                                hmShortcut.put(polyline.getId(), i);
+
+                                                addStart(i.getStart());
+                                                addEnd(i.getEnd());
+                                            }
+                                            prbLoading.setVisibility(View.GONE);
+
+                                            map.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener()
+                                            {
+                                                @Override
+                                                public void onPolylineClick(Polyline polyline)
+                                                {
+                                                    final Shortcut shortcut = hmShortcut.get(polyline.getId());
+                                                    ShortcutDialog dialog = new ShortcutDialog(DirectionActivity.this, shortcut, time, jamType, ID);
+                                                    dialog.setListener(new OnLoadListener<Integer>()
+                                                    {
+                                                        @Override
+                                                        public void onFinish(Integer rating)
+                                                        {
+                                                            if (rating < 0)
+                                                            {
+                                                                waypoint = new ArrayList<>();
+                                                                navigate(latLng[0], shortcut.getStart(), shortcut.getEnd(), latLng[1]);
+                                                            }
+                                                            else
+                                                            {
+                                                                rating(jamType, ID, rating, shortcut.getRouteString());
+                                                            }
+                                                        }
+                                                    });
+                                                    dialog.show();
+                                                }
+                                            });
+                                        }
+                                        else
+                                        {
+                                            prbLoading.setVisibility(View.GONE);
+                                            Toast.makeText(DirectionActivity.this, "Hiện chưa có tuyến đường tắt nào", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                }).show();
+                    }
+
+                    ;
+                });
+                asyncTask.execute(marker.getPosition().latitude, marker.getPosition().longitude);
+                return false;
+            }
+        });
+    }
+
+    void addStart(LatLng start)
+    {
+        MarkerOptions options = new MarkerOptions().position(start).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
+        map.addMarker(options);
+    }
+
+    void addEnd(LatLng end)
+    {
+        MarkerOptions options = new MarkerOptions().position(end).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+        map.addMarker(options);
+    }
+
+    void redraw()
+    {
+    }
+
+    void rating(String jamType, int ID, final int rating, final String route)
+    {
+        Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time) + "/" + jamType);
+        final Query query = firebase.orderByChild("id").equalTo(ID);
+        query.addValueEventListener(new ValueEventListener()
+        {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot)
+            {
+                DataSnapshot data = dataSnapshot.child("shortcut");
+                for (DataSnapshot shortcut : data.getChildren())
+                {
+                    if (route.equals(shortcut.child("route").getValue()))
+                    {
+                        Firebase ref = shortcut.getRef();
+                        Map<String, Object> rateNode = new HashMap<>();
+                        rateNode.put("rate", rating);
+                        ref.updateChildren(rateNode);
+                    }
+                }
+                query.removeEventListener(this);
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError)
+            {
+                query.removeEventListener(this);
+            }
+        });
+    }
+
 }

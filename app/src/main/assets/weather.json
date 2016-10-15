@@ -1,0 +1,380 @@
+{
+"Forecast":{
+"1":{
+"Description":"Trời quang",
+"ShortDescription":"Quang"
+},
+"2":{
+"Description":"Ít mây",
+"ShortDescription":"Ít mây"
+},
+"3":{
+"Description":"Bầu trời có mây một phần",
+"ShortDescription":"Mây một phần"
+},
+"4":{
+"Description":"Bầu trời có mây",
+"ShortDescription":"Có mây"
+},
+"5":{
+"Description":"Có thể mưa",
+"ShortDescription":"Mưa nhỏ"
+},
+"6":{
+"Description":"Mưa nhỏ",
+"ShortDescription":"Mưa nhỏ"
+},
+"7":{
+"Description":"Mưa",
+"ShortDescription":"Mưa"
+},
+"8":{
+"Description":"Mưa lớn",
+"ShortDescription":"Mưa lớn"
+},
+"9":{
+"Description":"Có thể sấm",
+"ShortDescription":"Sấm"
+},
+"10":{
+"Description":"Mưa và có thể sấm",
+"ShortDescription":"Sấm"
+},
+"11":{
+"Description":"Mưa và có thể giông bão lớn",
+"ShortDescription":"Sấm"
+},
+"12":{
+"Description":"Có thể mưa hoặc mưa đá",
+"ShortDescription":"Mưa hoặc mưa đá"
+},
+"13":{
+"Description":"Mưa nhỏ hoặc mưa đá",
+"ShortDescription":"Mưa hoặc mưa đá"
+},
+"14":{
+"Description":"Mưa hoặc mưa đá",
+"ShortDescription":"Mưa hoặc mưa đá"
+},
+"15":{
+"Description":"Mưa lớn hoặc mưa đá",
+"ShortDescription":"Mưa hoặc mưa đá"
+},
+"16":{
+"Description":"Mưa hoặc mưa đá và có thể sấm",
+"ShortDescription":"Mưa hoặc mưa đá"
+},
+"17":{
+"Description":"Mưa hoặc mưa đá và có thể sấm to",
+"ShortDescription":"Mưa hoặc mưa đá"
+},
+"18":{
+"Description":"Có thể mưa đá hoặc tuyết",
+"ShortDescription":"Mưa đá hoặc tuyết"
+},
+"19":{
+"Description":"Mưa đá nhỏ hoặc tuyết",
+"ShortDescription":"Mưa đá hoặc tuyết"
+},
+"20":{
+"Description":"Mưa đá hoặc tuyết",
+"ShortDescription":"Mưa đá hoặc tuyết"
+},
+"21":{
+"Description":"Mưa đá to hoặc tuyết",
+"ShortDescription":"Mưa đá hoặc tuyết"
+},
+"22":{
+"Description":"Mưa đá hoặc tuyết và có thể sấm",
+"ShortDescription":"Mưa đá hoặc tuyết"
+},
+"23":{
+"Description":"Mưa đá hoặc tuyết và có thể sấm to",
+"ShortDescription":"Mưa đá hoặc tuyết"
+},
+"24":{
+"Description":"Có thể tuyết",
+"ShortDescription":"Tuyết rơi nhẹ"
+},
+"25":{
+"Description":"Tuyết rơi nhẹ",
+"ShortDescription":"Tuyết rơi nhẹ"
+},
+"26":{
+"Description":"Tuyết",
+"ShortDescription":"Tuyết"
+},
+"27":{
+"Description":"Tuyết rơi dày",
+"ShortDescription":"Tuyết rơi dày"
+},
+"28":{
+"Description":"Tuyết và có thể có sấm",
+"ShortDescription":"Tuyết rơi dày"
+},
+"29":{
+"Description":"Tuyết và có thể sấm to",
+"ShortDescription":"Tuyết rơi dày"
+},
+"30":{
+"Description":"Trời quang",
+"ShortDescription":""
+},
+"31":{
+"Description":"Phần lớn là quang tạnh",
+"ShortDescription":""
+},
+"32":{
+"Description":"Bầu trời có mây một phần",
+"ShortDescription":""
+},
+"33":{
+"Description":"Bầu trời có mây",
+"ShortDescription":""
+},
+"34":{
+"Description":"Phần lớn là quang tạnh với khả năng có mưa",
+"ShortDescription":""
+},
+"35":{
+"Description":"Mây một phần với khả năng có mưa",
+"ShortDescription":""
+},
+"36":{
+"Description":"Có mây với khả năng có mưa rào",
+"ShortDescription":""
+},
+"37":{
+"Description":"Mưa nhỏ theo từng đợt rõ ràng",
+"ShortDescription":""
+},
+"38":{
+"Description":"Có mây kèm theo mưa rào nhỏ",
+"ShortDescription":""
+},
+"39":{
+"Description":"Mưa theo từng đợt rõ ràng",
+"ShortDescription":""
+},
+"40":{
+"Description":"Có mây kèm theo từng đợt mưa",
+"ShortDescription":""
+},
+"41":{
+"Description":"Mưa rào lớn với từng đợt rõ ràng",
+"ShortDescription":""
+},
+"42":{
+"Description":"Có mây kèm theo từng đợt mưa lớn",
+"ShortDescription":""
+},
+"43":{
+"Description":"Mưa rào nhẹ",
+"ShortDescription":""
+},
+"44":{
+"Description":"Mưa rào",
+"ShortDescription":""
+},
+"45":{
+"Description":"Từng đợt rõ ràng và mưa kèm theo khả năng có sấm",
+"ShortDescription":""
+},
+"46":{
+"Description":"Từng đợt rõ ràng và mưa kèm theo khả năng có giông bão lớn",
+"ShortDescription":""
+},
+"47":{
+"Description":"Có mây và mưa kèm khả năng có theo sấm",
+"ShortDescription":""
+},
+"48":{
+"Description":"Có mây và mưa kèm theo khả năng có giông bão lớn",
+"ShortDescription":""
+},
+"49":{
+"Description":"Phần lớn là quang tạnh kèm theo khả năng mưa hoặc mưa rào đá",
+"ShortDescription":""
+},
+"50":{
+"Description":"Mây một phần với khả năng mưa hoặc mưa rào đá",
+"ShortDescription":""
+},
+"51":{
+"Description":"Có mây với khả năng mưa hoặc mưa rào đá",
+"ShortDescription":""
+},
+"52":{
+"Description":"Mưa nhỏ hoặc mưa rào đá với từng đợt rõ ràng",
+"ShortDescription":""
+},
+"53":{
+"Description":"Có mây kèm theo mưa nhỏ hoặc mưa rào đá",
+"ShortDescription":""
+},
+"54":{
+"Description":"Mưa hoặc mưa rào đá với từng đợt rõ ràng",
+"ShortDescription":""
+},
+"55":{
+"Description":"Có mây kèm theo mưa hoặc mưa rào đá",
+"ShortDescription":""
+},
+"56":{
+"Description":"Mưa lớn hoặc mưa rào đá với từng đợt rõ ràng",
+"ShortDescription":""
+},
+"57":{
+"Description":"Có mây với từng đợt mưa lớn hoặc mưa rào đá",
+"ShortDescription":""
+},
+"58":{
+"Description":"Mưa nhỏ hoặc mưa rào đá",
+"ShortDescription":""
+},
+"59":{
+"Description":"Mưa hoặc mưa rào đá",
+"ShortDescription":""
+},
+"60":{
+"Description":"Từng đợt rõ ràng và mưa hoặc mưa rào đá kèm theo khả năng có sấm",
+"ShortDescription":""
+},
+"61":{
+"Description":"Từng đợt rõ ràng và mưa hoặc mưa rào đá kèm theo khả năng có sấm to",
+"ShortDescription":""
+},
+"62":{
+"Description":"Có mây với mưa hoặc mưa rào đá và có thể sấm",
+"ShortDescription":""
+},
+"63":{
+"Description":"Có mây với mưa hoặc mưa rào đá và có thể sấm to",
+"ShortDescription":""
+},
+"64":{
+"Description":"Phần lớn là quang tạnh kèm theo khả năng mưa đá hoặc mưa tuyết",
+"ShortDescription":""
+},
+"65":{
+"Description":"Mây một phần với khả năng mưa đá hoặc mưa tuyết",
+"ShortDescription":""
+},
+"66":{
+"Description":"Có mây với khả năng mưa đá hoặc mưa tuyết",
+"ShortDescription":""
+},
+"67":{
+"Description":"Mưa đá nhỏ hoặc mưa tuyết với từng đợt rõ ràng",
+"ShortDescription":""
+},
+"68":{
+"Description":"Có mây kèm theo mưa đá nhỏ hoặc mưa tuyết",
+"ShortDescription":""
+},
+"69":{
+"Description":"Mưa đá hoặc mưa tuyết với từng đợt rõ ràng",
+"ShortDescription":""
+},
+"70":{
+"Description":"Có mây kèm theo mưa đá hoặc mưa tuyết",
+"ShortDescription":""
+},
+"71":{
+"Description":"Mưa đá lớn hoặc mưa tuyết với từng đợt rõ ràng",
+"ShortDescription":""
+},
+"72":{
+"Description":"Có mây với từng đợt mưa đá lớn hoặc mưa tuyết",
+"ShortDescription":""
+},
+"73":{
+"Description":"Mưa đá nhỏ hoặc mưa tuyết",
+"ShortDescription":""
+},
+"74":{
+"Description":"Mưa đá hoặc mưa tuyết",
+"ShortDescription":""
+},
+"75":{
+"Description":"Từng đợt rõ ràng và mưa đá hoặc tuyết kèm theo khả năng có sấm",
+"ShortDescription":""
+},
+"76":{
+"Description":"Từng đợt rõ ràng và mưa đá hoặc tuyết kèm theo khả năng có sấm to",
+"ShortDescription":""
+},
+"77":{
+"Description":"Có mây với mưa đá hoặc mưa tuyết và có thể sấm",
+"ShortDescription":""
+},
+"78":{
+"Description":"Có mây với mưa đá hoặc mưa tuyết và có thể sấm to",
+"ShortDescription":""
+},
+"79":{
+"Description":"Phần lớn là quang tạnh với khả năng có mưa tuyết",
+"ShortDescription":""
+},
+"80":{
+"Description":"Mây một phần với khả năng có mưa tuyết",
+"ShortDescription":""
+},
+"81":{
+"Description":"Có mây kèm theo khả năng có mưa tuyết",
+"ShortDescription":""
+},
+"82":{
+"Description":"Mưa tuyết nhỏ theo từng đợt rõ ràng",
+"ShortDescription":""
+},
+"83":{
+"Description":"Có mây kèm theo mưa tuyết nhỏ",
+"ShortDescription":""
+},
+"84":{
+"Description":"Mưa tuyết theo từng đợt rõ ràng",
+"ShortDescription":""
+},
+"85":{
+"Description":"Có mây kèm theo mưa tuyết",
+"ShortDescription":""
+},
+"86":{
+"Description":"Mưa tuyết lớn theo từng đợt rõ ràng",
+"ShortDescription":""
+},
+"87":{
+"Description":"Có mây kèm theo từng đợt mưa tuyết lớn",
+"ShortDescription":""
+},
+"88":{
+"Description":"Mưa tuyết nhỏ",
+"ShortDescription":""
+},
+"89":{
+"Description":"Mưa tuyết",
+"ShortDescription":""
+},
+"90":{
+"Description":"Từng đợt rõ ràng và mưa tuyết kèm theo khả năng có sấm",
+"ShortDescription":""
+},
+"91":{
+"Description":"Từng đợt rõ ràng và mưa tuyết kèm theo khả năng có sấm to",
+"ShortDescription":""
+},
+"92":{
+"Description":"Có mây với mưa tuyết và có thể sấm",
+"ShortDescription":""
+},
+"93":{
+"Description":"Có mây với mưa tuyết và có thể sấm to",
+"ShortDescription":""
+},
+"94":{
+"Description":"Freezing fog",
+"ShortDescription":"Freezing fog"
+}
+}
+}

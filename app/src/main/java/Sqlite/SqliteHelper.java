@@ -15,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,7 +33,6 @@ import utils.PolyUtils;
  */
 public class SqliteHelper extends SQLiteOpenHelper
 {
-
     private static String DB_PATH;
     private static String DB_NAME;
     private Context context;
@@ -140,14 +140,21 @@ public class SqliteHelper extends SQLiteOpenHelper
         db = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE);
     }
 
-    public boolean saveTraffic(double lat, double lng, int radius, String address)
+    public boolean saveTraffic(int id, double lat, double lng, int radius, String address, int timeNode, String jamType)
     {
-        String date = new Date().toString();
-        return excute(String.format(Locale.US, "insert into Location values (%d, '%s', '%s', %d, '%s', '%s')",
-                                    getNextID(), Double.toString(lat), Double.toString(lng), radius, date, address));
+        Date today = new Date();
+        String[] datetime = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(today).split(" ");
+        String[] date = datetime[0].split("-");
+        String[] time = datetime[1].split(":");
+
+        String moment = "Ngày " +  date[0] + "/" + date[1] + " lúc " + time[0] + ":" + time[1];
+
+        String type = jamType.substring(0,1);
+        return excute(String.format(Locale.US, "insert into MyTraffic values (%d, '%s', '%s', %d, '%s', '%s', %d, '%s')",
+                id, Double.toString(lat), Double.toString(lng), radius, moment, address.replace(", Hồ Chí Minh", ""), timeNode, type));
     }
 
-    public void insert(String table, String place, String address, double lat, double lng)
+    public void insertDestination(String table, String place, String address, double lat, double lng)
     {
         String latStr = Double.toString(lat);
         String lngStr = Double.toString(lng);
@@ -182,13 +189,12 @@ public class SqliteHelper extends SQLiteOpenHelper
     public ArrayList<HashMap<String, String>> executeQuery(String sql)   // place - address
     {
         ArrayList<HashMap<String, String>> listData = new ArrayList<HashMap<String, String>>();
-        if (db != null)
+        Cursor cursor = db.rawQuery(sql, null);
+        if (cursor != null)
         {
-            Cursor cursor = db.rawQuery(sql, null);
-            if (cursor != null)
+            String[] columnNames = cursor.getColumnNames();
+            if (cursor.moveToFirst())
             {
-                String[] columnNames = cursor.getColumnNames();
-                cursor.moveToFirst();
                 while (!cursor.isAfterLast())
                 {
                     HashMap<String, String> item = new HashMap<>();
@@ -199,15 +205,15 @@ public class SqliteHelper extends SQLiteOpenHelper
                     listData.add(item);
                     cursor.moveToNext();
                 }
-                cursor.close();
             }
+            cursor.close();
         }
         return listData;
     }
 
     int getNextID()
     {
-        Cursor cursor = db.rawQuery("select max(ID) from Location", null);
+        Cursor cursor = db.rawQuery("select max(ID) from MyTraffic", null);
         if (cursor != null)
         {
             if (cursor.moveToFirst())
@@ -216,16 +222,17 @@ public class SqliteHelper extends SQLiteOpenHelper
             }
             cursor.close();
         }
-        return 1;
+        return 0;
     }
 
-    public boolean addShortcut(int ID, String route, int distance, int duration)
+    public boolean addShortcut(int time, String jamType, int ID, String route, int distance, int duration, int rating, String like)
     {
-        return excute(String.format(Locale.US, "insert into Shortcut values (%d, '%s', %d, %d)",
-                                    ID, route, distance, duration));
+        String type = jamType.substring(0,1);
+        return excute(String.format(Locale.US, "insert into Shortcut values (%d, '%s', %d, %d, %d, '%s', %d, '%s')",
+                ID, route, distance, duration, rating, like, time, type));
     }
 
-    public ArrayList<Shortcut> getShortcut(int ID, LatLng location)
+    ArrayList<Shortcut> getShortcut(int ID)
     {
         ArrayList<Shortcut> shortcuts = new ArrayList<>();
         ArrayList<HashMap<String, String>> data = executeQuery("select * from Shortcut where ID = " + ID);
@@ -234,7 +241,7 @@ public class SqliteHelper extends SQLiteOpenHelper
             String route = row.get("Route");
             int distance = Integer.parseInt(row.get("Distance"));
             int duration = Integer.parseInt(row.get("Duration"));
-            shortcuts.add(new Shortcut(location.latitude, location.longitude, route, distance, duration, 1));
+            shortcuts.add(new Shortcut(route, distance, duration, 1));
         }
         return shortcuts;
     }
@@ -242,16 +249,17 @@ public class SqliteHelper extends SQLiteOpenHelper
     public ArrayList<MyTraffic> getMyTraffic()
     {
         ArrayList<MyTraffic> myTraffics = new ArrayList<>();
-        ArrayList<HashMap<String, String>> data = getAll("Location");
+        ArrayList<HashMap<String, String>> data = getAll("MyTraffic");
         for (HashMap<String, String> row : data)
         {
             int id = Integer.parseInt(row.get("ID"));
-            String time = row.get("Time");
+            String time = row.get("Moment");
             double lat = Double.parseDouble(row.get("Lat"));
             double lng = Double.parseDouble(row.get("Lng"));
             int radius = Integer.parseInt(row.get("Radius"));
             String address = row.get("Address");
-            myTraffics.add(new MyTraffic(id, lat, lng, radius, time, address));
+            ArrayList<Shortcut> shortcuts = getShortcut(id);
+            myTraffics.add(new MyTraffic(id, new LatLng(lat, lng), radius, time, address, shortcuts));
         }
         return myTraffics;
     }
@@ -259,13 +267,13 @@ public class SqliteHelper extends SQLiteOpenHelper
     public ArrayList<MyTraffic> getMyLocation()
     {
         ArrayList<MyTraffic> myTraffics = new ArrayList<>();
-        ArrayList<HashMap<String, String>> data = getAll("Location");
+        ArrayList<HashMap<String, String>> data = getAll("MyTraffic");
         for (HashMap<String, String> row : data)
         {
             int ID = Integer.parseInt(row.get("ID"));
             double lat = Double.parseDouble(row.get("Lat"));
             double lng = Double.parseDouble(row.get("Lng"));
-            myTraffics.add(new MyTraffic(ID, lat, lng, 0, "", ""));
+            myTraffics.add(new MyTraffic(ID, new LatLng(lat, lng)));
         }
         return myTraffics;
     }
@@ -275,8 +283,10 @@ public class SqliteHelper extends SQLiteOpenHelper
         ArrayList<MyTraffic> myLocation = getMyLocation();
         for (MyTraffic i : myLocation)
         {
-            if (MapUtils.inCircle(i.getLocation(), traffic.getCenter(), traffic.getRadius()))
+            if (MapUtils.inCircle(i.getCenter(), traffic.getCenter(), traffic.getRadius()))
+            {
                 return i.getId();
+            }
         }
         return -1;
     }
@@ -286,9 +296,43 @@ public class SqliteHelper extends SQLiteOpenHelper
         ArrayList<MyTraffic> myLocation = getMyLocation();
         for (MyTraffic i : myLocation)
         {
-            if (PolyUtils.isLocationOnPath(i.getLocation(), traffic.getPolyline(), false, 100))
+            if (PolyUtils.isLocationOnPath(i.getCenter(), traffic.getPolyline(), false, 100))
+            {
                 return i.getId();
+            }
         }
         return -1;
+    }
+
+    public boolean checkLiked(int time, String jamType, int ID)
+    {
+        String type = jamType.substring(0,1);
+        ArrayList<HashMap<String, String>> data = executeQuery(String.format(Locale.US,
+                "select * from Shortcut where Time = %d and Jam = '%s' and ID = %d",
+                time, type, ID));
+        if (data.size() < 1)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    boolean rating(int time, String jamType, int ID, int rating, String like)
+    {
+        String type = jamType.substring(0,1);
+        return excute(String.format(Locale.US,
+                "update Shortcut set Like = '%s', Rating = %d" +
+                        " where Time = %d and Jam = '%s' and ID = %d",
+                like, rating, time, type, ID));
+    }
+
+    public boolean like(int time, String jamType, int ID, int rating)
+    {
+        return rating(time, jamType, ID, rating, "1");
+    }
+
+    public boolean dislike(int time, String jamType, int ID, int rating)
+    {
+        return rating(time, jamType, ID, rating, "0");
     }
 }
