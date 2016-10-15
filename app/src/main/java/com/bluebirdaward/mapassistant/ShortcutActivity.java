@@ -128,38 +128,55 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
 
                 if (PolyUtils.isLocationOnPath(jam, route.getRoute(), false, 100))
                 {
-                    MessageDialog.showMessage(this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Đường đi tắt đi qua điểm kẹt xe", "Đường đi tắt mà bạn gợi ý có đi ngang qua vị trị có ùn tắc giao thông" + (acceptedLength / 1000) + "km" + "\nHãy thử tìm đường tắt khác nhé!");
+                    MessageDialog.showMessage(this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Đường có kẹt xe", "Đường đi tắt mà bạn gợi ý có đi ngang qua vị trị có ùn tắc giao thông" + "\nHãy thử tìm đường tắt khác nhé!");
                     return;
                 }
 
                 prbLoading.setVisibility(View.VISIBLE);
 
-                final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time)).child(jamType);
-                final Query query = firebase.orderByChild("id").equalTo(ID);
-                query.addValueEventListener(new ValueEventListener()
+                // what the fuck is happening here ??????
+                final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time));
+                final Query query = firebase.child(jamType).orderByChild("id").equalTo(ID);
+                query.addListenerForSingleValueEvent(new ValueEventListener()
                 {
                     @Override
                     public void onDataChange(DataSnapshot snapshot)
                     {
+//Object a = snapshot.getValue();
+
+                        HashMap<String, Object> wtf = (HashMap<String, Object>)snapshot.getValue();
+
+                        ArrayList<String> listKey = new ArrayList<String>(wtf.keySet());
+                        for (String key : listKey)
+                        if (key.equals(Integer.toString(ID)))
+                        {
+                            //DataSnapshot data = snapshot.child("shortcut");
+                            Firebase ref = snapshot.child(key).child("shortcut").getRef();
+
+                            String routeString = PolyUtils.encode(polyline.getPoints());
+                            Map<String, Object> shortcut = new HashMap<>();
+                            shortcut.put("route", routeString);
+                            shortcut.put("distance", route.getDistance());
+                            shortcut.put("duration", route.getDuration());
+                            shortcut.put("like", 1);
+                            ref.push().setValue(shortcut);  // ??????????
+                            query.removeEventListener(this);
+
+                            MainActivity.sqlite.addShortcut(time, jamType, ID, routeString, route.getDistance(), route.getDuration(), 1, "0");
+
+                            prbLoading.setVisibility(View.GONE);
+                            MessageDialog.showMessage(ShortcutActivity.this, getResources().getColor(R.color.green), R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
+
+                            Log.d("traffic", "shortcut " + time + " " + jamType);
+                        }
+
                         // chưa có kiểm tra xem 2 shortcut trùng nhau
-                        DataSnapshot data = snapshot.child("shortcut");
-                        Firebase ref = data.getRef();
+                        //DataSnapshot data = snapshot.getChildren().iterator().next();
+                        //String key = snapshot.getKey();
+                       // String path = "/" + snapshot.getKey() + "/" + key;
 
-                        String routeString = PolyUtils.encode(polyline.getPoints());
-                        Map<String, Object> shortcut = new HashMap<>();
-                        shortcut.put("route", routeString);
-                        shortcut.put("distance", route.getDistance());
-                        shortcut.put("duration", route.getDuration());
-                        shortcut.put("like", 1);
-                        ref.push().setValue(shortcut);  // ??????????
-                        query.removeEventListener(this);
 
-                        MainActivity.sqlite.addShortcut(time, jamType, ID, routeString, route.getDistance(), route.getDuration(), 1, "0");
 
-                        prbLoading.setVisibility(View.GONE);
-                        MessageDialog.showMessage(ShortcutActivity.this, getResources().getColor(R.color.lime), R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
-
-                        Log.d("traffic", "shortcut " + time + " " + jamType);
                     }
 
                     @Override
@@ -314,7 +331,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public boolean onMarkerClick(final Marker marker)
     {
-        prbLoading.setVisibility(View.VISIBLE);
+      /*  prbLoading.setVisibility(View.VISIBLE);
         AddressAst asyncTask = new AddressAst(geocoder);
         asyncTask.setListener(new OnLoadListener<String>()
         {
@@ -337,7 +354,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
             }
         });
         LatLng position = marker.getPosition();
-        asyncTask.execute(position.latitude, position.longitude);
+        asyncTask.execute(position.latitude, position.longitude);*/
         return false;
     }
 

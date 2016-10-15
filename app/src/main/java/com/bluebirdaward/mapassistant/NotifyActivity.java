@@ -33,6 +33,7 @@ import asyncTask.AddressAst;
 import listener.OnLoadListener;
 import model.Traffic;
 import model.TrafficCircle;
+import utils.MapUtils;
 import utils.PolyUtils;
 import utils.RequestCode;
 import utils.TrafficUtils;
@@ -42,6 +43,7 @@ import widgets.MessageDialog;
 import com.bluebirdaward.mapassistant.gmmap.R;
 import com.google.android.gms.maps.model.LatLng;
 
+import static model.TrafficCircle.getRadius;
 import static utils.TimeUtils.*;
 
 public class NotifyActivity extends AppCompatActivity
@@ -56,6 +58,8 @@ public class NotifyActivity extends AppCompatActivity
     TextView tvAddress, tvRadius;
     SeekBar radiusPicker;
     String info;
+    Firebase ref;
+    MessageDialog dialog;
 
     View.OnClickListener reloadListener, notifyListener;
 
@@ -163,21 +167,16 @@ public class NotifyActivity extends AppCompatActivity
         {
             double lat = Double.parseDouble(row.get("Lat"));
             double lng = Double.parseDouble(row.get("Lng"));
-            float distance = getDistance(myLocation.latitude, myLocation.longitude, lat, lng);
-            //Log.d("123", "lat = " + lat + " " + myLocation.latitude);
-            //Log.d("123", "lng = " + lng + " " + myLocation.longitude);
-            //Log.d("123", "distance = " + distance);
-            if (distance >= 0 && distance <= 1000)
+            int radius = Integer.parseInt(row.get("Radius"));
+            float distance = MapUtils.distance(new LatLng(myLocation.latitude, myLocation.longitude), new LatLng(lat, lng));
+            if (distance > getRadius(radiusPicker.getProgress()) + getRadius(radius));
             {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
-    boolean send = false;
-    Firebase ref;
-    MessageDialog dialog;
 
 
     void showMessage(String message)
@@ -226,7 +225,7 @@ public class NotifyActivity extends AppCompatActivity
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
-        tvRadius.setText("Ước tính phạm vi ùn tắc: " + TrafficCircle.getRadius(progress) + "m");
+        tvRadius.setText("Ước tính phạm vi ùn tắc: " + getRadius(progress) + "m");
     }
 
     @Override
@@ -290,7 +289,7 @@ public class NotifyActivity extends AppCompatActivity
         }
 
         boolean intersect = false;
-        int myRadius = TrafficCircle.getRadius(radiusPicker.getProgress()) / 2;
+        int myRadius = getRadius(radiusPicker.getProgress()) / 2;
         DataSnapshot circleData = snapshot.child("circle");
         if (!find)      // put to existing circle
         {
@@ -299,7 +298,6 @@ public class NotifyActivity extends AppCompatActivity
                 double lat = (double) i.child("lat").getValue();
                 double lng = (double) i.child("lng").getValue();
                 int radius = ((Long) i.child("radius").getValue()).intValue();
-                id = ((Long) i.child("id").getValue()).intValue();
                 float[] distance = new float[2];
                 Location.distanceBetween(myLocation.latitude, myLocation.longitude, lat, lng, distance);
                 if (distance[0] <= radius)      // in circle
@@ -309,6 +307,7 @@ public class NotifyActivity extends AppCompatActivity
                     Map<String, Object> rateNode = new HashMap<>();
                     rateNode.put("rate", rate + 1);
                     ref.updateChildren(rateNode);
+                    id = ((Long) i.child("id").getValue()).intValue();
                     find = true;
                     jamType= Traffic.CIRCLE;
                     break;
@@ -338,7 +337,7 @@ public class NotifyActivity extends AppCompatActivity
                 Map<String, Object> circleNode = new HashMap<>();
                 circleNode.put("lat", myLocation.latitude);
                 circleNode.put("lng", myLocation.longitude);
-                circleNode.put("radius", myRadius);
+                circleNode.put("radius", radiusPicker.getProgress());
                 circleNode.put("rate", 1);
                 circleNode.put("id", id);
 
@@ -351,15 +350,14 @@ public class NotifyActivity extends AppCompatActivity
         // chưa có new line
 
         ref.removeEventListener(this);
-        if (find)
+        if (find && id > -1)
         {
-            String address = tvAddress.getText().toString();
-            address = address.substring(12);
-            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, myRadius, address, Integer.parseInt(time), jamType);
-            dialog.show(getResources().getColor(R.color.lime), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông cho tất cả mọi người cùng được biết");
+            String address = tvAddress.getText().toString().replace("Bạn đang ở ", "");
+            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, radiusPicker.getProgress(), address, Integer.parseInt(time), jamType);
+            dialog.show(getResources().getColor(R.color.green), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông cho tất cả mọi người cùng được biết");
 
 
-            Log.d("traffic", "notift " + time + " " + jamType);
+            Log.d("traffic", "notift " + time + " " + jamType + " " + myRadius);
         }
         else
         {

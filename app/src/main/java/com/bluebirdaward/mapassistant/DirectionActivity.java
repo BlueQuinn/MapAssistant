@@ -61,7 +61,8 @@ import static utils.FirebaseUtils.getTrafficLine;
 
 public class DirectionActivity extends AppCompatActivity
         implements View.OnClickListener, OnMapReadyCallback,
-        GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener
+        GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener,
+        GoogleMap.OnPolylineClickListener
 {
     View root;
     GoogleMap map;
@@ -83,8 +84,6 @@ public class DirectionActivity extends AppCompatActivity
     ArrayList<Marker> waypoint;
 
     Traffic hmTraffic;
-    ArrayList<TrafficCircle> trafficCircles;
-    ArrayList<TrafficLine> trafficLines;
     HashMap<String, Shortcut> hmShortcut;
 
     int request;
@@ -97,6 +96,9 @@ public class DirectionActivity extends AppCompatActivity
 
     int time;
     MarkerOptions waypointOption;
+    String jamType;
+    int ID;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -174,14 +176,7 @@ public class DirectionActivity extends AppCompatActivity
 
         map.setOnMarkerDragListener(this);
         map.setOnMarkerClickListener(DirectionActivity.this);
-        map.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener()
-        {
-            @Override
-            public void onPolylineClick(Polyline polyline)
-            {
-                Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).show();
-            }
-        });
+        map.setOnPolylineClickListener(this);
 
         geocoder = new Geocoder(this, Locale.getDefault());
 
@@ -242,6 +237,7 @@ public class DirectionActivity extends AppCompatActivity
                 navigate(latLng[0], latLng[1]);
                 break;
         }
+
     }
 
     @Override
@@ -252,6 +248,9 @@ public class DirectionActivity extends AppCompatActivity
         if ((requestCode == 0 || requestCode == 1) && data != null)     // between 2 custom place
         {
             prbLoading.setVisibility(View.GONE);
+
+            map.clear();
+
             String place = data.getStringExtra("place");
             String address = data.getStringExtra("address");
             latLng[requestCode] = data.getParcelableExtra("position");
@@ -278,6 +277,13 @@ public class DirectionActivity extends AppCompatActivity
 
             if (textView[0].getText().length() > 0 && textView[1].getText().length() > 0)
             {
+                for (Marker i : waypoint)
+                i.remove();
+
+               /* ArrayList<String> key = new ArrayList<>(hmShortcut.keySet());
+                for (String i : key)
+                hmShortcut.get(i).*/
+
                 navigate(latLng[0], latLng[1]);
             }
         }
@@ -310,6 +316,8 @@ public class DirectionActivity extends AppCompatActivity
 
     void navigate(LatLng... point)
     {
+        //hmShortcut = null;
+
         DirectionAst asyncTask = new DirectionAst();
         asyncTask.setOnLoadListener(new OnLoadListener<Route>()
         {
@@ -337,14 +345,7 @@ public class DirectionActivity extends AppCompatActivity
                 polyline.setClickable(true);
 
                 map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(latLng[0], latLng[1]), width, height, 150));
-                map.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener()
-                {
-                    @Override
-                    public void onPolylineClick(Polyline polyline)
-                    {
-                        Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime).show();
-                    }
-                });
+
                 DirectionActivity.this.route = route;
             }
         });
@@ -437,7 +438,7 @@ public class DirectionActivity extends AppCompatActivity
         {
             prbLoading.setVisibility(View.VISIBLE);
             final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time));
-            final ValueEventListener listener = new ValueEventListener()    // chưa load downNode
+            firebase.addValueEventListener(new ValueEventListener()    // chưa load downNode
             {
                 @Override
                 public void onDataChange(DataSnapshot snapshot)
@@ -445,8 +446,8 @@ public class DirectionActivity extends AppCompatActivity
                     prbLoading.setVisibility(View.VISIBLE);
                     int meta = ((Long) snapshot.child("meta").getValue()).intValue();
 
-                    trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(snapshot, meta), route);
-                    trafficLines = TrafficUtils.getLineJam(getTrafficLine(snapshot, meta), route);
+                    ArrayList<TrafficCircle>       trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(snapshot, meta), route);
+                    ArrayList<TrafficLine>           trafficLines = TrafficUtils.getLineJam(getTrafficLine(snapshot, meta), route);
 
                     if (trafficLines.size() > 0 || trafficCircles.size() > 0)
                     {
@@ -479,8 +480,7 @@ public class DirectionActivity extends AppCompatActivity
                     prbLoading.setVisibility(View.GONE);
                     firebase.removeEventListener(this);
                 }
-            };
-            firebase.addValueEventListener(listener);
+            });
         }
         else
         {
@@ -538,6 +538,7 @@ public class DirectionActivity extends AppCompatActivity
         return false;
     }
 
+
     void getShorcut()
     {
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
@@ -562,8 +563,6 @@ public class DirectionActivity extends AppCompatActivity
 
                                         hmShortcut = new HashMap<>();
                                         ArrayList<Shortcut> shortcuts;
-                                        final String jamType;
-                                        final int ID;
                                         if (hmTraffic.isLine(marker.getId()))
                                         {
                                             TrafficLine line = hmTraffic.getLine(marker.getId());
@@ -584,7 +583,7 @@ public class DirectionActivity extends AppCompatActivity
                                             for (Shortcut i : shortcuts)
                                             {
                                                 PolylineOptions options = new PolylineOptions().color(colorGreen).width(15);
-                                                options.addAll(i.getRoute());
+                                                options.addAll(i.getRoute()).clickable(true);
                                                 Polyline polyline = map.addPolyline(options);
                                                 hmShortcut.put(polyline.getId(), i);
 
@@ -598,25 +597,7 @@ public class DirectionActivity extends AppCompatActivity
                                                 @Override
                                                 public void onPolylineClick(Polyline polyline)
                                                 {
-                                                    final Shortcut shortcut = hmShortcut.get(polyline.getId());
-                                                    ShortcutDialog dialog = new ShortcutDialog(DirectionActivity.this, shortcut, time, jamType, ID);
-                                                    dialog.setListener(new OnLoadListener<Integer>()
-                                                    {
-                                                        @Override
-                                                        public void onFinish(Integer rating)
-                                                        {
-                                                            if (rating < 0)
-                                                            {
-                                                                waypoint = new ArrayList<>();
-                                                                navigate(latLng[0], shortcut.getStart(), shortcut.getEnd(), latLng[1]);
-                                                            }
-                                                            else
-                                                            {
-                                                                rating(jamType, ID, rating, shortcut.getRouteString());
-                                                            }
-                                                        }
-                                                    });
-                                                    dialog.show();
+
                                                 }
                                             });
                                         }
@@ -684,4 +665,37 @@ public class DirectionActivity extends AppCompatActivity
         });
     }
 
+    @Override
+    public void onPolylineClick(Polyline polyline)
+    {
+        if (hmShortcut != null)
+        {
+            final Shortcut shortcut = hmShortcut.get(polyline.getId());
+            if (shortcut != null)
+            {
+                ShortcutDialog dialog = new ShortcutDialog(DirectionActivity.this, shortcut, time, jamType, ID);
+                dialog.setListener(new OnLoadListener<Integer>()
+                {
+                    @Override
+                    public void onFinish(Integer rating)
+                    {
+                        if (rating < 0)
+                        {
+                            waypoint = new ArrayList<>();
+                            navigate(latLng[0], shortcut.getStart(), shortcut.getEnd(), latLng[1]);
+                        }
+                        else
+                        {
+                            rating(jamType, ID, rating, shortcut.getRouteString());
+                        }
+                    }
+                });
+                dialog.show();
+            }
+        }
+        else
+        {
+            Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime).show();
+        }
+    }
 }

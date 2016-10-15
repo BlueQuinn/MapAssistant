@@ -278,30 +278,30 @@ public class SqliteHelper extends SQLiteOpenHelper
         return myTraffics;
     }
 
-    public int haveStucked(TrafficCircle traffic)
+    public boolean haveStucked(TrafficCircle traffic)
     {
         ArrayList<MyTraffic> myLocation = getMyLocation();
         for (MyTraffic i : myLocation)
         {
             if (MapUtils.inCircle(i.getCenter(), traffic.getCenter(), traffic.getRadius()))
             {
-                return i.getId();
+                return true;
             }
         }
-        return -1;
+        return false;
     }
 
-    public int haveStucked(TrafficLine traffic)
+    public boolean haveStucked(TrafficLine traffic)
     {
         ArrayList<MyTraffic> myLocation = getMyLocation();
         for (MyTraffic i : myLocation)
         {
             if (PolyUtils.isLocationOnPath(i.getCenter(), traffic.getPolyline(), false, 100))
             {
-                return i.getId();
+                return true;
             }
         }
-        return -1;
+        return false;
     }
 
     public boolean checkLiked(int time, String jamType, int ID)

@@ -33,10 +33,10 @@ public class FirebaseUtils
                 ArrayList<Shortcut> shortcuts = new ArrayList<>();
                 for (DataSnapshot i : shortcutData.getChildren())
                 {
-                    int distance = ((Long) data.child("distance").getValue()).intValue();
-                    int duration = ((Long) data.child("duration").getValue()).intValue();
-                    String route = (String) data.child("route").getValue();
-                    int like = ((Long) data.child("like").getValue()).intValue();
+                    String route = (String) i.child("route").getValue();
+                    int like = ((Long) i.child("like").getValue()).intValue();
+                    int distance = ((Long) i.child("distance").getValue()).intValue();
+                    int duration = ((Long) i.child("duration").getValue()).intValue();
                     shortcuts.add(new Shortcut(route, like, duration, distance));
                 }
                 trafficCircles.add(new TrafficCircle(id, new LatLng(lat, lng), radius, rate, shortcuts));
@@ -64,10 +64,10 @@ public class FirebaseUtils
                 ArrayList<Shortcut> shortcuts = new ArrayList<>();
                 for (DataSnapshot i : shortcutData.getChildren())
                 {
-                    int distance = ((Long) data.child("distance").getValue()).intValue();
-                    int duration = ((Long) data.child("duration").getValue()).intValue();
-                    String route = (String) data.child("route").getValue();
-                    int like = ((Long) data.child("like").getValue()).intValue();
+                    int distance = ((Long) i.child("distance").getValue()).intValue();
+                    int duration = ((Long) i.child("duration").getValue()).intValue();
+                    String route = (String) i.child("route").getValue();
+                    int like = ((Long) i.child("like").getValue()).intValue();
                     shortcuts.add(new Shortcut(route, like, duration, distance));
                 }
                 trafficLine.add(new TrafficLine(id, lat1, lng1, lat2, lng2, rate, shortcuts));

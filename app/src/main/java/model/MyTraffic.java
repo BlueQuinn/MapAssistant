@@ -25,7 +25,7 @@ public class MyTraffic implements SafeParcelable
 
     public int getRadius()
     {
-        return radius;
+        return 50 * (radius + 4);
     }
 
     int id;

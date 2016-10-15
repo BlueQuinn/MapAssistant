@@ -911,14 +911,13 @@ myLocation = m.getPosition();
                                             if (hmTraffic.isLine(marker.getId()))
                                             {
                                                 TrafficLine line = hmTraffic.getLine(marker.getId());
-                                                int ID = sqlite.haveStucked(line);
-                                                if (ID != -1)
+                                                if (sqlite.haveStucked(line))
                                                 {
                                                     Intent intent = new Intent(MainActivity.this, ShortcutActivity.class);
                                                     intent.putExtra("time", time);
                                                     intent.putExtra("jamType", Traffic.LINE);
                                                     intent.putExtra("jam", line);
-                                                    intent.putExtra("ID", ID);      // id của MyTraffic trong DB
+                                                    intent.putExtra("ID", line.getId());      // id của MyTraffic trong DB
                                                     startActivity(intent);
                                                 }
                                                 else
@@ -929,14 +928,13 @@ myLocation = m.getPosition();
                                             else
                                             {
                                                 TrafficCircle circle = hmTraffic.getCircle(marker.getId());
-                                                int ID = sqlite.haveStucked(circle);
-                                                if (ID != -1)
+                                                if (sqlite.haveStucked(circle))
                                                 {
                                                     Intent intent = new Intent(MainActivity.this, ShortcutActivity.class);
                                                     intent.putExtra("time", time);
                                                     intent.putExtra("jamType", Traffic.CIRCLE);
                                                     intent.putExtra("jam", circle);
-                                                    intent.putExtra("ID", ID);
+                                                    intent.putExtra("ID", circle.getId());
                                                     startActivity(intent);
                                                 }
                                                 else
