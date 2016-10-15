@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bluebirdaward.mapassistant.MainActivity;
@@ -13,6 +14,7 @@ import com.bluebirdaward.mapassistant.gmmap.R;
 
 import listener.OnLoadListener;
 import model.Shortcut;
+import utils.RouteUtils;
 
 /**
  * Created by lequan on 10/12/2016.
@@ -23,6 +25,8 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
     String jamType;
     boolean like;
     TextView txtRating;
+
+   // LinearLayout btnDislike, btnLike,btnAdd;
     ImageButton btnDislike, btnLike,btnAdd;
 
     OnLoadListener<Integer> listener;
@@ -31,7 +35,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
     {
         super(context);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.dialog_loading);
+        setContentView(R.layout.dialog_shorcut);
 
         this.time = time;
         this.jamType = jamType;
@@ -44,8 +48,8 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         TextView txtDuration = (TextView) findViewById(R.id.txtDuration);
         txtRating = (TextView) findViewById(R.id.txtRating);
 
-        txtDistance.setText(Integer.toString(distance));
-        txtDuration.setText(Integer.toString(duration));
+        txtDistance.setText("Chiều dài: " + RouteUtils.getDistance(distance));
+        txtDuration.setText("Thời gian đi: " + RouteUtils.getDistance(duration));
 
         if (like)
         {
@@ -56,7 +60,10 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
             txtRating.setText(Integer.toString(rating) + " người đã thích đường đi này");
         }
 
-        btnDislike = (ImageButton) findViewById(R.id.btnDirection);
+      /*  btnDislike = (LinearLayout) findViewById(R.id.btnDislike);
+        btnLike = (LinearLayout) findViewById(R.id.btnLike);
+        btnAdd = (LinearLayout) findViewById(R.id.btnAdd);*/
+        btnDislike = (ImageButton) findViewById(R.id.btnDislike);
         btnLike = (ImageButton) findViewById(R.id.btnLike);
         btnAdd = (ImageButton) findViewById(R.id.btnAdd);
 

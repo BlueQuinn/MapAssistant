@@ -54,6 +54,7 @@ public class PetrolAdt extends ArrayAdapter<Petrol>
 
         txtName.setText(list.get(position).getName());
         txtPrice.setText(list.get(position).getPrice());
+        image.setImageResource(list.get(position).getIcon());
 /*
 
         if (list.get(position).getImage().length() > 0)

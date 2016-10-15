@@ -17,4 +17,6 @@
 
     <color name="fillColorHigh">#26D50000</color>
     <color name="fillColorMedium">#40FFD600</color>
+
+    <color name="routeColor">#18FFFF</color>
 </resources>

@@ -10,7 +10,7 @@ public class RouteUtils
         return getDuration(duration) + " - " + getDistance(distance);
     }
 
-    static String getDuration(int duration)
+    public static String getDuration(int duration)
     {
         String time;
         int hour = duration / 3600;
@@ -32,7 +32,7 @@ public class RouteUtils
         }
     }
 
-    static String getDistance(int distance)
+    public static String getDistance(int distance)
     {
         String dtc;
         if (distance < 1000)

@@ -26,7 +26,7 @@ public class PetrolActivity extends AppCompatActivity
     PetrolAdt adapter;
     ArrayList<Petrol> listPetrol;
     ProgressBar prbLoading;
-TextView txtLatest;
+    TextView txtLatest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -50,6 +50,11 @@ TextView txtLatest;
                 {
                     txtLatest.setText((String) jsonObject.get("time"));
                     listPetrol = (ArrayList<Petrol>) jsonObject.get("ListPetrol");
+                    int[] icon = new int[]{R.drawable.petrol1, R.drawable.petrol2, R.drawable.petrol3, R.drawable.petrol4, R.drawable.petrol5};
+                    for (int i=0;i<icon.length;++i)
+                    {
+                        listPetrol.get(i).setIcon(icon[i]);
+                    }
                     adapter = new PetrolAdt(PetrolActivity.this, R.layout.row_petrol, listPetrol);
                     listView.setAdapter(adapter);
                     prbLoading.setVisibility(View.GONE);

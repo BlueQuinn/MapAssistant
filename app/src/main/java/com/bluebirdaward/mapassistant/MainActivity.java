@@ -551,19 +551,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 {
                     prbLoading.setVisibility(View.VISIBLE);
                     meta = ((Long) snapshot.child("meta").getValue()).intValue();
-                    //DataSnapshot upNode = snapshot.child(Integer.toString(tUp));
-                    //DataSnapshot downNode = snapshot.child(Integer.toString(tDown));
-
 
                     ArrayList<TrafficCircle> trafficCircles = new ArrayList<>();
                     trafficCircles.addAll(getTrafficCircle(snapshot, meta));
-                    //trafficCircles.addAll(getCircleJam(upNode));
-                    //trafficCircles.addAll(getCircleJam(downNode));
 
                     ArrayList<TrafficLine> trafficLine = new ArrayList<>();
                     trafficLine.addAll(getTrafficLine(snapshot, meta));
-                    //trafficLine.addAll(getLineJam(upNode));
-                    //trafficLine.addAll(getLineJam(downNode));
 
                     if (trafficLine.size() > 0 || trafficCircles.size() > 0)
                     {
@@ -659,7 +652,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             editor.apply();
         }
     }
-    Marker m ;
+
+    Marker m;
+
     @Override
     public void onLocationChanged(Location location)
     {
@@ -688,8 +683,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         txtSearch.setText(address);
                         BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
                         //map.addMarker(new MarkerOptions().icon(icon).position(new LatLng(myLocation.latitude, myLocation.longitude)).title(address).snippet(""));
-                         m =        map.addMarker(new MarkerOptions().icon(icon).position(new LatLng(myLocation.latitude, myLocation.longitude)).title(address).snippet("").draggable(true));
-                       map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener()
+                        m = map.addMarker(new MarkerOptions().icon(icon).position(new LatLng(myLocation.latitude, myLocation.longitude)).title(address).snippet("").draggable(true));
+                        map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener()
                         {
                             @Override
                             public void onMarkerDragStart(Marker marker)
@@ -706,7 +701,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             @Override
                             public void onMarkerDragEnd(Marker marker)
                             {
-myLocation = m.getPosition();
+                                myLocation = m.getPosition();
                             }
                         });
                         map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 19));
@@ -849,7 +844,7 @@ myLocation = m.getPosition();
                 prbLoading.setVisibility(View.VISIBLE);
 
                 CircleOptions options = null;
-                if (hmMyTraffic != null )
+                if (hmMyTraffic != null)
                 {
                     MyTraffic traffic = hmMyTraffic.get(marker.getId());
                     if (traffic != null)
@@ -879,7 +874,7 @@ myLocation = m.getPosition();
                 }
                 if (options != null)
                 {
-                  map.addCircle(options);
+                    circle =  map.addCircle(options);
                 }
 
                 AddressAst asyncTask = new AddressAst(geocoder);
@@ -898,12 +893,16 @@ myLocation = m.getPosition();
 
                                         if (myTraffic)
                                         {
+
+
                                             MyTraffic circle = hmMyTraffic.get(marker.getId());
                                             Intent intent = new Intent(MainActivity.this, ShortcutActivity.class);
                                             intent.putExtra("time", time);
                                             intent.putExtra("jamType", Traffic.MY_TRAFFIC);
                                             intent.putExtra("jam", circle);     // circle này có id của DB
                                             intent.putExtra("ID", circle.getId());
+
+
                                             startActivity(intent);
                                         }
                                         else
@@ -913,7 +912,9 @@ myLocation = m.getPosition();
                                                 TrafficLine line = hmTraffic.getLine(marker.getId());
                                                 if (sqlite.haveStucked(line))
                                                 {
+                                                    ArrayList<LatLng> nearbyTraffic = TrafficUtils.getNearbyJam(hmTraffic.getLine(), hmTraffic.getCircle(), line.getCenter(), (int) (line.length() / 2));
                                                     Intent intent = new Intent(MainActivity.this, ShortcutActivity.class);
+                                                    intent.putExtra("nearby", nearbyTraffic);
                                                     intent.putExtra("time", time);
                                                     intent.putExtra("jamType", Traffic.LINE);
                                                     intent.putExtra("jam", line);
@@ -930,7 +931,9 @@ myLocation = m.getPosition();
                                                 TrafficCircle circle = hmTraffic.getCircle(marker.getId());
                                                 if (sqlite.haveStucked(circle))
                                                 {
+                                                    ArrayList<LatLng> nearbyTraffic = TrafficUtils.getNearbyJam(hmTraffic.getLine(), hmTraffic.getCircle(), circle.getCenter(), circle.getRadius());
                                                     Intent intent = new Intent(MainActivity.this, ShortcutActivity.class);
+                                                    intent.putExtra("nearby", nearbyTraffic);
                                                     intent.putExtra("time", time);
                                                     intent.putExtra("jamType", Traffic.CIRCLE);
                                                     intent.putExtra("jam", circle);

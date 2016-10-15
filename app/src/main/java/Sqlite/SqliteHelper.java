@@ -308,7 +308,7 @@ public class SqliteHelper extends SQLiteOpenHelper
     {
         String type = jamType.substring(0,1);
         ArrayList<HashMap<String, String>> data = executeQuery(String.format(Locale.US,
-                "select * from Shortcut where Time = %d and Jam = '%s' and ID = %d",
+                "select * from Shortcut where Time = %d and JamType = '%s' and ID = %d",
                 time, type, ID));
         if (data.size() < 1)
         {

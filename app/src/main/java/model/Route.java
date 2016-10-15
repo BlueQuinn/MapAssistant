@@ -14,9 +14,13 @@ import utils.RouteUtils;
  * Created by lequan on 10/2/2016.
  */
 public class Route implements SafeParcelable
-
 {
     ArrayList<Path> paths;
+
+    public ArrayList<Path> getPath()
+    {
+        return paths;
+    }
 
     public Path getPath(int index)
     {
@@ -44,6 +48,13 @@ public class Route implements SafeParcelable
         }
         return route;
     }
+
+    public void add(ArrayList<Path> paths)
+    {
+        for (Path p : paths)
+            this.paths.add(p);
+    }
+
 
     public int pathCount()
     {

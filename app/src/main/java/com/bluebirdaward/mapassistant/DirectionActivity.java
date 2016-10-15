@@ -22,7 +22,6 @@ import com.firebase.client.ValueEventListener;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -79,8 +78,7 @@ public class DirectionActivity extends AppCompatActivity
 
     TextView[] textView;
 
-    LatLng[] latLng = new LatLng[2];
-    Marker[] marker = new Marker[2];
+    MarkerOptions startOption, endOption;
     ArrayList<Marker> waypoint;
 
     Traffic hmTraffic;
@@ -92,7 +90,7 @@ public class DirectionActivity extends AppCompatActivity
     public static final int PLACE_DIRECTION = 3;
 
     ProgressBar prbLoading;
-    int colorGreen, colorLime;
+    int colorGreen, colorLime, colorRoute;
 
     int time;
     MarkerOptions waypointOption;
@@ -113,6 +111,7 @@ public class DirectionActivity extends AppCompatActivity
         root = findViewById(R.id.frameLayout);
         colorGreen = getResources().getColor(R.color.green);
         colorLime = getResources().getColor(R.color.lime);
+        colorRoute = getResources().getColor(R.color.routeColor);
 
         textView = new TextView[2];
         textView[0] = (TextView) findViewById(R.id.txtFrom);
@@ -154,6 +153,10 @@ public class DirectionActivity extends AppCompatActivity
                 destination = new LatLng(dest.getLat(), dest.getLng());
                 place = dest.getName();
                 address = dest.getAddress();
+                if (address == null)
+                {
+                    address = "";
+                }
                 break;
         }
 
@@ -175,7 +178,7 @@ public class DirectionActivity extends AppCompatActivity
         map.getUiSettings().setMapToolbarEnabled(false);
 
         map.setOnMarkerDragListener(this);
-        map.setOnMarkerClickListener(DirectionActivity.this);
+        map.setOnMarkerClickListener(this);
         map.setOnPolylineClickListener(this);
 
         geocoder = new Geocoder(this, Locale.getDefault());
@@ -198,10 +201,10 @@ public class DirectionActivity extends AppCompatActivity
                     place = intent.getStringExtra("restaurant");
                     address = intent.getStringExtra("address");
                     myLocation = intent.getParcelableExtra("my location");
-                    latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
+                    // start = new Place(myLocation.latitude, myLocation.longitude, "my location", intent.getStringExtra("my address"));
                     textView[0].setText("my location");
-                    MarkerOptions markerOptions = new MarkerOptions().position(latLng[0]).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
-                    marker[0] = map.addMarker(markerOptions.title("my location").snippet(intent.getStringExtra("my address")));
+                    startOption = new MarkerOptions().position(myLocation).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
+                    map.addMarker(startOption.title("my location").snippet(intent.getStringExtra("my address")));
 
                     Intent findPlaceIntent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(address).zzig(1).build(this);
                     startActivityForResult(findPlaceIntent, 3);
@@ -217,24 +220,18 @@ public class DirectionActivity extends AppCompatActivity
                 break;
 
             case PLACE_DIRECTION:
-                latLng[0] = new LatLng(myLocation.latitude, myLocation.longitude);
-                latLng[1] = new LatLng(destination.latitude, destination.longitude);
 
-                MarkerOptions markerOptions = new MarkerOptions().position(latLng[0]).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
-                marker[0] = map.addMarker(markerOptions.title("my location").draggable(true));
+                startOption = new MarkerOptions().position(new LatLng(myLocation.latitude, myLocation.longitude)).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
+                map.addMarker(startOption.title("my location").snippet(""));//.draggable(true));
 
-                markerOptions = new MarkerOptions().position(latLng[1]).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
-                marker[1] = map.addMarker(markerOptions.title(place));
-                if (address != null)
-                {
-                    marker[1].setSnippet(address);
-                }
+                endOption = new MarkerOptions().position(new LatLng(destination.latitude, destination.longitude)).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+                map.addMarker(endOption.title(place).snippet(address));
 
                 textView[0].setText("my location");
                 textView[1].setText(place);
 
                 waypoint = new ArrayList<>();
-                navigate(latLng[0], latLng[1]);
+                navigate(startOption.getPosition(), endOption.getPosition());
                 break;
         }
 
@@ -253,7 +250,7 @@ public class DirectionActivity extends AppCompatActivity
 
             String place = data.getStringExtra("place");
             String address = data.getStringExtra("address");
-            latLng[requestCode] = data.getParcelableExtra("position");
+            LatLng pos = data.getParcelableExtra("position");
 
             textView[requestCode].setText(place);
 
@@ -267,24 +264,45 @@ public class DirectionActivity extends AppCompatActivity
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
             }
 
-            if (marker[requestCode] != null)
+            /*if (marker[requestCode] != null)
             {
                 marker[requestCode].remove();
+            }*/
+            if (requestCode == 0)
+            {
+                startOption = new MarkerOptions().position(pos).icon(icon);
+                map.addMarker(startOption.title(place).snippet(address));
             }
-            MarkerOptions markerOptions = new MarkerOptions().position(latLng[requestCode]).icon(icon);
-            marker[requestCode] = map.addMarker(markerOptions.title(place).snippet(address));
-            map.animateCamera(CameraUpdateFactory.newLatLng(latLng[requestCode]));
+            else
+            {
+                endOption = new MarkerOptions().position(pos).icon(icon);
+                map.addMarker(endOption.title(place).snippet(address));
+            }
 
-            if (textView[0].getText().length() > 0 && textView[1].getText().length() > 0)
+            map.clear();
+            reset();
+            if (startOption != null)
+            {
+                map.addMarker(startOption);
+            }
+            if (endOption != null)
+            {
+                map.addMarker(endOption);
+            }
+
+            map.animateCamera(CameraUpdateFactory.newLatLng(pos));
+            if (isDirected())
             {
                 for (Marker i : waypoint)
-                i.remove();
+                {
+                    i.remove();
+                }
 
                /* ArrayList<String> key = new ArrayList<>(hmShortcut.keySet());
                 for (String i : key)
                 hmShortcut.get(i).*/
 
-                navigate(latLng[0], latLng[1]);
+                navigate(startOption.getPosition(), endOption.getPosition());
             }
         }
         if (requestCode == 3)       // direction to restaurant from my location
@@ -292,20 +310,17 @@ public class DirectionActivity extends AppCompatActivity
             if (resultCode == -1)
             {
                 prbLoading.setVisibility(View.GONE);
-                Place restaurant = PlaceAutocomplete.getPlace(this, data);
+                com.google.android.gms.location.places.Place restaurant = PlaceAutocomplete.getPlace(this, data);
                 textView[1].setText(restaurant.getName());
-                latLng[1] = restaurant.getLatLng();
-                MarkerOptions markerOptions = new MarkerOptions().position(latLng[1]).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
-                marker[1] = map.addMarker(markerOptions.title(restaurant.getName().toString()));
-                if (place.length() > 0)
+                endOption = new MarkerOptions().position(restaurant.getLatLng()).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+                if (place.length() < 1)
                 {
-                    marker[1].setSnippet(place);
+                    place = "";
                 }
+                map.addMarker(endOption.title(restaurant.getName().toString()).snippet(place));
 
-                marker[0].setPosition(latLng[0]);
-                marker[1].setPosition(latLng[1]);
 
-                navigate(latLng[0], latLng[1]);
+                navigate(startOption.getPosition(), endOption.getPosition());
             }
             else if (resultCode == 2)
             {
@@ -330,12 +345,12 @@ public class DirectionActivity extends AppCompatActivity
                     Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_LONG).show();
                     return;
                 }
-                PolylineOptions option = new PolylineOptions().width(15).color(getResources().getColor(R.color.colorPrimary));
+                PolylineOptions option = new PolylineOptions().width(15).color(getResources().getColor(R.color.routeColor));
                 /*for (int i = 0; i < result.lenght(); i++)
                 {
                     line.add(result.get(i));
                 }*/
-                option.addAll(route.getRoute());
+                option.addAll(route.getRoute()).clickable(true);
                 if (polyline != null)
                 {
                     polyline.remove();
@@ -344,7 +359,7 @@ public class DirectionActivity extends AppCompatActivity
                 polyline = map.addPolyline(option);
                 polyline.setClickable(true);
 
-                map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(latLng[0], latLng[1]), width, height, 150));
+                map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(startOption.getPosition(), endOption.getPosition()), width, height, 150));
 
                 DirectionActivity.this.route = route;
             }
@@ -376,39 +391,32 @@ public class DirectionActivity extends AppCompatActivity
                     textView[0].setText(textView[1].getText());
                     textView[1].setText(tmp);
 
-                    double tmpLat = latLng[0].latitude;
-                    double tmpLng = latLng[0].longitude;
-                    latLng[0] = new LatLng(latLng[1].latitude, latLng[1].longitude);
-                    latLng[1] = new LatLng(tmpLat, tmpLng);
+                    double tmpLat = startOption.getPosition().latitude;
+                    double tmpLng = startOption.getPosition().longitude;
+                    startOption.position(new LatLng(endOption.getPosition().latitude, endOption.getPosition().longitude));
+                    endOption.position(new LatLng(tmpLat, tmpLng));
 
-                    tmp = marker[0].getTitle();
-                    marker[0].setTitle(marker[1].getTitle());
-                    marker[1].setTitle(tmp);
+                    tmp = startOption.getTitle();
+                    startOption.title(endOption.getTitle());
+                    endOption.title(tmp);
 
-                    tmp = marker[0].getSnippet();
-                    marker[0].setSnippet(marker[1].getSnippet());
-                    marker[1].setSnippet(tmp);
+                    tmp = startOption.getSnippet();
+                    startOption.snippet(endOption.getSnippet());
+                    endOption.snippet(tmp);
 
-                    marker[0].setPosition(latLng[0]);
-                    marker[1].setPosition(latLng[1]);
+                    map.clear();
+                    reset();
+                    map.addMarker(startOption).hideInfoWindow();
+                    map.addMarker(endOption).hideInfoWindow();
 
-                    marker[0].hideInfoWindow();
-                    marker[1].hideInfoWindow();
-
-                    //MarkerOptions options = new MarkerOptions().
-
-                    for (Marker m : waypoint)
-                    {
-                        m.remove();
-                    }
-                    navigate(latLng[0], latLng[1]);
+                    navigate(startOption.getPosition(), endOption.getPosition());
                 }
                 break;
 
             case R.id.btnAdd:
-                if (textView[0].getText().length() > 0 && textView[1].getText().length() > 0)
+                if (isDirected())
                 {
-                    LatLng position = new LatLng((latLng[0].latitude + latLng[1].latitude) / 2, (latLng[0].longitude + latLng[1].longitude) / 2);
+                    LatLng position = new LatLng((startOption.getPosition().latitude + endOption.getPosition().latitude) / 2, (startOption.getPosition().longitude + endOption.getPosition().longitude) / 2);
                     waypoint.add(map.addMarker(waypointOption.position(position)));
                 }
                 else
@@ -418,7 +426,7 @@ public class DirectionActivity extends AppCompatActivity
                 break;
 
             case R.id.btnTraffic:
-                if (textView[0].getText().length() > 0 && textView[1].getText().length() > 0)
+                if (isDirected())
                 {
                     prbLoading.setVisibility(View.VISIBLE);
                     loadTraffic();
@@ -446,20 +454,21 @@ public class DirectionActivity extends AppCompatActivity
                     prbLoading.setVisibility(View.VISIBLE);
                     int meta = ((Long) snapshot.child("meta").getValue()).intValue();
 
-                    ArrayList<TrafficCircle>       trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(snapshot, meta), route);
-                    ArrayList<TrafficLine>           trafficLines = TrafficUtils.getLineJam(getTrafficLine(snapshot, meta), route);
+                    ArrayList<TrafficCircle> trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(snapshot, meta), route);
+                    ArrayList<TrafficLine> trafficLines = TrafficUtils.getLineJam(getTrafficLine(snapshot, meta), route);
 
                     if (trafficLines.size() > 0 || trafficCircles.size() > 0)
                     {
-                        //map.clear();
+                        redraw();
                         AddTrafficAst asyncTask = new AddTrafficAst(trafficLines, trafficCircles, map);
                         asyncTask.setListener(new OnLoadListener<Traffic>()
                         {
                             @Override
                             public void onFinish(Traffic result)
                             {
+
                                 hmTraffic = result;
-                                getShorcut();
+                                loadShortcut();
                                 prbLoading.setVisibility(View.GONE);
                             }
                         });
@@ -468,7 +477,7 @@ public class DirectionActivity extends AppCompatActivity
                     else
                     {
                         prbLoading.setVisibility(View.GONE);
-                        Toast.makeText(DirectionActivity.this, "Chưa có nơi nào tắc đường", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(DirectionActivity.this, "Chưa có điểm kẹt xe nào trên đường đi này", Toast.LENGTH_SHORT).show();
                     }
                     firebase.removeEventListener(this);
                 }
@@ -504,8 +513,8 @@ public class DirectionActivity extends AppCompatActivity
     public void onMarkerDragEnd(Marker marker)
     {
         ArrayList<LatLng> point = new ArrayList<>();
-        point.add(latLng[0]);
-        point.add(latLng[1]);
+        point.add(startOption.getPosition());
+        point.add(endOption.getPosition());
         for (Marker i : waypoint)
         {
             point.add(i.getPosition());
@@ -525,7 +534,7 @@ public class DirectionActivity extends AppCompatActivity
                         public void onClick(View view)
                         {
                             Marker sign = map.addMarker(new MarkerOptions()
-                                    .draggable(true).position(latLng[0])
+                                    .draggable(true).position(startOption.getPosition())
                                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.sign)));
                             sign.setTitle("Chọn tuyến đường khác");
                             sign.setSnippet("Nhấn giữ để di chuyển");
@@ -539,7 +548,7 @@ public class DirectionActivity extends AppCompatActivity
     }
 
 
-    void getShorcut()
+    void loadShortcut()
     {
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
         {
@@ -578,12 +587,12 @@ public class DirectionActivity extends AppCompatActivity
                                             ID = circle.getId();
                                         }
 
-                                        if (shortcuts.size() > 0)
+                                        if (shortcuts != null && shortcuts.size() > 0)
                                         {
                                             for (Shortcut i : shortcuts)
                                             {
                                                 PolylineOptions options = new PolylineOptions().color(colorGreen).width(15);
-                                                options.addAll(i.getRoute()).clickable(true);
+                                                options.addAll(i.getRoute()).clickable(true).zIndex(10);
                                                 Polyline polyline = map.addPolyline(options);
                                                 hmShortcut.put(polyline.getId(), i);
 
@@ -591,15 +600,6 @@ public class DirectionActivity extends AppCompatActivity
                                                 addEnd(i.getEnd());
                                             }
                                             prbLoading.setVisibility(View.GONE);
-
-                                            map.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener()
-                                            {
-                                                @Override
-                                                public void onPolylineClick(Polyline polyline)
-                                                {
-
-                                                }
-                                            });
                                         }
                                         else
                                         {
@@ -620,18 +620,23 @@ public class DirectionActivity extends AppCompatActivity
 
     void addStart(LatLng start)
     {
-        MarkerOptions options = new MarkerOptions().position(start).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
+        MarkerOptions options = new MarkerOptions().position(start).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_shortcut));
         map.addMarker(options);
     }
 
     void addEnd(LatLng end)
     {
-        MarkerOptions options = new MarkerOptions().position(end).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+        MarkerOptions options = new MarkerOptions().position(end).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag_shortcut));
         map.addMarker(options);
     }
 
     void redraw()
     {
+        map.addMarker(startOption);
+        map.addMarker(endOption);
+        PolylineOptions options = new PolylineOptions().width(15).color(colorGreen);
+        options.addAll(route.getRoute());
+        map.addPolyline(options);
     }
 
     void rating(String jamType, int ID, final int rating, final String route)
@@ -665,12 +670,14 @@ public class DirectionActivity extends AppCompatActivity
         });
     }
 
+    Shortcut shortcut;
+
     @Override
     public void onPolylineClick(Polyline polyline)
     {
         if (hmShortcut != null)
         {
-            final Shortcut shortcut = hmShortcut.get(polyline.getId());
+            shortcut = hmShortcut.get(polyline.getId());
             if (shortcut != null)
             {
                 ShortcutDialog dialog = new ShortcutDialog(DirectionActivity.this, shortcut, time, jamType, ID);
@@ -681,8 +688,9 @@ public class DirectionActivity extends AppCompatActivity
                     {
                         if (rating < 0)
                         {
-                            waypoint = new ArrayList<>();
-                            navigate(latLng[0], shortcut.getStart(), shortcut.getEnd(), latLng[1]);
+                            map.clear();
+                            reset();
+                            navigateShortcut(startOption.getPosition(), shortcut.getStart(), shortcut.getEnd(), endOption.getPosition());
                         }
                         else
                         {
@@ -697,5 +705,82 @@ public class DirectionActivity extends AppCompatActivity
         {
             Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime).show();
         }
+    }
+
+    boolean isDirected()
+    {
+        return textView[0].getText().length() > 0 && textView[1].getText().length() > 0;
+    }
+
+    void reset()
+    {
+        hmShortcut = null;
+        hmTraffic = null;
+        waypoint = new ArrayList<>();
+    }
+
+    void navigateShortcut(final LatLng... point)
+    {
+        DirectionAst asyncTask = new DirectionAst();
+        asyncTask.setOnLoadListener(new OnLoadListener<Route>()
+        {
+            @Override
+            public void onFinish(final Route route)
+            {
+                if (route == null || route.pathCount() < 1)
+                {
+                    Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                final Route firstRoute = route;
+
+                DirectionAst asyncTask = new DirectionAst();
+                asyncTask.setOnLoadListener(new OnLoadListener<Route>()
+                {
+                    @Override
+                    public void onFinish(Route route)
+                    {
+                        prbLoading.setVisibility(View.GONE);
+                        if (route == null || route.pathCount() < 1)
+                        {
+                            Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        /*if (polyline != null)
+                        {
+                            polyline.remove();
+                        }*/
+
+                        PolylineOptions option = new PolylineOptions().width(15).color(colorRoute).clickable(true);
+                        option.addAll(firstRoute.getRoute());
+                        polyline = map.addPolyline(option);
+
+                        option = new PolylineOptions().width(15).color(colorGreen).clickable(true);
+                        option.addAll(shortcut.getRoute());
+                        polyline = map.addPolyline(option);
+
+                        option = new PolylineOptions().width(15).color(colorRoute).clickable(true);
+                        option.addAll(route.getRoute());
+                        polyline = map.addPolyline(option);
+
+                        MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.sign));
+                        map.addMarker(markerOptions.position(shortcut.getStart()));
+                        map.addMarker(markerOptions.position(shortcut.getEnd()));
+                        map.addMarker(startOption);
+                        map.addMarker(endOption);
+                        map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(startOption.getPosition(), endOption.getPosition()), width, height, 150));
+
+                        DirectionActivity.this.route = new Route(firstRoute.getPath());
+                        DirectionActivity.this.route.add(route.getPath());
+                    }
+                });
+                asyncTask.execute(point[2], point[3]);
+                prbLoading.setVisibility(View.VISIBLE);
+            }
+        });
+        asyncTask.execute(point[0], point[1]);
+        prbLoading.setVisibility(View.VISIBLE);
     }
 }

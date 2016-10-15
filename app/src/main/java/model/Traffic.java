@@ -47,4 +47,25 @@ public class Traffic
     public static final String CIRCLE = "circle";
     public static final String LINE = "line";
 
+    public ArrayList<TrafficLine> getLine()
+    {
+        ArrayList<TrafficLine> list = new ArrayList<>();
+        ArrayList<String> key = new ArrayList<>(listLine.keySet());
+        for (String i : key)
+        {
+            list.add(listLine.get(i));
+        }
+return list;
+    }
+
+    public ArrayList<TrafficCircle> getCircle()
+    {
+        ArrayList<TrafficCircle> list = new ArrayList<>();
+        ArrayList<String> key = new ArrayList<>(listCircle.keySet());
+        for (String i : key)
+        {
+            list.add(listCircle.get(i));
+        }
+        return list;
+    }
 }

@@ -71,6 +71,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     int radius;
     String jamType;
     int time;
+    ArrayList<LatLng> nearbyTraffic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -115,21 +116,30 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
             {
                 if (!route.inCircle(jam, radius))
                 {
-                    MessageDialog.showMessage(this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Vượt quá phạm vi cho phép", "Đường đi tắt mà bạn gợi ý phải nằm trong phạm vi gần điểm ùn tắc\nHãy thử tìm đường tắt khác nhé!");
+                    MessageDialog.showMessage(this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Vượt quá phạm vi cho phép", "Đường đi tắt mà bạn gợi ý phải nằm trong phạm vi gần điểm ùn tắc.\nHãy thử tìm đường tắt khác nhé!");
                     return;
                 }
 
                 int acceptedLength = radius + 2000;
                 if (route.getDistance() > acceptedLength)
                 {
-                    MessageDialog.showMessage(this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Đường đi quá dài", "Đường đi tắt mà bạn gợi ý phải ngắn hơn " + (acceptedLength / 1000) + "km" + "\nHãy thử tìm đường tắt khác nhé!");
+                    MessageDialog.showMessage(this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Đường đi quá dài", "Đường đi tắt mà bạn gợi ý phải ngắn hơn " + (acceptedLength / 1000) + "km." + "\nHãy thử tìm đường tắt khác nhé!");
                     return;
                 }
 
                 if (PolyUtils.isLocationOnPath(jam, route.getRoute(), false, 100))
                 {
-                    MessageDialog.showMessage(this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Đường có kẹt xe", "Đường đi tắt mà bạn gợi ý có đi ngang qua vị trị có ùn tắc giao thông" + "\nHãy thử tìm đường tắt khác nhé!");
+                    MessageDialog.showMessage(this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Đường có kẹt xe", "Đường đi tắt mà bạn gợi ý có đi ngang qua vị trị có ùn tắc giao thông." + "\nHãy thử tìm đường tắt khác nhé!");
                     return;
+                }
+
+                for (LatLng i : nearbyTraffic)
+                {
+                    if (PolyUtils.isLocationOnPath(i, route.getRoute(), false, 100))
+                    {
+                        MessageDialog.showMessage(this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Đường có kẹt xe", "Đường đi tắt mà bạn gợi ý có đi ngang qua vị trị có ùn tắc giao thông." + "\nHãy thử tìm đường tắt khác nhé!");
+                        return;
+                    }
                 }
 
                 prbLoading.setVisibility(View.VISIBLE);
@@ -144,37 +154,38 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                     {
 //Object a = snapshot.getValue();
 
-                        HashMap<String, Object> wtf = (HashMap<String, Object>)snapshot.getValue();
+                        HashMap<String, Object> wtf = (HashMap<String, Object>) snapshot.getValue();
 
-                        ArrayList<String> listKey = new ArrayList<String>(wtf.keySet());
+                        ArrayList<String> listKey = new ArrayList<>(wtf.keySet());
                         for (String key : listKey)
-                        if (key.equals(Integer.toString(ID)))
                         {
-                            //DataSnapshot data = snapshot.child("shortcut");
-                            Firebase ref = snapshot.child(key).child("shortcut").getRef();
+                            if (key.equals(Integer.toString(ID)))
+                            {
+                                //DataSnapshot data = snapshot.child("shortcut");
+                                Firebase ref = snapshot.child(key).child("shortcut").getRef();
 
-                            String routeString = PolyUtils.encode(polyline.getPoints());
-                            Map<String, Object> shortcut = new HashMap<>();
-                            shortcut.put("route", routeString);
-                            shortcut.put("distance", route.getDistance());
-                            shortcut.put("duration", route.getDuration());
-                            shortcut.put("like", 1);
-                            ref.push().setValue(shortcut);  // ??????????
-                            query.removeEventListener(this);
+                                String routeString = PolyUtils.encode(polyline.getPoints());
+                                Map<String, Object> shortcut = new HashMap<>();
+                                shortcut.put("route", routeString);
+                                shortcut.put("distance", route.getDistance());
+                                shortcut.put("duration", route.getDuration());
+                                shortcut.put("like", 0);
+                                ref.push().setValue(shortcut);  // ??????????
+                                query.removeEventListener(this);
 
-                            MainActivity.sqlite.addShortcut(time, jamType, ID, routeString, route.getDistance(), route.getDuration(), 1, "0");
+                                MainActivity.sqlite.addShortcut(time, jamType, ID, routeString, route.getDistance(), route.getDuration(), 0, "0");
 
-                            prbLoading.setVisibility(View.GONE);
-                            MessageDialog.showMessage(ShortcutActivity.this, getResources().getColor(R.color.green), R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
+                                prbLoading.setVisibility(View.GONE);
+                                MessageDialog.showMessage(ShortcutActivity.this, getResources().getColor(R.color.green), R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
 
-                            Log.d("traffic", "shortcut " + time + " " + jamType);
+                                Log.d("traffic", "shortcut " + time + " " + jamType);
+                            }
                         }
 
                         // chưa có kiểm tra xem 2 shortcut trùng nhau
                         //DataSnapshot data = snapshot.getChildren().iterator().next();
                         //String key = snapshot.getKey();
-                       // String path = "/" + snapshot.getKey() + "/" + key;
-
+                        // String path = "/" + snapshot.getKey() + "/" + key;
 
 
                     }
@@ -203,6 +214,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
         time = intent.getIntExtra("time", 0);
         ID = intent.getIntExtra("ID", 0);
         jamType = intent.getStringExtra("jamType");
+        nearbyTraffic = intent.getParcelableArrayListExtra("nearby");
         switch (jamType)
         {
             case Traffic.LINE:
@@ -258,6 +270,12 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
         map.setOnMarkerClickListener(this);
         map.setOnPolylineClickListener(this);
 
+        for (LatLng i : nearbyTraffic)
+        {
+            MarkerOptions trafficMarkerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_medium));
+            map.addMarker(trafficMarkerOption.position(i));
+        }
+
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(startPos, jam, endPos), 10));
         map.addMarker(new MarkerOptions().position(jam).icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high)));
         map.addCircle(new CircleOptions().center(jam).radius(radius).strokeColor(Color.RED));
@@ -265,6 +283,8 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
         option = new MarkerOptions().draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.sign));
         start = map.addMarker(new MarkerOptions().draggable(true).position(startPos).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)).title("Điểm đầu"));
         end = map.addMarker(new MarkerOptions().draggable(true).position(endPos).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag)).title("Điểm cuối"));
+
+
 
         waypoint = new ArrayList<>();
         btnAdd.setClickable(true);

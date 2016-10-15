@@ -66,6 +66,7 @@ public class PetrolAst  extends AsyncTask<String, String, JSONObject> {
             Object[] nodes_price = (root.evaluateXPath("//*[@id='tc_gia_vang']/div/div/table/tbody/tr/td[1]"));
 
             Log.d("Son","nodes");
+
             ArrayList<Petrol> lstPetrol = new ArrayList<>();
             for (int i = 0; i < nodes_name.length; ++i) {
                 TagNode node_name = (TagNode)nodes_name[i];

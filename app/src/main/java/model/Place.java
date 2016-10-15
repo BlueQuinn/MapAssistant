@@ -1,5 +1,7 @@
 package model;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.io.Serializable;
 
 /**
@@ -36,5 +38,10 @@ public class Place implements Serializable
         this.lng = lng;
         this.name = name;
         this.address = address;
+    }
+
+    public LatLng getPosition()
+    {
+        return new LatLng(lat, lng);
     }
 }
