@@ -15,8 +15,9 @@ import com.bluebirdaward.mapassistant.gmmap.R;
 public class LoadingDialog extends Dialog
 {
     public static LoadingDialog show(Context context, String message)
-    {
-        return new LoadingDialog(context, message);
+    { LoadingDialog dialog = new LoadingDialog(context, message);
+        dialog.show();
+        return dialog;
     }
 
     ProgressBar prbLoading;

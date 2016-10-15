@@ -429,7 +429,7 @@ public class DirectionActivity extends AppCompatActivity
             case R.id.btnTraffic:
                 if (isDirected())
                 {
-                    prbLoading.setVisibility(View.VISIBLE);
+                   // prbLoading.setVisibility(View.VISIBLE);
                     loadTraffic();
                 }
                 else

@@ -51,6 +51,7 @@ import model.TrafficCircle;
 import model.TrafficLine;
 import utils.MapUtils;
 import utils.PolyUtils;
+import utils.RequestCode;
 import widgets.MessageDialog;
 
 public class ShortcutActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback,
@@ -199,11 +200,6 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        return super.onCreateOptionsMenu(menu);
-    }
 
     @Override
     public void onMapReady(GoogleMap googleMap)
@@ -391,12 +387,26 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.menu_shortcut, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        if (item.getItemId() == android.R.id.home)
+        switch (item.getItemId())
         {
-            finish();
+            case android.R.id.home:
+                finish();
+                break;
+
+            case R.id.info:
+                MessageDialog.showMessage(this, getResources().getColor(R.color.colorAccent), R.drawable.info, "Hướng dẫn", "Nhấn giữ và kéo thả các điểm trên bản đồ để tạo thành đường đi tắt.\n" +  "Sau đó gửi đường đi tắt này lên server để cho tất cả những người dùng ứng dụng Map Assistant đều có thể thấy được gợi ý của bạn khi có ùn tắc giao thông xảy ra");
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
 }
+
