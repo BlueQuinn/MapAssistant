@@ -153,8 +153,6 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                     @Override
                     public void onDataChange(DataSnapshot snapshot)
                     {
-//Object a = snapshot.getValue();
-
                         HashMap<String, Object> wtf = (HashMap<String, Object>) snapshot.getValue();
 
                         ArrayList<String> listKey = new ArrayList<>(wtf.keySet());
@@ -162,7 +160,6 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                         {
                             if (key.equals(Integer.toString(ID)))
                             {
-                                //DataSnapshot data = snapshot.child("shortcut");
                                 Firebase ref = snapshot.child(key).child("shortcut").getRef();
 
                                 String routeString = PolyUtils.encode(polyline.getPoints());
@@ -171,7 +168,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                                 shortcut.put("distance", route.getDistance());
                                 shortcut.put("duration", route.getDuration());
                                 shortcut.put("like", 0);
-                                ref.push().setValue(shortcut);  // ??????????
+                                ref.push().setValue(shortcut);
                                 query.removeEventListener(this);
 
                                 MainActivity.sqlite.addShortcut(time, jamType, ID, routeString, route.getDistance(), route.getDuration());
@@ -194,7 +191,6 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                     @Override
                     public void onCancelled(FirebaseError firebaseError)
                     {
-                        System.out.println("The read failed: " + firebaseError.getMessage());
                         query.removeEventListener(this);
                     }
                 });
@@ -266,8 +262,8 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
 
             default:
             {
-                startPos = new LatLng(10.76353877327849, 106.68203115463257);
-                endPos = new LatLng(10.411269, 107.136072);
+                startPos = new LatLng(jam.latitude, jam.longitude + 0.01);
+                endPos = new LatLng(jam.latitude, jam.longitude - 0.01);
                 break;
             }
         }
@@ -290,7 +286,6 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
         option = new MarkerOptions().draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.sign));
         start = map.addMarker(new MarkerOptions().draggable(true).position(startPos).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)).title("Điểm đầu"));
         end = map.addMarker(new MarkerOptions().draggable(true).position(endPos).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag)).title("Điểm cuối"));
-
 
 
         waypoint = new ArrayList<>();
@@ -358,7 +353,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public boolean onMarkerClick(final Marker marker)
     {
-      /*  prbLoading.setVisibility(View.VISIBLE);
+        prbLoading.setVisibility(View.VISIBLE);
         AddressAst asyncTask = new AddressAst(geocoder);
         asyncTask.setListener(new OnLoadListener<String>()
         {
@@ -366,22 +361,26 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
             public void onFinish(String address)
             {
                 prbLoading.setVisibility(View.GONE);
-                Snackbar snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE);
-                if (marker.getId().equals(waypoint.get(0).getId()) || marker.getId().equals(waypoint.get(waypoint.size() - 1).getId()))     // must not remove start and end
+                Snackbar snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE).setActionTextColor(getResources().getColor(R.color.lime));
+                snackbar.setAction("Xóa", new View.OnClickListener()
                 {
-                    snackbar.setAction("Xóa", new View.OnClickListener()
+                    @Override
+                    public void onClick(View v)
                     {
-                        @Override
-                        public void onClick(View v)
+                        marker.remove();
+                        for (Marker m : waypoint)
                         {
-                            marker.remove();
+                            if (m.getId().equals(marker.getId()))
+                            {
+                                waypoint.remove(m);
+                            }
                         }
-                    }).show();
-                }
+                    }
+                }).show();
             }
         });
         LatLng position = marker.getPosition();
-        asyncTask.execute(position.latitude, position.longitude);*/
+        asyncTask.execute(position.latitude, position.longitude);
         return false;
     }
 

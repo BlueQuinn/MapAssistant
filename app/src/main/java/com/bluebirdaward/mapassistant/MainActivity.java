@@ -893,8 +893,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                         if (myTraffic)
                                         {
-
-
                                             MyTraffic circle = hmMyTraffic.get(marker.getId());
                                             Intent intent = new Intent(MainActivity.this, ShortcutActivity.class);
                                             intent.putExtra("time", time);

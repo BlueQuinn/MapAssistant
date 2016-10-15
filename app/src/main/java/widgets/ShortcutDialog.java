@@ -123,7 +123,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         }
         else
         {
-            txtRating.setText("Bạn và " + Integer.toString(rating) + " người khác đã thích đường đi này");
+            txtRating.setText("Bạn và " + Integer.toString(rating-1) + " người khác đã thích đường đi này");
         }
     }
 
@@ -135,7 +135,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         }
         else
         {
-            txtRating.setText(Integer.toString(rating) + " người đã thích đường đi này");
+            txtRating.setText(Integer.toString(rating+1) + " người đã thích đường đi này");
         }
     }
 

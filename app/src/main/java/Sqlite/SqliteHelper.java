@@ -310,11 +310,7 @@ public class SqliteHelper extends SQLiteOpenHelper
         ArrayList<HashMap<String, String>> data = executeQuery(String.format(Locale.US,
                 "select * from Shortcut where Time = %d and JamType = '%s' and ID = %d and Like = '1'",
                 time, type, ID));
-        if (data.size() < 1)
-        {
-            return false;
-        }
-        return true;
+        return data.size() > 0;
     }
 
     boolean rating(int time, String jamType, int ID, int rating, String like)

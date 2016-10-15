@@ -23,7 +23,6 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -47,6 +46,7 @@ import model.TrafficCircle;
 import model.TrafficLine;
 import utils.MapUtils;
 import utils.TrafficUtils;
+import widgets.LoadingDialog;
 import widgets.ShortcutDialog;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
@@ -201,11 +201,11 @@ public class DirectionActivity extends AppCompatActivity
                     Intent intent = getIntent();
                     place = intent.getStringExtra("restaurant");
                     address = intent.getStringExtra("address");
-                    myLocation = intent.getParcelableExtra("my location");
-                    // start = new Place(myLocation.latitude, myLocation.longitude, "my location", intent.getStringExtra("my address"));
-                    textView[0].setText("my location");
-                    startOption = new MarkerOptions().position(myLocation).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
-                    map.addMarker(startOption.title("my location").snippet(intent.getStringExtra("my address")));
+                    myLocation = intent.getParcelableExtra("Bạn đang ở đây");
+                    // start = new Place(myLocation.latitude, myLocation.longitude, "Bạn đang ở đây", intent.getStringExtra("my address"));
+                    textView[0].setText("Bạn đang ở đây");
+                    startOption = new MarkerOptions().position(myLocation).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker2));
+                    map.addMarker(startOption.title("Bạn đang ở đây").snippet(intent.getStringExtra("my address")));
 
                     Intent findPlaceIntent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(address).zzig(1).build(this);
                     startActivityForResult(findPlaceIntent, 3);
@@ -223,12 +223,12 @@ public class DirectionActivity extends AppCompatActivity
             case PLACE_DIRECTION:
 
                 startOption = new MarkerOptions().position(new LatLng(myLocation.latitude, myLocation.longitude)).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
-                map.addMarker(startOption.title("my location").snippet(""));//.draggable(true));
+                map.addMarker(startOption.title("Bạn đang ở đây").snippet(""));//.draggable(true));
 
                 endOption = new MarkerOptions().position(new LatLng(destination.latitude, destination.longitude)).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
                 map.addMarker(endOption.title(place).snippet(address));
 
-                textView[0].setText("my location");
+                textView[0].setText("Bạn đang ở đây");
                 textView[1].setText(place);
 
                 waypoint = new ArrayList<>();
@@ -258,11 +258,11 @@ public class DirectionActivity extends AppCompatActivity
             BitmapDescriptor icon;
             if (requestCode == 0)
             {
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.marker);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.marker2);
             }
             else
             {
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.flag2);
             }
 
             /*if (marker[requestCode] != null)
@@ -445,14 +445,14 @@ public class DirectionActivity extends AppCompatActivity
         time = Integer.parseInt(TrafficUtils.getTimeNode());
         if ((time >= 390 && time <= 720) || (time >= 990 && time <= 1170))
         {
-            prbLoading.setVisibility(View.VISIBLE);
+            final LoadingDialog dialog = LoadingDialog.show(this, "Phát hiện những điểm ùn tắc giao thông gần đấy");
             final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time));
             firebase.addValueEventListener(new ValueEventListener()    // chưa load downNode
             {
                 @Override
                 public void onDataChange(DataSnapshot snapshot)
                 {
-                    prbLoading.setVisibility(View.VISIBLE);
+                    dialog.dismiss();
                     meta = ((Long) snapshot.child("meta").getValue()).intValue();
 
                     ArrayList<TrafficCircle> trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(snapshot, meta), route);
@@ -476,8 +476,9 @@ public class DirectionActivity extends AppCompatActivity
                     }
                     else
                     {
-                        prbLoading.setVisibility(View.GONE);
-                        Toast.makeText(DirectionActivity.this, "Chưa có điểm kẹt xe nào trên đường đi này", Toast.LENGTH_SHORT).show();
+                        /*prbLoading.setVisibility(View.GONE);
+                        Toast.makeText(DirectionActivity.this, "Chưa có điểm kẹt xe nào trên đường đi này", Toast.LENGTH_SHORT).show();*/
+                        dialog.dismiss("Chưa có điểm kẹt xe nào trên đường đi này");
                     }
                     firebase.removeEventListener(this);
                 }
@@ -543,6 +544,7 @@ public class DirectionActivity extends AppCompatActivity
                                     public void onClick(View v)
                                     {
                                         waypoint.remove(m);
+                                        marker.remove();
                                     }
                                 }).show();
                     }
@@ -588,7 +590,7 @@ public class DirectionActivity extends AppCompatActivity
                                 {
                                     MarkerOptions markerOptions = new MarkerOptions().position(marker.getPosition())
                                             .title(marker.getTitle()).snippet(marker.getSnippet());
-                                    if (getRating(marker.getTitle()) > 2 * meta)
+                                    if (getRating(marker.getSnippet()) > 2 * meta)
                                     {
                                         markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high));
                                     }
@@ -774,9 +776,8 @@ public class DirectionActivity extends AppCompatActivity
                         option.addAll(route.getRoute());
                         polyline = map.addPolyline(option);
 
-                        MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.sign));
-                        map.addMarker(markerOptions.position(shortcut.getStart()));
-                        map.addMarker(markerOptions.position(shortcut.getEnd()));
+                        map.addMarker(waypointOption.position(shortcut.getStart()));
+                        map.addMarker(waypointOption.position(shortcut.getEnd()));
                         map.addMarker(startOption);
                         map.addMarker(endOption);
                         map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(startOption.getPosition(), endOption.getPosition()), width, height, 150));
@@ -793,9 +794,9 @@ public class DirectionActivity extends AppCompatActivity
         prbLoading.setVisibility(View.VISIBLE);
     }
 
-    int getRating(String markerTitle)
+    int getRating(String markerSnippet)
     {
-        String[] title = markerTitle.split(" ");
+        String[] title = markerSnippet.split(" ");
         if (title[0].length() == 1)
         {
             return Integer.parseInt(title[0].substring(0, 1));
