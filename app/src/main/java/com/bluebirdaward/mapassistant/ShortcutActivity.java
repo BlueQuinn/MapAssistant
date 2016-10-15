@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -173,7 +174,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                                 ref.push().setValue(shortcut);  // ??????????
                                 query.removeEventListener(this);
 
-                                MainActivity.sqlite.addShortcut(time, jamType, ID, routeString, route.getDistance(), route.getDuration(), 0, "0");
+                                MainActivity.sqlite.addShortcut(time, jamType, ID, routeString, route.getDistance(), route.getDuration());
 
                                 prbLoading.setVisibility(View.GONE);
                                 MessageDialog.showMessage(ShortcutActivity.this, getResources().getColor(R.color.green), R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
@@ -200,6 +201,12 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                 break;
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -237,8 +244,8 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
 
                 Log.d("shortcut", "" + radius);
 
-                startPos = new LatLng(10.76353877327849, 106.68203115463257);
-                endPos = new LatLng(10.411269, 107.136072);
+                startPos = new LatLng(jam.latitude, jam.longitude + 0.01);
+                endPos = new LatLng(jam.latitude, jam.longitude - 0.01);
 
                 break;
             }
@@ -251,8 +258,8 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
 
                 Log.d("shortcut", "" + radius);
 
-                startPos = new LatLng(10.76353877327849, 106.68203115463257);
-                endPos = new LatLng(10.411269, 107.136072);
+                startPos = new LatLng(jam.latitude, jam.longitude + 0.01);
+                endPos = new LatLng(jam.latitude, jam.longitude - 0.01);
 
                 break;
             }

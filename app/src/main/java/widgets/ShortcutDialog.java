@@ -26,8 +26,8 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
     boolean like;
     TextView txtRating;
 
-   // LinearLayout btnDislike, btnLike,btnAdd;
-    ImageButton btnDislike, btnLike,btnAdd;
+    // LinearLayout btnDislike, btnLike,btnAdd;
+    ImageButton btnDislike, btnLike, btnAdd;
 
     OnLoadListener<Integer> listener;
 
@@ -49,15 +49,15 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         txtRating = (TextView) findViewById(R.id.txtRating);
 
         txtDistance.setText("Chiều dài: " + RouteUtils.getDistance(distance));
-        txtDuration.setText("Thời gian đi: " + RouteUtils.getDistance(duration));
+        txtDuration.setText("Thời gian đi: " + RouteUtils.getDuration(duration));
 
         if (like)
         {
-            txtRating.setText("Bạn và " + Integer.toString(rating) + " người khác đã thích đường đi này");
+            like();
         }
         else
         {
-            txtRating.setText(Integer.toString(rating) + " người đã thích đường đi này");
+            dislike();
         }
 
       /*  btnDislike = (LinearLayout) findViewById(R.id.btnDislike);
@@ -72,7 +72,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         btnAdd.setOnClickListener(this);
         if (MainActivity.sqlite.checkLiked(time, jamType, ID))
         {
-           btnDislike.setVisibility(View.VISIBLE);
+            btnDislike.setVisibility(View.VISIBLE);
             btnLike.setVisibility(View.GONE);
         }
     }
@@ -86,7 +86,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
             case R.id.btnDislike:
                 rating--;
                 listener.onFinish(rating);
-                txtRating.setText(Integer.toString(rating) + " người đã thích đường đi này");
+                dislike();
                 MainActivity.sqlite.dislike(time, jamType, ID, rating);
 
                 btnDislike.setVisibility(View.GONE);
@@ -96,7 +96,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
             case R.id.btnLike:
                 rating++;
                 listener.onFinish(rating);
-                txtRating.setText("Bạn và " + Integer.toString(rating) + " người khác đã thích đường đi này");
+               like();
                 MainActivity.sqlite.like(time, jamType, ID, rating);
 
                 btnDislike.setVisibility(View.VISIBLE);
@@ -114,4 +114,29 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
     {
         this.listener = listener;
     }
+
+    void like()
+    {
+        if (rating == 1)
+        {
+            txtRating.setText("Bạn đã thích đường đi này");
+        }
+        else
+        {
+            txtRating.setText("Bạn và " + Integer.toString(rating) + " người khác đã thích đường đi này");
+        }
+    }
+
+    void dislike()
+    {
+        if (rating == 0)
+        {
+            txtRating.setText("Hãy là người đầu tiên thích đường đi này");
+        }
+        else
+        {
+            txtRating.setText(Integer.toString(rating) + " người đã thích đường đi này");
+        }
+    }
+
 }

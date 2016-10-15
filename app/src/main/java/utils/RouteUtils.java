@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.Locale;
+
 /**
  * Created by lequan on 10/12/2016.
  */
@@ -34,15 +36,13 @@ public class RouteUtils
 
     public static String getDistance(int distance)
     {
-        String dtc;
         if (distance < 1000)
         {
-            dtc = Integer.toString(distance) + " mét";
+            return Integer.toString(distance) + " mét";
         }
         else
         {
-            dtc = Float.toString(Math.round(distance * 1000) / 1000) + "km";
+            return String.format(Locale.US, "%.2f", 1.0f*distance/1000) + "km";
         }
-        return dtc;
     }
 }

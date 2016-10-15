@@ -147,9 +147,9 @@ public class SqliteHelper extends SQLiteOpenHelper
         String[] date = datetime[0].split("-");
         String[] time = datetime[1].split(":");
 
-        String moment = "Ngày " +  date[0] + "/" + date[1] + " lúc " + time[0] + ":" + time[1];
+        String moment = "Ngày " + date[0] + "/" + date[1] + " lúc " + time[0] + ":" + time[1];
 
-        String type = jamType.substring(0,1);
+        String type = jamType.substring(0, 1);
         return excute(String.format(Locale.US, "insert into MyTraffic values (%d, '%s', '%s', %d, '%s', '%s', %d, '%s')",
                 id, Double.toString(lat), Double.toString(lng), radius, moment, address.replace(", Hồ Chí Minh", ""), timeNode, type));
     }
@@ -225,11 +225,11 @@ public class SqliteHelper extends SQLiteOpenHelper
         return 0;
     }
 
-    public boolean addShortcut(int time, String jamType, int ID, String route, int distance, int duration, int rating, String like)
+    public boolean addShortcut(int time, String jamType, int ID, String route, int distance, int duration)
     {
-        String type = jamType.substring(0,1);
+        String type = jamType.substring(0, 1);
         return excute(String.format(Locale.US, "insert into Shortcut values (%d, '%s', %d, %d, %d, '%s', %d, '%s')",
-                ID, route, distance, duration, rating, like, time, type));
+                ID, route, distance, duration, 0, "0", time, type));
     }
 
     ArrayList<Shortcut> getShortcut(int ID)
@@ -306,9 +306,9 @@ public class SqliteHelper extends SQLiteOpenHelper
 
     public boolean checkLiked(int time, String jamType, int ID)
     {
-        String type = jamType.substring(0,1);
+        String type = jamType.substring(0, 1);
         ArrayList<HashMap<String, String>> data = executeQuery(String.format(Locale.US,
-                "select * from Shortcut where Time = %d and JamType = '%s' and ID = %d",
+                "select * from Shortcut where Time = %d and JamType = '%s' and ID = %d and Like = '1'",
                 time, type, ID));
         if (data.size() < 1)
         {
@@ -319,7 +319,7 @@ public class SqliteHelper extends SQLiteOpenHelper
 
     boolean rating(int time, String jamType, int ID, int rating, String like)
     {
-        String type = jamType.substring(0,1);
+        String type = jamType.substring(0, 1);
         return excute(String.format(Locale.US,
                 "update Shortcut set Like = '%s', Rating = %d" +
                         " where Time = %d and Jam = '%s' and ID = %d",

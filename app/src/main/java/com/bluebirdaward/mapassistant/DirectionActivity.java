@@ -23,6 +23,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -77,7 +78,7 @@ public class DirectionActivity extends AppCompatActivity
     Geocoder geocoder;
 
     TextView[] textView;
-
+    int meta;
     MarkerOptions startOption, endOption;
     ArrayList<Marker> waypoint;
 
@@ -452,7 +453,7 @@ public class DirectionActivity extends AppCompatActivity
                 public void onDataChange(DataSnapshot snapshot)
                 {
                     prbLoading.setVisibility(View.VISIBLE);
-                    int meta = ((Long) snapshot.child("meta").getValue()).intValue();
+                    meta = ((Long) snapshot.child("meta").getValue()).intValue();
 
                     ArrayList<TrafficCircle> trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(snapshot, meta), route);
                     ArrayList<TrafficLine> trafficLines = TrafficUtils.getLineJam(getTrafficLine(snapshot, meta), route);
@@ -468,7 +469,6 @@ public class DirectionActivity extends AppCompatActivity
                             {
 
                                 hmTraffic = result;
-                                loadShortcut();
                                 prbLoading.setVisibility(View.GONE);
                             }
                         });
@@ -493,6 +493,7 @@ public class DirectionActivity extends AppCompatActivity
         }
         else
         {
+            prbLoading.setVisibility(View.VISIBLE);
             Toast.makeText(this, "Hiện chưa có điểm kẹt xe nào", Toast.LENGTH_SHORT).show();
         }
     }
@@ -523,37 +524,11 @@ public class DirectionActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onMarkerClick(Marker marker)
+    public boolean onMarkerClick(final Marker marker)
     {
-        if (marker.getTitle().equals("Ùn tắc giao thông") || marker.getTitle().equals("Kẹt xe"))
+        for (final Marker m : waypoint)
         {
-            Snackbar.make(findViewById(R.id.frameLayout), marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
-                    .setAction("Tránh", new View.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(View view)
-                        {
-                            Marker sign = map.addMarker(new MarkerOptions()
-                                    .draggable(true).position(startOption.getPosition())
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.sign)));
-                            sign.setTitle("Chọn tuyến đường khác");
-                            sign.setSnippet("Nhấn giữ để di chuyển");
-                            sign.showInfoWindow();
-
-                            waypoint.add(sign);
-                        }
-                    }).show();
-        }
-        return false;
-    }
-
-
-    void loadShortcut()
-    {
-        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
-        {
-            @Override
-            public boolean onMarkerClick(final Marker marker)
+            if (m.getId().equals(marker.getId()))
             {
                 AddressAst asyncTask = new AddressAst(geocoder);
                 asyncTask.setListener(new OnLoadListener<String>()
@@ -561,80 +536,114 @@ public class DirectionActivity extends AppCompatActivity
                     @Override
                     public void onFinish(String address)
                     {
-                        prbLoading.setVisibility(View.GONE);
-                        Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
-                                .setAction("Gợi ý đường tắt", new View.OnClickListener()
+                        Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime)
+                                .setAction("Xóa", new View.OnClickListener()
                                 {
                                     @Override
                                     public void onClick(View v)
                                     {
-                                        prbLoading.setVisibility(View.VISIBLE);
-
-                                        hmShortcut = new HashMap<>();
-                                        ArrayList<Shortcut> shortcuts;
-                                        if (hmTraffic.isLine(marker.getId()))
-                                        {
-                                            TrafficLine line = hmTraffic.getLine(marker.getId());
-                                            shortcuts = line.getShortcuts();
-                                            jamType = Traffic.LINE;
-                                            ID = line.getId();
-                                        }
-                                        else
-                                        {
-                                            TrafficCircle circle = hmTraffic.getCircle(marker.getId());
-                                            shortcuts = circle.getShortcuts();
-                                            jamType = Traffic.CIRCLE;
-                                            ID = circle.getId();
-                                        }
-
-                                        if (shortcuts != null && shortcuts.size() > 0)
-                                        {
-                                            for (Shortcut i : shortcuts)
-                                            {
-                                                PolylineOptions options = new PolylineOptions().color(colorGreen).width(15);
-                                                options.addAll(i.getRoute()).clickable(true).zIndex(10);
-                                                Polyline polyline = map.addPolyline(options);
-                                                hmShortcut.put(polyline.getId(), i);
-
-                                                addStart(i.getStart());
-                                                addEnd(i.getEnd());
-                                            }
-                                            prbLoading.setVisibility(View.GONE);
-                                        }
-                                        else
-                                        {
-                                            prbLoading.setVisibility(View.GONE);
-                                            Toast.makeText(DirectionActivity.this, "Hiện chưa có tuyến đường tắt nào", Toast.LENGTH_SHORT).show();
-                                        }
+                                        waypoint.remove(m);
                                     }
                                 }).show();
                     }
-
-                    ;
                 });
                 asyncTask.execute(marker.getPosition().latitude, marker.getPosition().longitude);
                 return false;
             }
+        }
+
+        AddressAst asyncTask = new AddressAst(geocoder);
+        asyncTask.setListener(new OnLoadListener<String>()
+        {
+            @Override
+            public void onFinish(String address)
+            {
+                prbLoading.setVisibility(View.GONE);
+                Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
+                        .setAction("Đường tắt", new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View v)
+                            {
+                                prbLoading.setVisibility(View.VISIBLE);
+
+                                hmShortcut = new HashMap<>();
+                                ArrayList<Shortcut> shortcuts;
+                                if (hmTraffic.isLine(marker.getId()))
+                                {
+                                    TrafficLine line = hmTraffic.getLine(marker.getId());
+                                    shortcuts = line.getShortcuts();
+                                    jamType = Traffic.LINE;
+                                    ID = line.getId();
+                                }
+                                else
+                                {
+                                    TrafficCircle circle = hmTraffic.getCircle(marker.getId());
+                                    shortcuts = circle.getShortcuts();
+                                    jamType = Traffic.CIRCLE;
+                                    ID = circle.getId();
+                                }
+
+                                if (shortcuts != null && shortcuts.size() > 0)
+                                {
+                                    MarkerOptions markerOptions = new MarkerOptions().position(marker.getPosition())
+                                            .title(marker.getTitle()).snippet(marker.getSnippet());
+                                    if (getRating(marker.getTitle()) > 2 * meta)
+                                    {
+                                        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high));
+                                    }
+                                    else
+                                    {
+                                        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_medium));
+                                    }
+                                    map.clear();
+                                    map.addMarker(markerOptions);
+                                    redraw();
+                                    for (int i = 0; i < shortcuts.size(); ++i)
+                                    {
+                                        PolylineOptions options = new PolylineOptions().color(colorGreen).width(15);
+                                        options.addAll(shortcuts.get(i).getRoute()).clickable(true).zIndex(10);
+                                        Polyline polyline = map.addPolyline(options);
+                                        hmShortcut.put(polyline.getId(), shortcuts.get(i));
+
+                                        addStart(shortcuts.get(i).getStart(), i);
+                                        addEnd(shortcuts.get(i).getEnd(), i);
+                                    }
+                                    prbLoading.setVisibility(View.GONE);
+                                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16));
+                                }
+                                else
+                                {
+                                    prbLoading.setVisibility(View.GONE);
+                                    Toast.makeText(DirectionActivity.this, "Hiện chưa có tuyến đường tắt nào", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }).show();
+            }
         });
+        asyncTask.execute(marker.getPosition().latitude, marker.getPosition().longitude);
+        return false;
+
     }
 
-    void addStart(LatLng start)
+
+    void addStart(LatLng start, int i)
     {
         MarkerOptions options = new MarkerOptions().position(start).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_shortcut));
-        map.addMarker(options);
+        map.addMarker(options.title("Tuyến đường tắt số " + (i + 1)).snippet("Điểm đầu")).showInfoWindow();
     }
 
-    void addEnd(LatLng end)
+    void addEnd(LatLng end, int i)
     {
         MarkerOptions options = new MarkerOptions().position(end).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag_shortcut));
-        map.addMarker(options);
+        map.addMarker(options.title("Tuyến đường tắt số " + (i + 1)).snippet("Điểm cuối"));
     }
 
     void redraw()
     {
         map.addMarker(startOption);
         map.addMarker(endOption);
-        PolylineOptions options = new PolylineOptions().width(15).color(colorGreen);
+        PolylineOptions options = new PolylineOptions().width(15).color(colorRoute);
         options.addAll(route.getRoute());
         map.addPolyline(options);
     }
@@ -783,4 +792,18 @@ public class DirectionActivity extends AppCompatActivity
         asyncTask.execute(point[0], point[1]);
         prbLoading.setVisibility(View.VISIBLE);
     }
+
+    int getRating(String markerTitle)
+    {
+        String[] title = markerTitle.split(" ");
+        if (title[0].length() == 1)
+        {
+            return Integer.parseInt(title[0].substring(0, 1));
+        }
+        else
+        {
+            return Integer.parseInt(title[0].substring(0, 1)) * 10 + Integer.parseInt(title[0].substring(1, 2));
+        }
+    }
 }
+
