@@ -38,17 +38,21 @@ public class WeatherDateFragment extends Fragment
         prbLoading.setVisibility(View.VISIBLE);
 
         listWeather = new ArrayList<>();
+        adapter = new WeatherTimeAdt(getActivity().getApplicationContext(), R.layout.row_weather_time, listWeather);
+        listView.setAdapter(adapter);
+
+
         WeatherDayAst asyncTask = new WeatherDayAst(getActivity().getApplicationContext());
         asyncTask.setListener(new OnLoadListener<ArrayList<WeatherTime>>()
         {
             @Override
             public void onFinish(ArrayList<WeatherTime> weatherTimes)
             {
-                listWeather  = weatherTimes;
-                adapter = new WeatherTimeAdt(getActivity().getApplicationContext(), R.layout.row_weather_time, listWeather);
-                listView.setAdapter(adapter);
                 prbLoading.setVisibility(View.GONE);
                 listView.setVisibility(View.VISIBLE);
+                for (WeatherTime i : weatherTimes)
+                listWeather.add(i);
+                adapter.notifyDataSetChanged();
             }
         });
         asyncTask.execute();

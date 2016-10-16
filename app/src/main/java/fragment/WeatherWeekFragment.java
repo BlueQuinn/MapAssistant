@@ -38,17 +38,19 @@ public class WeatherWeekFragment extends Fragment
         prbLoading.setVisibility(View.VISIBLE);
 
         listWeather = new ArrayList<>();
+        adapter = new WeatherWeekAdt(getActivity().getApplicationContext(), R.layout.row_weather_week, listWeather);
+        listView.setAdapter(adapter);
         WeatherWeekAst asyncTask = new WeatherWeekAst();
         asyncTask.setListener(new OnLoadListener<ArrayList<WeatherWeek>>()
         {
             @Override
             public void onFinish(ArrayList<WeatherWeek> weatherTimes)
             {
-                listWeather  = weatherTimes;
-                adapter = new WeatherWeekAdt(getActivity().getApplicationContext(), R.layout.row_weather_week, listWeather);
-                listView.setAdapter(adapter);
                 prbLoading.setVisibility(View.GONE);
                 listView.setVisibility(View.VISIBLE);
+                for (WeatherWeek i : weatherTimes)
+                    listWeather.add(i);
+                adapter.notifyDataSetChanged();
             }
         });
         asyncTask.execute();

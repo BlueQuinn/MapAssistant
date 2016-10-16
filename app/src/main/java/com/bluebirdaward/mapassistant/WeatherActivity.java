@@ -1,5 +1,6 @@
 package com.bluebirdaward.mapassistant;
 
+import android.graphics.Color;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -28,9 +29,9 @@ public class WeatherActivity extends AppCompatActivity
         setContentView(R.layout.activity_weather);
 
         Toolbar toolbar= (Toolbar) findViewById(R.id.toolbar);
+
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
 
         WeatherDateFragment dateFragment = new WeatherDateFragment();
         WeatherTimeFragment timeFragment = new WeatherTimeFragment();

@@ -39,6 +39,7 @@ import asyncTask.AddTrafficAst;
 import asyncTask.AddressAst;
 import asyncTask.DirectionAst;
 import listener.OnLoadListener;
+import model.Place;
 import model.Route;
 import model.Shortcut;
 import model.Traffic;
@@ -71,8 +72,8 @@ public class DirectionActivity extends AppCompatActivity
     int height;
 
     LatLng myLocation;
-    LatLng destination;
-    String place, address;
+    //   LatLng destination;
+    //   String place, address;
 
     Route route;
     Geocoder geocoder;
@@ -140,26 +141,6 @@ public class DirectionActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         request = intent.getIntExtra("request", CUSTOM_DIRECTION);
-        switch (request)
-        {
-            case CUSTOM_DIRECTION:
-                break;
-
-            case RESTAURANT_DIRECTION:
-                break;
-
-            case PLACE_DIRECTION:
-                myLocation = intent.getParcelableExtra("myLocation");
-                model.Place dest = (model.Place) intent.getSerializableExtra("destination");
-                destination = new LatLng(dest.getLat(), dest.getLng());
-                place = dest.getName();
-                address = dest.getAddress();
-                if (address == null)
-                {
-                    address = "";
-                }
-                break;
-        }
 
         DisplayMetrics display = getResources().getDisplayMetrics();
         width = display.widthPixels;
@@ -199,37 +180,46 @@ public class DirectionActivity extends AppCompatActivity
                 try
                 {
                     Intent intent = getIntent();
-                    place = intent.getStringExtra("restaurant");
-                    address = intent.getStringExtra("address");
-                    myLocation = intent.getParcelableExtra("Bạn đang ở đây");
-                    // start = new Place(myLocation.latitude, myLocation.longitude, "Bạn đang ở đây", intent.getStringExtra("my address"));
-                    textView[0].setText("Bạn đang ở đây");
+                    String place = intent.getStringExtra("restaurant");
+                    String address = intent.getStringExtra("address");
+                    myLocation = intent.getParcelableExtra("my location");
+                    String myAddress = intent.getStringExtra("my address");
+                    textView[0].setText(myAddress);
                     startOption = new MarkerOptions().position(myLocation).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker2));
-                    map.addMarker(startOption.title("Bạn đang ở đây").snippet(intent.getStringExtra("my address")));
+                    map.addMarker(startOption.title("Bạn đang ở đây").snippet(myAddress));
+
+                    endOption = new MarkerOptions().snippet(place);
 
                     Intent findPlaceIntent = (new PlaceAutocomplete.IntentBuilder(2)).zzeq(address).zzig(1).build(this);
                     startActivityForResult(findPlaceIntent, 3);
                 }
-                catch (GooglePlayServicesRepairableException e)
-                {
-                    e.printStackTrace();
-                }
-                catch (GooglePlayServicesNotAvailableException e)
+                catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e)
                 {
                     e.printStackTrace();
                 }
                 break;
 
             case PLACE_DIRECTION:
+                Intent intent = getIntent();
+                myLocation = intent.getParcelableExtra("myLocation");
+                Place dest = (Place) intent.getSerializableExtra("destination");
+                String myAdress = intent.getStringExtra("myAddress");
+                //  destination = new LatLng(dest.getLat(), dest.getLng());
+                //   String place = dest.getName();
+                //    String    address = dest.getAddress();
+               /* if (address == null)
+                {
+                    address = "";
+                }*/
 
-                startOption = new MarkerOptions().position(new LatLng(myLocation.latitude, myLocation.longitude)).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
-                map.addMarker(startOption.title("Bạn đang ở đây").snippet(""));//.draggable(true));
+                startOption = new MarkerOptions().position(myLocation).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
+                map.addMarker(startOption.title("Bạn đang ở đây").snippet(myAdress));
 
-                endOption = new MarkerOptions().position(new LatLng(destination.latitude, destination.longitude)).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
-                map.addMarker(endOption.title(place).snippet(address));
+                endOption = new MarkerOptions().position(dest.getPosition()).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+                map.addMarker(endOption.title(dest.getName()).snippet(dest.getAddress()));
 
-                textView[0].setText("Bạn đang ở đây");
-                textView[1].setText(place);
+                textView[0].setText(myAdress);
+                textView[1].setText(dest.getName());
 
                 waypoint = new ArrayList<>();
                 navigate(startOption.getPosition(), endOption.getPosition());
@@ -248,6 +238,7 @@ public class DirectionActivity extends AppCompatActivity
             prbLoading.setVisibility(View.GONE);
 
             map.clear();
+            reset();
 
             String place = data.getStringExtra("place");
             String address = data.getStringExtra("address");
@@ -259,37 +250,32 @@ public class DirectionActivity extends AppCompatActivity
             if (requestCode == 0)
             {
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.marker2);
+                startOption = new MarkerOptions().position(pos).icon(icon);
+                map.addMarker(startOption.title(place).snippet(address));
+                if (endOption != null)
+                {
+                    map.addMarker(endOption);
+                }
             }
             else
             {
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.flag2);
-            }
-
-            /*if (marker[requestCode] != null)
-            {
-                marker[requestCode].remove();
-            }*/
-            if (requestCode == 0)
-            {
-                startOption = new MarkerOptions().position(pos).icon(icon);
-                map.addMarker(startOption.title(place).snippet(address));
-            }
-            else
-            {
                 endOption = new MarkerOptions().position(pos).icon(icon);
                 map.addMarker(endOption.title(place).snippet(address));
+                if (startOption != null)
+                {
+                    map.addMarker(startOption);
+                }
             }
 
-            map.clear();
-            reset();
-            if (startOption != null)
+           /* if (startOption != null)
             {
                 map.addMarker(startOption);
             }
             if (endOption != null)
             {
                 map.addMarker(endOption);
-            }
+            }*/
 
             map.animateCamera(CameraUpdateFactory.newLatLng(pos));
             if (isDirected())
@@ -298,10 +284,6 @@ public class DirectionActivity extends AppCompatActivity
                 {
                     i.remove();
                 }
-
-               /* ArrayList<String> key = new ArrayList<>(hmShortcut.keySet());
-                for (String i : key)
-                hmShortcut.get(i).*/
 
                 navigate(startOption.getPosition(), endOption.getPosition());
             }
@@ -313,12 +295,9 @@ public class DirectionActivity extends AppCompatActivity
                 prbLoading.setVisibility(View.GONE);
                 com.google.android.gms.location.places.Place restaurant = PlaceAutocomplete.getPlace(this, data);
                 textView[1].setText(restaurant.getName());
-                endOption = new MarkerOptions().position(restaurant.getLatLng()).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
-                if (place.length() < 1)
-                {
-                    place = "";
-                }
-                map.addMarker(endOption.title(restaurant.getName().toString()).snippet(place));
+                endOption.position(restaurant.getLatLng()).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag))
+                        .title(restaurant.getName().toString());
+                map.addMarker(endOption);
 
 
                 navigate(startOption.getPosition(), endOption.getPosition());
@@ -429,7 +408,7 @@ public class DirectionActivity extends AppCompatActivity
             case R.id.btnTraffic:
                 if (isDirected())
                 {
-                   // prbLoading.setVisibility(View.VISIBLE);
+                    // prbLoading.setVisibility(View.VISIBLE);
                     loadTraffic();
                 }
                 else
@@ -526,6 +505,10 @@ public class DirectionActivity extends AppCompatActivity
     @Override
     public boolean onMarkerClick(final Marker marker)
     {
+        if (marker.getPosition().equals(startOption.getPosition()) || marker.getPosition().equals(endOption.getPosition()))
+        {
+            return false;
+        }
         for (final Marker m : waypoint)
         {
             if (m.getId().equals(marker.getId()))

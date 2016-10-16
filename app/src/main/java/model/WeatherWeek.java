@@ -1,6 +1,8 @@
 package model;
 
 
+import android.util.Log;
+
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**
@@ -17,26 +19,27 @@ public class WeatherWeek {
 
     public WeatherWeek(String date, String info, String rain, int minTemp, int maxTemp)
     {
-        this.date = date;
+        this.date = formatDate(date).replace("Tháng", "tháng ");
         this.info = info;
         this.rain = rain;
         this.maxTemp = maxTemp;
         this.minTemp = minTemp;
 
+        String up_info = info.toUpperCase();
 
-        if (info.contains("mưa to") || info.contains("mưa lớn"))
+        if (up_info.contains("Mưa") || up_info.contains("MƯA LỚN"))
             icon = R.drawable.heavyrain;
-        else if (info.contains("mưa") && info.contains("nắng"))
+        else if (up_info.contains("MƯA") && up_info.contains("NẮNG"))
             icon = R.drawable.sun_rain;
-        else if (info.contains("nắng") && info.contains("mây"))
+        else if (up_info.contains("NẮNG") && up_info.contains("MÂY"))
             icon = R.drawable.sun_clound;
-        else if (info.contains("sấm") || info.contains("chốp"))
+        else if (up_info.contains("SẤM") || up_info.contains("CHỐP"))
             icon = R.drawable.thunder;
-        else if (info.contains("mây"))
+        else if (up_info.contains("MÂY"))
             icon = R.drawable.cloud;
-        else if (info.contains("mưa"))
+        else if (up_info.contains("MƯA"))
             icon = R.drawable.rain;
-        else if (info.contains("nắng"))
+        else if (up_info.contains("NẮNG"))
             icon = R.drawable.sun;
     }
 
@@ -58,6 +61,21 @@ public class WeatherWeek {
 
     public String getTemperature()
     {
-        return "Nhiệt độ: " + maxTemp + (char) 0x00B0 + "C - " + minTemp + (char) 0x00B0 + "C";
+        return "Nhiệt độ: " + minTemp + (char) 0x00B0 + "C - " + maxTemp + (char) 0x00B0 + "C";
+    }
+
+    private String formatDate(String time) {
+        time =  time.replace("Thg","Tháng");
+        Log.d("Son","time: " + time);
+        for (int i = 0; i < time.length(); i++) {
+            char c = time.charAt(i);
+            if (c >= '0' && c <= '9') {
+                time = time.substring(0, i) + " " + time.substring(i);
+                Log.d("Son","time final: " + time);
+                return time;
+            }
+        }
+
+        return time;
     }
 }

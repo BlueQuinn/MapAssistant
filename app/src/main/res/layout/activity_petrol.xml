@@ -10,15 +10,22 @@
     <TextView
         android:id="@+id/txtLatest"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="18dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/lvPetrol"
+        android:layout_marginTop="20dp" />
 
     <ListView
-        android:layout_margin="13dp"
         android:id="@+id/lvPetrol"
         android:background="@drawable/card"
         android:divider="@color/colorPrimaryLight"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="13dp"
+        android:layout_below="@+id/txtLatest"
+        android:layout_centerHorizontal="true">
     </ListView>
 
     <include

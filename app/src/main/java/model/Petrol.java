@@ -23,7 +23,7 @@ int icon;
     }
 
     public String getPrice() {
-        return price + " đồng";
+        return price + " đồng/lít";
     }
 
     public int getIcon() {

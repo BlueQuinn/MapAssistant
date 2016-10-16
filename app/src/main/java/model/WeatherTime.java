@@ -1,5 +1,7 @@
 package model;
 
+import android.util.Log;
+
 import com.bluebirdaward.mapassistant.gmmap.R;
 
 /**
@@ -33,6 +35,9 @@ public class WeatherTime {
         else if (up_info.contains("NẮNG"))
             icon = R.drawable.sun;
     }
+
+
+
 
     public String getTime() {
         return time;

@@ -354,12 +354,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             case R.id.btnDirection:
             {
-                Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
+                final Intent intent = new Intent(MainActivity.this, DirectionActivity.class);
                 if (destination != null)
                 {
-                    intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
-                    intent.putExtra("myLocation", myLocation);
-                    intent.putExtra("destination", destination);
+                    prbLoading.setVisibility(View.VISIBLE);
+                    AddressAst asyncTask = new AddressAst(geocoder);
+                    asyncTask.setListener(new OnLoadListener<String>()
+                    {
+                        @Override
+                        public void onFinish(String address)
+                        {
+                            prbLoading.setVisibility(View.GONE);
+                            intent.putExtra("request", DirectionActivity.PLACE_DIRECTION);
+                            intent.putExtra("myLocation", myLocation);
+                            intent.putExtra("myAddress", address);
+                            intent.putExtra("destination", destination);
+                        }
+                    });
+                    asyncTask.execute(destination.getPosition().latitude, destination.getPosition().longitude);
                 }
                 else
                 {
@@ -788,7 +800,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 {
                                     final Dialog dialog = new Dialog(MainActivity.this);
                                     dialog.setContentView(R.layout.dialog_save_favourite);
-                                    dialog.setTitle("Lưu vào yêu thích với tên ");
+                                    dialog.setTitle("Lưu vào yêu thích với tên");
 
                                     final EditText txtFavourite = (EditText) dialog.findViewById(R.id.txtFavourite);
                                     txtFavourite.setText(place);
