@@ -275,7 +275,7 @@ public class NotifyActivity extends AppCompatActivity
         }
 
         boolean intersect = false;
-        int myRadius = getRadius(radiusPicker.getProgress()) / 2;
+        int myRadius = ((radiusPicker.getProgress() / 2) + 2) * 50;
         DataSnapshot circleData = snapshot.child("circle");
         if (!find)      // put to existing circle
         {
@@ -339,7 +339,7 @@ public class NotifyActivity extends AppCompatActivity
         if (find && id > -1)
         {
             String address = tvAddress.getText().toString().replace("Bạn đang ở ", "");
-            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, radiusPicker.getProgress() / 2, address, Integer.parseInt(time), jamType);
+            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, ((radiusPicker.getProgress() / 2) + 2) * 50, address, Integer.parseInt(time), jamType);
             dialog.show(getResources().getColor(R.color.green), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông này cho tất cả mọi người cùng được biết");
 
 

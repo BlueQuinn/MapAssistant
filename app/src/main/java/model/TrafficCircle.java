@@ -36,7 +36,7 @@ public class TrafficCircle implements SafeParcelable
 
     public static int getRadius(int radius)
     {
-        return 50 * (radius + 4);
+        return radius;
     }
 
     LatLng center;

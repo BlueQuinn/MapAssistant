@@ -84,7 +84,8 @@ import com.google.android.gms.maps.model.PolylineOptions;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         View.OnClickListener, View.OnLongClickListener,
         ExpandableListView.OnChildClickListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener
+        GoogleApiClient.OnConnectionFailedListener, LocationListener,
+        GoogleMap.OnMapClickListener
 
 {
     Place destination;
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     HashMap<String, MyTraffic> hmMyTraffic;
     Circle circle;
     int time, meta;
+    Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -427,7 +429,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
 
                         map.clear();
-                        MarkerOptions options = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
+                        MarkerOptions options = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.pin));
                         LatLngBounds.Builder builder = new LatLngBounds.Builder();
                         for (int i = 0; i < list.size(); ++i)
                         {
@@ -789,7 +791,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             {
                 marker.showInfoWindow();
                 destination = new Place(marker.getPosition().latitude, marker.getPosition().longitude, marker.getTitle(), marker.getSnippet());
-                Snackbar.make(root, marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
+                snackbar = Snackbar.make(root, marker.getTitle(), Snackbar.LENGTH_INDEFINITE)
                         .setAction("Lưu", new View.OnClickListener()
                         {
                             @Override
@@ -833,7 +835,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 }
                                 //saveFavourite(marker.getTitle());
                             }
-                        }).setActionTextColor(getResources().getColor(R.color.colorPrimaryLight)).show();
+                        }).setActionTextColor(getResources().getColor(R.color.colorPrimaryLight));
+                snackbar.show();
                 return true;
             }
         });
@@ -887,7 +890,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
                 if (options != null)
                 {
-                    circle =  map.addCircle(options);
+                    circle = map.addCircle(options);
                 }
 
                 AddressAst asyncTask = new AddressAst(geocoder);
@@ -897,7 +900,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onFinish(String address)
                     {
                         prbLoading.setVisibility(View.GONE);
-                        Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
+                        snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
                                 .setAction("Đề xuất\nđường tắt", new View.OnClickListener()
                                 {
                                     @Override
@@ -958,14 +961,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         }
                                     }
                                 })
-                                .setActionTextColor(getResources().getColor(R.color.green)).show();
+                                .setActionTextColor(getResources().getColor(R.color.green));
+                        snackbar.show();
                     }
                 });
                 asyncTask.execute(marker.getPosition().latitude, marker.getPosition().longitude);
-                //loadAddress(marker.getPosition());
                 return false;
             }
         });
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng)
+    {
+        if (snackbar != null)
+        {
+            snackbar.dismiss();
+        }
     }
 }
 

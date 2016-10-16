@@ -68,38 +68,6 @@
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
-  <component name="DockManager">
-    <window id="1">
-      <content type="file-editors">
-        <state>
-          <leaf>
-            <file leaf-file-name="FoodActivity.java" pinned="false" current-in-tab="false">
-              <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/FoodActivity.java">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state vertical-scroll-proportion="0.0">
-                    <caret line="202" column="48" selection-start-line="202" selection-start-column="48" selection-end-line="202" selection-end-column="48" />
-                    <folding />
-                  </state>
-                </provider>
-              </entry>
-            </file>
-            <file leaf-file-name="MainActivity.java" pinned="true" current-in-tab="true">
-              <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/MainActivity.java">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state vertical-scroll-proportion="0.3888889">
-                    <caret line="362" column="21" selection-start-line="362" selection-start-column="21" selection-end-line="362" selection-end-column="21" />
-                    <folding>
-                      <element signature="e#14924#14925#0" expanded="true" />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-          </leaf>
-        </state>
-      </content>
-    </window>
-  </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="ExternalProjectsManager">
     <system id="GRADLE">
@@ -130,7 +98,27 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/NotifyActivity.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="311" column="9" selection-start-line="311" selection-start-column="9" selection-end-line="311" selection-end-column="9" />
+              <caret line="287" column="67" selection-start-line="287" selection-start-column="67" selection-end-line="287" selection-end-column="67" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TrafficCircle.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/model/TrafficCircle.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="39" column="5" selection-start-line="39" selection-start-column="5" selection-end-line="39" selection-end-column="5" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MyTraffic.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/model/MyTraffic.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.7697595">
+              <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -140,78 +128,19 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/sqlite/SqliteHelper.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="142" column="19" selection-start-line="142" selection-start-column="19" selection-end-line="142" selection-end-column="19" />
+              <caret line="154" column="5" selection-start-line="154" selection-start-column="5" selection-end-line="154" selection-end-column="5" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DirectionActivity.java" pinned="true" current-in-tab="true">
+      <file leaf-file-name="DirectionActivity.java" pinned="true" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33273056">
-              <caret line="161" column="42" selection-start-line="161" selection-start-column="42" selection-end-line="161" selection-end-column="42" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="WeatherWeekAst.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/asyncTask/WeatherWeekAst.java">
-          <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="44" column="61" selection-start-line="44" selection-start-column="61" selection-end-line="44" selection-end-column="61" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#4278#4279#0" expanded="false" />
-                <element signature="e#4320#4321#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="WeatherWeek.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/model/WeatherWeek.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="42" column="34" selection-start-line="42" selection-start-column="34" selection-end-line="42" selection-end-column="34" />
+              <caret line="796" column="31" selection-start-line="795" selection-start-column="8" selection-end-line="796" selection-end-column="31" />
               <folding>
                 <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="WeatherTime.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/model/WeatherTime.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="35" column="34" selection-start-line="20" selection-start-column="8" selection-end-line="35" selection-end-column="34" />
-              <folding>
-                <element signature="e#1239#1240#0" expanded="false" />
-                <element signature="e#1266#1267#0" expanded="false" />
-                <element signature="e#1297#1298#0" expanded="false" />
-                <element signature="e#1324#1325#0" expanded="false" />
-                <element signature="e#1355#1356#0" expanded="false" />
-                <element signature="e#1398#1399#0" expanded="false" />
-                <element signature="e#1433#1434#0" expanded="false" />
-                <element signature="e#1476#1477#0" expanded="false" />
-                <element signature="e#1514#1515#0" expanded="false" />
-                <element signature="e#1585#1586#0" expanded="false" />
-                <element signature="e#1613#1614#0" expanded="false" />
-                <element signature="e#1640#1641#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="WeatherTimeFragment.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/fragment/WeatherTimeFragment.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="52" column="39" selection-start-line="52" selection-start-column="39" selection-end-line="52" selection-end-column="39" />
-              <folding>
-                <element signature="imports" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -221,10 +150,18 @@
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/ShortcutActivity.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="404" column="22" selection-start-line="404" selection-start-column="22" selection-end-line="404" selection-end-column="22" />
-              <folding>
-                <element signature="imports" expanded="false" />
-              </folding>
+              <caret line="420" column="31" selection-start-line="419" selection-start-column="6" selection-end-line="420" selection-end-column="31" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MainActivity.java" pinned="true" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/MainActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="763" column="51" selection-start-line="763" selection-start-column="51" selection-end-line="763" selection-end-column="51" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -2317,8 +2254,6 @@
         <option value="$PROJECT_DIR$/app/src/main/res/layout/fragment_destination.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/fragment_weather.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/row_weather_time.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/model/MyTraffic.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/model/TrafficCircle.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/utils/FirebaseUtils.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/model/Place.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/asyncTask/PetrolAst.java" />
@@ -2333,9 +2268,7 @@
         <option value="$PROJECT_DIR$/app/src/main/res/menu/menu_shortcut.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/widgets/LoadingDialog.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/dialog_message.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/NotifyActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/widgets/MessageDialog.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/ShortcutActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/dialog_loading.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/utils/TrafficUtils.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/colors.xml" />
@@ -2351,13 +2284,18 @@
         <option value="$PROJECT_DIR$/app/src/main/java/fragment/WeatherWeekFragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/model/WeatherWeek.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/ShortcutActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/MainActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/NotifyActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/model/TrafficCircle.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/model/MyTraffic.java" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="554" />
-    <option name="width" value="1141" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1696" />
     <option name="height" value="1026" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
@@ -2385,110 +2323,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="Scratches" />
-      <pane id="AndroidView">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GmMap" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GmMap" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="res" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GmMap" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="res" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="drawable" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderTypeNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GmMap" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GmMap" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GmMap" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="mapassistant" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GmMap" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="app" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="java" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="adapter" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -2619,7 +2453,93 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="AndroidView">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GmMap" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GmMap" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="res" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidResFolderNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GmMap" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GmMap" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GmMap" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="model" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GmMap" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="mapassistant" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="PackagesPane" />
+      <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -2638,12 +2558,9 @@
     <property name="SHOW_ALL_PROCESSES" value="false" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\drawable" />
-      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\java\model" />
+    <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\layout" />
-      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\menu" />
-      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\layout-v21" />
+      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\drawable" />
     </key>
     <key name="android.template.packageName">
       <recent name="com.bluebirdaward.mapassistant" />
@@ -2658,9 +2575,12 @@
       <recent name="widgets" />
       <recent name="asyncTask" />
     </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\layout" />
+    <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\drawable" />
+      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\java\model" />
+      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\layout" />
+      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\menu" />
+      <recent name="D:\Doc\IT\Ancient\III-2\Mobile\Maps\GmMap\app\src\main\res\layout-v21" />
     </key>
   </component>
   <component name="RunManager" selected="Android Application.app">
@@ -2940,7 +2860,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="554" y="0" width="1141" height="1026" extended-state="0" />
+    <frame x="-8" y="-8" width="1696" height="1026" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -2957,9 +2877,9 @@
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22109158" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14608802" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3295796" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19241443" sideWeight="0.49261993" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.12713936" sideWeight="0.49261993" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17726162" sideWeight="0.50738007" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.38364056" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -3019,13 +2939,13 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/MainActivity.java</url>
-          <line>930</line>
+          <line>933</line>
           <properties />
           <option name="timeStamp" value="19" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/MainActivity.java</url>
-          <line>913</line>
+          <line>916</line>
           <properties />
           <option name="timeStamp" value="20" />
         </line-breakpoint>
@@ -3054,26 +2974,20 @@
           <option name="timeStamp" value="45" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/NotifyActivity.java</url>
-          <line>340</line>
-          <properties />
-          <option name="timeStamp" value="46" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java</url>
-          <line>448</line>
+          <line>446</line>
           <properties />
           <option name="timeStamp" value="47" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java</url>
-          <line>438</line>
+          <line>436</line>
           <properties />
           <option name="timeStamp" value="48" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java</url>
-          <line>424</line>
+          <line>422</line>
           <properties />
           <option name="timeStamp" value="49" />
         </line-breakpoint>
@@ -3097,20 +3011,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/model/Place.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="44" column="36" selection-start-line="44" selection-start-column="36" selection-end-line="44" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/com.google.android.gms/play-services-location/8.4.0/jars/classes.jar!/com/google/android/gms/location/places/Place.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-6.2222223">
-          <caret line="14" column="17" selection-start-line="14" selection-start-column="17" selection-end-line="14" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Android/sdk/sources/android-23/android/app/Dialog.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -3119,13 +3019,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/row_menu.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.49122807">
           <caret line="1" column="0" selection-start-line="1" selection-start-column="0" selection-end-line="23" selection-end-column="15" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/asyncTask/PetrolAst.java">
@@ -3178,6 +3078,9 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_shorcut.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="19" column="17" selection-start-line="19" selection-start-column="17" selection-end-line="19" selection-end-column="17" />
@@ -3187,9 +3090,6 @@
             <element signature="e#3564#4817#0" expanded="false" />
           </folding>
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/model/Route.java">
@@ -3207,13 +3107,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_message.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-3.9298246">
           <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/widgets/MessageDialog.java">
@@ -3225,13 +3125,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_place_picker.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="6.9298244">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/widgets/ShortcutDialog.java">
@@ -3243,13 +3143,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_loading.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-7.8070173">
           <caret line="20" column="39" selection-start-line="20" selection-start-column="39" selection-end-line="20" selection-end-column="39" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/widgets/LoadingDialog.java">
@@ -3261,13 +3161,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_destination.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-4.859649">
           <caret line="16" column="44" selection-start-line="16" selection-start-column="44" selection-end-line="16" selection-end-column="44" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/values/colors.xml">
@@ -3278,13 +3178,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_direction.xml">
+      <provider selected="true" editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider editor-type-id="text-editor">
         <state vertical-scroll-proportion="-5.0">
           <caret line="41" column="51" selection-start-line="41" selection-start-column="51" selection-end-line="41" selection-end-column="51" />
         </state>
-      </provider>
-      <provider selected="true" editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/utils/TimeUtils.java">
@@ -3311,23 +3211,23 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_petrol.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-4.4210525">
           <caret line="9" column="13" selection-start-line="9" selection-start-column="13" selection-end-line="9" selection-end-column="13" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_weather.xml">
       <provider editor-type-id="android-designer">
         <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_weather.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-3.9298246">
           <caret line="8" column="35" selection-start-line="8" selection-start-column="35" selection-end-line="8" selection-end-column="35" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/model/Petrol.java">
@@ -3345,13 +3245,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_weather.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="5.894737">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/asyncTask/WeatherTimeAst.java">
@@ -3383,23 +3283,23 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/row_weather_week.xml">
+      <provider editor-type-id="android-designer">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-3.491228">
           <caret line="19" column="44" selection-start-line="19" selection-start-column="44" selection-end-line="19" selection-end-column="44" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/row_petrol.xml">
       <provider editor-type-id="android-designer">
         <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/row_petrol.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-2.4561403">
           <caret line="5" column="29" selection-start-line="5" selection-start-column="29" selection-end-line="5" selection-end-column="29" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DestinationActivity.java">
@@ -3432,9 +3332,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="48" column="52" selection-start-line="48" selection-start-column="52" selection-end-line="48" selection-end-column="52" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -3455,7 +3352,14 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="42" column="34" selection-start-line="42" selection-start-column="34" selection-end-line="42" selection-end-column="34" />
           <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="e#1296#1297#0" expanded="false" />
+            <element signature="e#1323#1324#0" expanded="false" />
+            <element signature="e#1354#1355#0" expanded="false" />
+            <element signature="e#1381#1382#0" expanded="false" />
+            <element signature="e#1412#1413#0" expanded="false" />
+            <element signature="e#1439#1440#0" expanded="false" />
+            <element signature="e#1467#1468#0" expanded="false" />
+            <element signature="e#1494#1495#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -3465,6 +3369,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="35" column="34" selection-start-line="20" selection-start-column="8" selection-end-line="35" selection-end-column="34" />
           <folding>
+            <element signature="imports" expanded="false" />
             <element signature="e#1239#1240#0" expanded="false" />
             <element signature="e#1266#1267#0" expanded="false" />
             <element signature="e#1297#1298#0" expanded="false" />
@@ -3491,20 +3396,36 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/ShortcutActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="404" column="22" selection-start-line="404" selection-start-column="22" selection-end-line="404" selection-end-column="22" />
+          <caret line="796" column="31" selection-start-line="795" selection-start-column="8" selection-end-line="796" selection-end-column="31" />
           <folding>
-            <element signature="imports" expanded="false" />
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/NotifyActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/FoodActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.3617021">
+          <caret line="202" column="48" selection-start-line="202" selection-start-column="48" selection-end-line="202" selection-end-column="48" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/ShortcutActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="311" column="9" selection-start-line="311" selection-start-column="9" selection-end-line="311" selection-end-column="9" />
+          <caret line="420" column="31" selection-start-line="419" selection-start-column="6" selection-end-line="420" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/MainActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="763" column="51" selection-start-line="763" selection-start-column="51" selection-end-line="763" selection-end-column="51" />
           <folding />
         </state>
       </provider>
@@ -3512,33 +3433,31 @@
     <entry file="file://$PROJECT_DIR$/app/src/main/java/sqlite/SqliteHelper.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="142" column="19" selection-start-line="142" selection-start-column="19" selection-end-line="142" selection-end-column="19" />
+          <caret line="154" column="5" selection-start-line="154" selection-start-column="5" selection-end-line="154" selection-end-column="5" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/FoodActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/NotifyActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="202" column="48" selection-start-line="202" selection-start-column="48" selection-end-line="202" selection-end-column="48" />
+          <caret line="287" column="67" selection-start-line="287" selection-start-column="67" selection-end-line="287" selection-end-column="67" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/MainActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/model/TrafficCircle.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3888889">
-          <caret line="362" column="21" selection-start-line="362" selection-start-column="21" selection-end-line="362" selection-end-column="21" />
-          <folding>
-            <element signature="e#14924#14925#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.0">
+          <caret line="39" column="5" selection-start-line="39" selection-start-column="5" selection-end-line="39" selection-end-column="5" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/model/MyTraffic.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33273056">
-          <caret line="161" column="42" selection-start-line="161" selection-start-column="42" selection-end-line="161" selection-end-column="42" />
+        <state vertical-scroll-proportion="0.7697595">
+          <caret line="24" column="0" selection-start-line="24" selection-start-column="0" selection-end-line="24" selection-end-column="0" />
           <folding />
         </state>
       </provider>

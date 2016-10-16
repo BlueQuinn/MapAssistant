@@ -63,7 +63,7 @@ import static utils.FirebaseUtils.getTrafficLine;
 public class DirectionActivity extends AppCompatActivity
         implements View.OnClickListener, OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener,
-        GoogleMap.OnPolylineClickListener
+        GoogleMap.OnPolylineClickListener, GoogleMap.OnMapClickListener
 {
     View root;
     GoogleMap map;
@@ -98,7 +98,7 @@ public class DirectionActivity extends AppCompatActivity
     MarkerOptions waypointOption;
     String jamType;
     int ID;
-
+Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -139,8 +139,7 @@ public class DirectionActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        Intent intent = getIntent();
-        request = intent.getIntExtra("request", CUSTOM_DIRECTION);
+
 
         DisplayMetrics display = getResources().getDisplayMetrics();
         width = display.widthPixels;
@@ -165,11 +164,12 @@ public class DirectionActivity extends AppCompatActivity
 
         geocoder = new Geocoder(this, Locale.getDefault());
 
+        Intent intent = getIntent();
+        request = intent.getIntExtra("request", CUSTOM_DIRECTION);
         switch (request)
         {
             case CUSTOM_DIRECTION:
             {
-                Intent intent = getIntent();
                 LatLng position = intent.getParcelableExtra("position");
                 float zoom = intent.getFloatExtra("zoom", 15);
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
@@ -179,13 +179,12 @@ public class DirectionActivity extends AppCompatActivity
             case RESTAURANT_DIRECTION:
                 try
                 {
-                    Intent intent = getIntent();
                     String place = intent.getStringExtra("restaurant");
                     String address = intent.getStringExtra("address");
                     myLocation = intent.getParcelableExtra("my location");
                     String myAddress = intent.getStringExtra("my address");
                     textView[0].setText(myAddress);
-                    startOption = new MarkerOptions().position(myLocation).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker2));
+                    startOption = new MarkerOptions().position(myLocation).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
                     map.addMarker(startOption.title("Bạn đang ở đây").snippet(myAddress));
 
                     endOption = new MarkerOptions().snippet(place);
@@ -200,7 +199,6 @@ public class DirectionActivity extends AppCompatActivity
                 break;
 
             case PLACE_DIRECTION:
-                Intent intent = getIntent();
                 myLocation = intent.getParcelableExtra("myLocation");
                 Place dest = (Place) intent.getSerializableExtra("destination");
                 String myAdress = intent.getStringExtra("myAddress");
@@ -249,7 +247,7 @@ public class DirectionActivity extends AppCompatActivity
             BitmapDescriptor icon;
             if (requestCode == 0)
             {
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.marker2);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.marker);
                 startOption = new MarkerOptions().position(pos).icon(icon);
                 map.addMarker(startOption.title(place).snippet(address));
                 if (endOption != null)
@@ -259,7 +257,7 @@ public class DirectionActivity extends AppCompatActivity
             }
             else
             {
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.flag2);
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
                 endOption = new MarkerOptions().position(pos).icon(icon);
                 map.addMarker(endOption.title(place).snippet(address));
                 if (startOption != null)
@@ -519,7 +517,7 @@ public class DirectionActivity extends AppCompatActivity
                     @Override
                     public void onFinish(String address)
                     {
-                        Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime)
+                        snackbar=  Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime)
                                 .setAction("Xóa", new View.OnClickListener()
                                 {
                                     @Override
@@ -528,7 +526,8 @@ public class DirectionActivity extends AppCompatActivity
                                         waypoint.remove(m);
                                         marker.remove();
                                     }
-                                }).show();
+                                });
+                        snackbar.show();
                     }
                 });
                 asyncTask.execute(marker.getPosition().latitude, marker.getPosition().longitude);
@@ -543,7 +542,7 @@ public class DirectionActivity extends AppCompatActivity
             public void onFinish(String address)
             {
                 prbLoading.setVisibility(View.GONE);
-                Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
+                snackbar=       Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
                         .setAction("Đường tắt", new View.OnClickListener()
                         {
                             @Override
@@ -602,7 +601,8 @@ public class DirectionActivity extends AppCompatActivity
                                     Toast.makeText(DirectionActivity.this, "Hiện chưa có tuyến đường tắt nào", Toast.LENGTH_SHORT).show();
                                 }
                             }
-                        }).show();
+                        });
+                snackbar.show();
             }
         });
         asyncTask.execute(marker.getPosition().latitude, marker.getPosition().longitude);
@@ -627,7 +627,7 @@ public class DirectionActivity extends AppCompatActivity
     {
         map.addMarker(startOption);
         map.addMarker(endOption);
-        PolylineOptions options = new PolylineOptions().width(15).color(colorRoute);
+        PolylineOptions options = new PolylineOptions().width(15).color(colorRoute).clickable(true);
         options.addAll(route.getRoute());
         map.addPolyline(options);
     }
@@ -696,7 +696,8 @@ public class DirectionActivity extends AppCompatActivity
         }
         else
         {
-            Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime).show();
+            snackbar=   Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime);
+                    snackbar.show();
         }
     }
 
@@ -787,6 +788,13 @@ public class DirectionActivity extends AppCompatActivity
         {
             return Integer.parseInt(title[0].substring(0, 1)) * 10 + Integer.parseInt(title[0].substring(1, 2));
         }
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng)
+    {
+        if (snackbar != null)
+            snackbar.dismiss();
     }
 }
 

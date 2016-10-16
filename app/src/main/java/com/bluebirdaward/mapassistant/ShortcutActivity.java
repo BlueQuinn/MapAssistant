@@ -55,7 +55,8 @@ import utils.RequestCode;
 import widgets.MessageDialog;
 
 public class ShortcutActivity extends AppCompatActivity implements View.OnClickListener, OnMapReadyCallback,
-        GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener, GoogleMap.OnPolylineClickListener
+        GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener,
+        GoogleMap.OnPolylineClickListener, GoogleMap.OnMapClickListener
 {
     FloatingActionButton btnAdd, btnSubmit;
     GoogleMap map;
@@ -74,6 +75,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     String jamType;
     int time;
     ArrayList<LatLng> nearbyTraffic;
+Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -357,7 +359,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
             public void onFinish(String address)
             {
                 prbLoading.setVisibility(View.GONE);
-                Snackbar snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE);
+                snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE);
                 for (final Marker m : waypoint)
                 {
                     if (marker.getId().equals(m.getId()))
@@ -385,7 +387,8 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onPolylineClick(Polyline polyline)
     {
-        Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).show();
+        snackbar=   Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE);
+                snackbar.show();
     }
 
     @Override
@@ -409,6 +412,13 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng)
+    {
+        if (snackbar != null)
+            snackbar.dismiss();
     }
 }
 
