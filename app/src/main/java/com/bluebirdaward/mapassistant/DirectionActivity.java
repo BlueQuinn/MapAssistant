@@ -452,7 +452,6 @@ public class DirectionActivity extends AppCompatActivity
                 @Override
                 public void onDataChange(DataSnapshot snapshot)
                 {
-                    dialog.dismiss();
                     meta = ((Long) snapshot.child("meta").getValue()).intValue();
 
                     ArrayList<TrafficCircle> trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(snapshot, meta), route);
@@ -460,6 +459,7 @@ public class DirectionActivity extends AppCompatActivity
 
                     if (trafficLines.size() > 0 || trafficCircles.size() > 0)
                     {
+                        map.clear();
                         redraw();
                         AddTrafficAst asyncTask = new AddTrafficAst(trafficLines, trafficCircles, map);
                         asyncTask.setListener(new OnLoadListener<Traffic>()
@@ -467,9 +467,8 @@ public class DirectionActivity extends AppCompatActivity
                             @Override
                             public void onFinish(Traffic result)
                             {
-
                                 hmTraffic = result;
-                                prbLoading.setVisibility(View.GONE);
+                                dialog.dismiss();
                             }
                         });
                         asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));

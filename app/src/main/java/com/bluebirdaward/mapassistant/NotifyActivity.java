@@ -131,7 +131,7 @@ public class NotifyActivity extends AppCompatActivity
 
                 if (address.length() < 1)
                 {
-                    tvAddress.setText("Không có kết nối internet");
+                    tvAddress.setText("Chưa có kết nối internet");
                     btnNotify.setText("Thử lại");
                     btnNotify.setOnClickListener(reloadListener);
                 }
@@ -146,37 +146,22 @@ public class NotifyActivity extends AppCompatActivity
         asyncTask.execute(myLocation.latitude, myLocation.longitude);
     }
 
-    float getDistance(double lat1, double lng1, double lat2, double lng2)
-    {
-        Location homeLocation = new Location("");
-        homeLocation.setLatitude(lat1);
-        homeLocation.setLongitude(lng1);
-
-        Location targetLocation = new android.location.Location("");
-        targetLocation.setLatitude(lat2);
-        targetLocation.setLongitude(lng2);
-
-        return targetLocation.distanceTo(homeLocation);     // meters
-    }
-
     boolean checkLocation()
     {
         ArrayList<HashMap<String, String>> listRow = MainActivity.sqlite.getAll("MyTraffic");
-        //Log.d("123", "size " + listRow.size());
         for (HashMap<String, String> row : listRow)
         {
             double lat = Double.parseDouble(row.get("Lat"));
             double lng = Double.parseDouble(row.get("Lng"));
             int radius = Integer.parseInt(row.get("Radius"));
             float distance = MapUtils.distance(new LatLng(myLocation.latitude, myLocation.longitude), new LatLng(lat, lng));
-            if (distance > getRadius(radiusPicker.getProgress()) + getRadius(radius));
+            if (distance < getRadius(radiusPicker.getProgress() / 2) + getRadius(radius))
             {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
-
 
 
     void showMessage(String message)
@@ -248,6 +233,7 @@ public class NotifyActivity extends AppCompatActivity
     }
 
     String time;
+
     void saveTraffic()
     {
         dialog = new MessageDialog(this);
@@ -283,7 +269,7 @@ public class NotifyActivity extends AppCompatActivity
                 ref.updateChildren(rateNode);
                 id = ((Long) i.child("id").getValue()).intValue();
                 find = true;
-                jamType= Traffic.LINE;
+                jamType = Traffic.LINE;
                 break;
             }
         }
@@ -309,10 +295,10 @@ public class NotifyActivity extends AppCompatActivity
                     ref.updateChildren(rateNode);
                     id = ((Long) i.child("id").getValue()).intValue();
                     find = true;
-                    jamType= Traffic.CIRCLE;
+                    jamType = Traffic.CIRCLE;
                     break;
                 }
-                else        // out of circle
+                /*else        // out of circle
                 {
                     if (!intersect)
                     {
@@ -321,7 +307,7 @@ public class NotifyActivity extends AppCompatActivity
                             intersect = true;
                         }
                     }
-                }
+                }*/
             }
         }
 
@@ -337,14 +323,14 @@ public class NotifyActivity extends AppCompatActivity
                 Map<String, Object> circleNode = new HashMap<>();
                 circleNode.put("lat", myLocation.latitude);
                 circleNode.put("lng", myLocation.longitude);
-                circleNode.put("radius", radiusPicker.getProgress());
+                circleNode.put("radius", radiusPicker.getProgress() / 2);
                 circleNode.put("rate", 1);
                 circleNode.put("id", id);
 
                 Firebase ref = circleData.getRef();
                 ref.push().setValue(circleNode);
                 find = true;
-                jamType= Traffic.MY_TRAFFIC;
+                jamType = Traffic.MY_TRAFFIC;
             }
         }
         // chưa có new line
@@ -353,8 +339,8 @@ public class NotifyActivity extends AppCompatActivity
         if (find && id > -1)
         {
             String address = tvAddress.getText().toString().replace("Bạn đang ở ", "");
-            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, radiusPicker.getProgress(), address, Integer.parseInt(time), jamType);
-            dialog.show(getResources().getColor(R.color.green), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông cho tất cả mọi người cùng được biết");
+            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, radiusPicker.getProgress() / 2, address, Integer.parseInt(time), jamType);
+            dialog.show(getResources().getColor(R.color.green), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông này cho tất cả mọi người cùng được biết");
 
 
             Log.d("traffic", "notift " + time + " " + jamType + " " + myRadius);

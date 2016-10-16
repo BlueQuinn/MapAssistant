@@ -17,7 +17,7 @@ import com.bluebirdaward.mapassistant.gmmap.R;
 public class MessageDialog extends Dialog
 {
     LinearLayout contentLayout;
-    RelativeLayout loadingLayout;
+    RelativeLayout loadingLayout, rootLayout;
 
     public static void showMessage(Context context, int color, int icon, String title, String info)
     {
@@ -25,12 +25,25 @@ public class MessageDialog extends Dialog
         dialog.show();
     }
 
+  /*  public static void showMessage(Context context, int color, int icon, String title, String info, int height)
+    {
+        MessageDialog dialog = new MessageDialog(context, color, icon, title, info, height);
+        dialog.show();
+    }*/
+
     public MessageDialog(Context context, int color, int icon, String title, String info)
     {
         super(context);
         initLayout();
         show(  color,  icon,  title,  info);
     }
+
+   /* public MessageDialog(Context context, int color, int icon, String title, String info, int height)
+    {
+        super(context);
+        initLayout();
+        show(  color,  icon,  title,  info, height);
+    }*/
 
     public MessageDialog(Context context)
     {
@@ -49,6 +62,7 @@ public class MessageDialog extends Dialog
 
         contentLayout = (LinearLayout) findViewById(R.id.contentLayout);
         loadingLayout = (RelativeLayout) findViewById(R.id.loadingLayout);
+        rootLayout = (RelativeLayout) findViewById(R.id.rootLayout);
     }
 
     public void loading()
@@ -56,6 +70,25 @@ public class MessageDialog extends Dialog
         contentLayout.setVisibility(View.GONE);
         loadingLayout.setVisibility(View.VISIBLE);
     }
+
+    /*public void show( int color, int icon, String title, String info, int height)
+    {
+        loadingLayout.setVisibility(View.GONE);
+        LinearLayout layoutTitle = (LinearLayout) findViewById(R.id.layoutTitle);
+        TextView txtTitle = (TextView) findViewById(R.id.txtTitle);
+        TextView txtInfo = (TextView) findViewById(R.id.txtInfo);
+        ImageView imvIcon = (ImageView) findViewById(R.id.imvIcon);
+
+        layoutTitle.setBackgroundColor(color);
+        txtTitle.setText(title);
+        txtInfo.setText(info);
+        imvIcon.setImageResource(icon);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(contentLayout.getLayoutParams());
+        params.height = height;
+        rootLayout.setLayoutParams(params);
+        contentLayout.setVisibility(View.VISIBLE);
+    }
+*/
 
     public void show( int color, int icon, String title, String info)
     {

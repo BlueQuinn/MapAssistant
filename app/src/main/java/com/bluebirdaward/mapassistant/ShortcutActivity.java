@@ -357,22 +357,24 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
             public void onFinish(String address)
             {
                 prbLoading.setVisibility(View.GONE);
-                Snackbar snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE).setActionTextColor(getResources().getColor(R.color.lime));
-                snackbar.setAction("Xóa", new View.OnClickListener()
+                Snackbar snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE);
+                for (final Marker m : waypoint)
                 {
-                    @Override
-                    public void onClick(View v)
+                    if (marker.getId().equals(m.getId()))
                     {
-                        marker.remove();
-                        for (Marker m : waypoint)
+                        snackbar.setActionTextColor(getResources().getColor(R.color.lime)).setAction("Xóa", new View.OnClickListener()
                         {
-                            if (m.getId().equals(marker.getId()))
+                            @Override
+                            public void onClick(View v)
                             {
+                                marker.remove();
                                 waypoint.remove(m);
                             }
-                        }
+                        });
+                        break;
                     }
-                }).show();
+                }
+                snackbar.show();
             }
         });
         LatLng position = marker.getPosition();
@@ -403,7 +405,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
                 break;
 
             case R.id.info:
-                MessageDialog.showMessage(this, getResources().getColor(R.color.colorAccent), R.drawable.info, "Hướng dẫn", "Nhấn giữ và kéo thả các điểm trên bản đồ để tạo thành đường đi tắt.\n" +  "Sau đó gửi đường đi tắt này lên server để cho tất cả những người dùng ứng dụng Map Assistant đều có thể thấy được gợi ý của bạn khi có ùn tắc giao thông xảy ra");
+                MessageDialog.showMessage(this, getResources().getColor(R.color.colorAccent), R.drawable.info, "Hướng dẫn", "Nhấn giữ và kéo thả các điểm trên bản đồ để tạo thành đường đi tắt.\n" + "Gửi đường đi tắt này lên server để tất cả người dùng ứng dụng Map Assistant đều có thể thấy được gợi ý của bạn khi có ùn tắc giao thông xảy ra");
                 break;
         }
         return super.onOptionsItemSelected(item);

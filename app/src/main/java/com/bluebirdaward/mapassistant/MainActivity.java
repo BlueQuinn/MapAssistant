@@ -837,6 +837,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             {
 
                 marker.showInfoWindow();
+
                 if (circle != null)
                 {
                     circle.remove();
@@ -899,7 +900,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                             intent.putExtra("jamType", Traffic.MY_TRAFFIC);
                                             intent.putExtra("jam", circle);     // circle này có id của DB
                                             intent.putExtra("ID", circle.getId());
-
 
                                             startActivity(intent);
                                         }
