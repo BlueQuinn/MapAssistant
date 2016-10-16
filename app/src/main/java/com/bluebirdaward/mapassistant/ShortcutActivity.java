@@ -156,33 +156,40 @@ Snackbar snackbar;
                     @Override
                     public void onDataChange(DataSnapshot snapshot)
                     {
-                        HashMap<String, Object> wtf = (HashMap<String, Object>) snapshot.getValue();
-
-                        ArrayList<String> listKey = new ArrayList<>(wtf.keySet());
-                        for (String key : listKey)
+                        try
                         {
-                            if (key.equals(Integer.toString(ID)))
+                            HashMap<String, Object> wtf = (HashMap<String, Object>) snapshot.getValue();
+
+                            ArrayList<String> listKey = new ArrayList<>(wtf.keySet());
+                            for (String key : listKey)
                             {
-                                Firebase ref = snapshot.child(key).child("shortcut").getRef();
+                                if (key.equals(Integer.toString(ID)))
+                                {
+                                    Firebase ref = snapshot.child(key).child("shortcut").getRef();
 
-                                String routeString = PolyUtils.encode(polyline.getPoints());
-                                Map<String, Object> shortcut = new HashMap<>();
-                                shortcut.put("route", routeString);
-                                shortcut.put("distance", route.getDistance());
-                                shortcut.put("duration", route.getDuration());
-                                shortcut.put("like", 0);
-                                ref.push().setValue(shortcut);
-                                query.removeEventListener(this);
+                                    String routeString = PolyUtils.encode(polyline.getPoints());
+                                    Map<String, Object> shortcut = new HashMap<>();
+                                    shortcut.put("route", routeString);
+                                    shortcut.put("distance", route.getDistance());
+                                    shortcut.put("duration", route.getDuration());
+                                    shortcut.put("like", 0);
+                                    ref.push().setValue(shortcut);
+                                    query.removeEventListener(this);
 
-                                MainActivity.sqlite.addShortcut(time, jamType, ID, routeString, route.getDistance(), route.getDuration());
+                                    MainActivity.sqlite.addShortcut(time, jamType, ID, routeString, route.getDistance(), route.getDuration());
 
-                                prbLoading.setVisibility(View.GONE);
-                                MessageDialog.showMessage(ShortcutActivity.this, getResources().getColor(R.color.green), R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
+                                    prbLoading.setVisibility(View.GONE);
+                                    MessageDialog.showMessage(ShortcutActivity.this, getResources().getColor(R.color.green), R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
 
-                                Log.d("traffic", "shortcut " + time + " " + jamType);
+                                    Log.d("traffic", "shortcut " + time + " " + jamType);
+                                }
                             }
-                        }
 
+                        }
+                        catch (Exception e)
+                        {
+                            
+                        }
                         // chưa có kiểm tra xem 2 shortcut trùng nhau
                         //DataSnapshot data = snapshot.getChildren().iterator().next();
                         //String key = snapshot.getKey();
@@ -238,8 +245,8 @@ Snackbar snackbar;
 
                 Log.d("shortcut", "" + radius);
 
-                startPos = new LatLng(jam.latitude, jam.longitude + 0.01);
-                endPos = new LatLng(jam.latitude, jam.longitude - 0.01);
+                startPos = new LatLng(jam.latitude, jam.longitude + 0.005);
+                endPos = new LatLng(jam.latitude, jam.longitude - 0.005);
 
                 break;
             }
@@ -252,16 +259,16 @@ Snackbar snackbar;
 
                 Log.d("shortcut", "" + radius);
 
-                startPos = new LatLng(jam.latitude, jam.longitude + 0.01);
-                endPos = new LatLng(jam.latitude, jam.longitude - 0.01);
+                startPos = new LatLng(jam.latitude, jam.longitude + 0.005);
+                endPos = new LatLng(jam.latitude, jam.longitude - 0.005);
 
                 break;
             }
 
             default:
             {
-                startPos = new LatLng(jam.latitude, jam.longitude + 0.01);
-                endPos = new LatLng(jam.latitude, jam.longitude - 0.01);
+                startPos = new LatLng(jam.latitude, jam.longitude + 0.005);
+                endPos = new LatLng(jam.latitude, jam.longitude - 0.005);
                 break;
             }
         }
@@ -271,6 +278,7 @@ Snackbar snackbar;
         map.setOnMarkerClickListener(this);
         map.setOnPolylineClickListener(this);
 
+if (nearbyTraffic != null)
         for (LatLng i : nearbyTraffic)
         {
             MarkerOptions trafficMarkerOption = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_medium));

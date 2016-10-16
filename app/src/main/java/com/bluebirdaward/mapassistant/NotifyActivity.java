@@ -155,7 +155,7 @@ public class NotifyActivity extends AppCompatActivity
             double lng = Double.parseDouble(row.get("Lng"));
             int radius = Integer.parseInt(row.get("Radius"));
             float distance = MapUtils.distance(new LatLng(myLocation.latitude, myLocation.longitude), new LatLng(lat, lng));
-            if (distance < getRadius(radiusPicker.getProgress() / 2) + getRadius(radius))
+            if (distance < getRadius() + radius)
             {
                 return true;
             }
@@ -202,15 +202,12 @@ public class NotifyActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    int getLength()
-    {
-        return (radiusPicker.getProgress() + 4) * 50;
-    }
+
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
-        tvRadius.setText("Ước tính phạm vi ùn tắc: " + getRadius(progress) + "m");
+        tvRadius.setText("Ước tính phạm vi ùn tắc: " + getRadius() + "m");
     }
 
     @Override
@@ -323,7 +320,7 @@ public class NotifyActivity extends AppCompatActivity
                 Map<String, Object> circleNode = new HashMap<>();
                 circleNode.put("lat", myLocation.latitude);
                 circleNode.put("lng", myLocation.longitude);
-                circleNode.put("radius", radiusPicker.getProgress() / 2);
+                circleNode.put("radius", getRadius());
                 circleNode.put("rate", 1);
                 circleNode.put("id", id);
 
@@ -339,7 +336,7 @@ public class NotifyActivity extends AppCompatActivity
         if (find && id > -1)
         {
             String address = tvAddress.getText().toString().replace("Bạn đang ở ", "");
-            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, ((radiusPicker.getProgress() / 2) + 2) * 50, address, Integer.parseInt(time), jamType);
+            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, getRadius(), address, Integer.parseInt(time), jamType);
             dialog.show(getResources().getColor(R.color.green), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông này cho tất cả mọi người cùng được biết");
 
 
@@ -356,4 +353,15 @@ public class NotifyActivity extends AppCompatActivity
     {
 
     }
+
+    int getLength()
+    {
+        return (radiusPicker.getProgress() + 4) * 50;
+    }
+
+    int getRadius()
+    {
+        return getLength()/2;
+    }
+
 }

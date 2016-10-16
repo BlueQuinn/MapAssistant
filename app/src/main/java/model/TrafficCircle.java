@@ -52,7 +52,7 @@ public class TrafficCircle implements SafeParcelable
 
     public int getRadius()
     {
-        return 50 * (radius + 4);
+       return radius;
     }
 
     public int getRating()
