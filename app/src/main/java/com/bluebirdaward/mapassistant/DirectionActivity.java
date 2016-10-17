@@ -335,10 +335,6 @@ public class DirectionActivity extends AppCompatActivity
                     return;
                 }
                 PolylineOptions option = new PolylineOptions().width(15).color(getResources().getColor(R.color.routeColor));
-                /*for (int i = 0; i < result.lenght(); i++)
-                {
-                    line.add(result.get(i));
-                }*/
                 option.addAll(route.getRoute()).clickable(true);
                 if (polyline != null)
                 {
@@ -499,18 +495,25 @@ public class DirectionActivity extends AppCompatActivity
                                             editor.apply();
                                         }
 
-                                        LatLng[] pos;
+                                        ArrayList<LatLng> pos = new ArrayList<LatLng>();
                                         if (trafficLines.size() > 0)
                                         {
-                                            pos = new LatLng[trafficCircles.size()];
+                                            for (TrafficLine line : trafficLines)
+                                            {
+                                                pos.add(line.getEnd());
+                                                pos.add(line.getStart());
+                                            }
                                         }
                                         else
                                         {
-                                            pos = new LatLng[trafficLines.size()];
+                                            for (TrafficCircle circle : trafficCircles)
+                                            {
+                                                pos.add(circle.getCenter());
+                                            }
                                         }
-                                        if (pos.length > 0)
+                                        if (pos.size() > 0)
                                         {
-                                            LatLngBounds bound = MapUtils.getBound(pos);
+                                            LatLngBounds bound = MapUtils.getBound(pos.toArray(new LatLng[pos.size()]));
                                             map.animateCamera(CameraUpdateFactory.newLatLngBounds(bound, 15));
                                         }
                                     }

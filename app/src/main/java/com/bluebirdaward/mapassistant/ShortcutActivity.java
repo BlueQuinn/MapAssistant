@@ -134,7 +134,7 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
             {
                 if (isOnline())
                 {
-                    if (route == null)
+                    if (route != null)
                     {
                         if (!route.inCircle(jam, radius))
                         {
