@@ -23,7 +23,9 @@ public class TrafficUtils
     {
         String date = new SimpleDateFormat("HH:mm").format(new Date());
         final int timeNow = toMinutes(date);
-        int t = timeNow / 30, tDown = t * 30, tUp = (t + 1) * 30;
+
+        //int t = timeNow / 30, tDown = t * 30, tUp = (t + 1) * 30;
+
         /*if (timeNow - tDown < tUp - timeNow)
         {
             return Integer.toString(tDown);
@@ -32,7 +34,16 @@ public class TrafficUtils
         {
             return Integer.toString(tUp);
         }*/
-        return Integer.toString(tDown);
+
+       // return Integer.toString(tDown);
+
+        return Integer.toString(timeNow);
+    }
+
+    public static int trafficTime()
+    {
+        String date = new SimpleDateFormat("HH:mm").format(new Date());
+       return toMinutes(date);
     }
 
     public static ArrayList<TrafficCircle> getCircleJam(ArrayList<TrafficCircle> trafficCircles, Route route)

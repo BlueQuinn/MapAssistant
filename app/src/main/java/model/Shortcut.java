@@ -15,6 +15,7 @@ import utils.RouteUtils;
  */
 public class Shortcut implements SafeParcelable
 {
+    int id;
     String routeString;
     int rating;
     int duration, distance;
@@ -65,8 +66,9 @@ public class Shortcut implements SafeParcelable
         return distance;
     }
 
-    public Shortcut(String routeString, int rating, int duration, int distance)
+    public Shortcut(int id, String routeString, int rating, int duration, int distance)
     {
+        this.id = id;
         this.routeString = routeString;
         this.rating = rating;
         this.duration = duration;
@@ -87,14 +89,22 @@ public class Shortcut implements SafeParcelable
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
+        dest.writeInt(id);
         dest.writeString(routeString);
         dest.writeInt(rating);
         dest.writeInt(duration);
         dest.writeInt(distance);
     }
 
-    Shortcut(Parcel in)
+    public int getId()
     {
+        return id;
+    }
+
+    Shortcut(Parcel in)
+
+    {
+        id = in.readInt();
         routeString = in.readString();
         rating = in.readInt();
         duration = in.readInt();

@@ -140,7 +140,7 @@ public class SqliteHelper extends SQLiteOpenHelper
         db = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE);
     }
 
-    public boolean saveTraffic(int id, double lat, double lng, int radius, String address, int timeNode, String jamType)
+    public boolean saveTraffic(int id, double lat, double lng, int radius, String address, String jamType)
     {
         Date today = new Date();
         String[] datetime = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(today).split(" ");
@@ -150,8 +150,8 @@ public class SqliteHelper extends SQLiteOpenHelper
         String moment = "Ngày " + date[0] + "/" + date[1] + " lúc " + time[0] + ":" + time[1];
 
         String type = jamType.substring(0, 1);
-        return excute(String.format(Locale.US, "insert into MyTraffic values (%d, '%s', '%s', %d, '%s', '%s', %d, '%s')",
-                id, Double.toString(lat), Double.toString(lng), radius, moment, address.replace(", Hồ Chí Minh", ""), timeNode, type));
+        return excute(String.format(Locale.US, "insert into MyTraffic values (%d, '%s', '%s', %d, '%s', '%s', '%s')",
+                id, Double.toString(lat), Double.toString(lng), radius, moment, address.replace(", Hồ Chí Minh", ""), type));
     }
 
     public void insertDestination(String table, String place, String address, double lat, double lng)
@@ -225,26 +225,26 @@ public class SqliteHelper extends SQLiteOpenHelper
         return 0;
     }
 
-    public boolean addShortcut(int time, String jamType, int ID, String route, int distance, int duration)
+    /*public boolean addShortcut(int jamID, String jamType, int ID, String route, int distance, int duration)
     {
         String type = jamType.substring(0, 1);
-        return excute(String.format(Locale.US, "insert into Shortcut values (%d, '%s', %d, %d, %d, '%s', %d, '%s')",
-                ID, route, distance, duration, 0, "0", time, type));
-    }
+        return excute(String.format(Locale.US, "insert into Shortcut values (%d, '%s', %d, %d, %d, '%s', '%s', %d)",
+                ID, route, distance, duration, 0, "0", type, jamID));
+    }*/
 
-    ArrayList<Shortcut> getShortcut(int ID)
+ /*   ArrayList<Shortcut> getShortcut(int jamID, int shortcutID)
     {
         ArrayList<Shortcut> shortcuts = new ArrayList<>();
-        ArrayList<HashMap<String, String>> data = executeQuery("select * from Shortcut where ID = " + ID);
+        ArrayList<HashMap<String, String>> data = executeQuery("select * from Shortcut where ID = " + jamID);
         for (HashMap<String, String> row : data)
         {
             String route = row.get("Route");
             int distance = Integer.parseInt(row.get("Distance"));
             int duration = Integer.parseInt(row.get("Duration"));
-            shortcuts.add(new Shortcut(route, distance, duration, 1));
+            shortcuts.add(new Shortcut(route, distance, duration, 0));
         }
         return shortcuts;
-    }
+    }*/
 
     public ArrayList<MyTraffic> getMyTraffic()
     {
@@ -258,8 +258,9 @@ public class SqliteHelper extends SQLiteOpenHelper
             double lng = Double.parseDouble(row.get("Lng"));
             int radius = Integer.parseInt(row.get("Radius"));
             String address = row.get("Address");
-            ArrayList<Shortcut> shortcuts = getShortcut(id);
-            myTraffics.add(new MyTraffic(id, new LatLng(lat, lng), radius, time, address, shortcuts));
+            //ArrayList<Shortcut> shortcuts = getShortcut(id);
+            //myTraffics.add(new MyTraffic(id, new LatLng(lat, lng), radius, time, address, shortcuts));
+            myTraffics.add(new MyTraffic(id, new LatLng(lat, lng), radius, time, address));
         }
         return myTraffics;
     }
@@ -304,40 +305,41 @@ public class SqliteHelper extends SQLiteOpenHelper
         return false;
     }
 
-    public boolean checkLiked(int time, String jamType, int ID)
+    public boolean checkLiked(String jamType, int jamId, int shortcutId)
     {
         String type = jamType.substring(0, 1);
         ArrayList<HashMap<String, String>> data = executeQuery(String.format(Locale.US,
-                "select * from Shortcut where Time = %d and JamType = '%s' and ID = %d and Like = '1'",
-                time, type, ID));
+                "select * from Like where JamType = '%s' and JamID = %d and ShortcutID = %d",
+                type, jamId, shortcutId));
         return data.size() > 0;
     }
 
-    boolean rating(int time, String jamType, int ID, int rating, String like)
+    /*boolean rating(String jamType, int jamId, int shortcutId)
     {
         String type = jamType.substring(0, 1);
         return excute(String.format(Locale.US,
-                "update Shortcut set Like = '%s', Rating = %d" +
+                "update Like set Like = '%s', Rating = %d" +
                         " where Time = %d and Jam = '%s' and ID = %d",
                 like, rating, time, type, ID));
-    }
+    }*/
 
-    public boolean like(int time, String jamType, int ID, int rating)
+    public boolean like(String jamType, int jamId, int shortcutId)
     {
-        return rating(time, jamType, ID, rating, "1");
+        return excute(String.format(Locale.US, "insert into Like values ('%s', %d, %d)",
+                jamType, jamId, shortcutId));
     }
 
-    public boolean dislike(int time, String jamType, int ID, int rating)
+    public boolean dislike(int shortcutId)
     {
-        return rating(time, jamType, ID, rating, "0");
+        return excute(String.format(Locale.US, "delete from Like where ShortcutID = %d", shortcutId));
     }
 
-    public boolean checkShortcutDuplicate(int time, String jamType, int ID, String route)
+    /*public boolean checkShortcutDuplicate(String jamType, int ID, String route)
     {
         String type = jamType.substring(0, 1);
         ArrayList<HashMap<String, String>> data = executeQuery(String.format(Locale.US,
-                "select * from Shortcut where Time = %d and JamType = '%s' and ID = %d and Route = '%s'",
+                "select * from Like where Time = %d and JamType = '%s' and ID = %d and Route = '%s'",
                 time, type, ID, route));
         return data.size() > 0;
-    }
+    }*/
 }

@@ -1,7 +1,10 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
+import android.graphics.Path;
 import android.location.Geocoder;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -45,9 +48,11 @@ import model.Shortcut;
 import model.Traffic;
 import model.TrafficCircle;
 import model.TrafficLine;
+import utils.FirebaseUtils;
 import utils.MapUtils;
 import utils.TrafficUtils;
 import widgets.LoadingDialog;
+import widgets.MessageDialog;
 import widgets.ShortcutDialog;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
@@ -55,7 +60,6 @@ import com.bluebirdaward.mapassistant.gmmap.R;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 import static utils.FirebaseUtils.getTrafficCircle;
 import static utils.FirebaseUtils.getTrafficLine;
@@ -97,8 +101,8 @@ public class DirectionActivity extends AppCompatActivity
     int time;
     MarkerOptions waypointOption;
     String jamType;
-    int ID;
-Snackbar snackbar;
+    int jamId;
+    Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -140,7 +144,6 @@ Snackbar snackbar;
         mapFragment.getMapAsync(this);
 
 
-
         DisplayMetrics display = getResources().getDisplayMetrics();
         width = display.widthPixels;
         height = display.heightPixels;
@@ -158,6 +161,7 @@ Snackbar snackbar;
         map.getUiSettings().setMyLocationButtonEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
 
+        map.setOnMapClickListener(this);
         map.setOnMarkerDragListener(this);
         map.setOnMarkerClickListener(this);
         map.setOnPolylineClickListener(this);
@@ -236,6 +240,10 @@ Snackbar snackbar;
             prbLoading.setVisibility(View.GONE);
 
             map.clear();
+            if (snackbar != null)
+            {
+                snackbar.dismiss();
+            }
             reset();
 
             String place = data.getStringExtra("place");
@@ -383,6 +391,10 @@ Snackbar snackbar;
                     endOption.snippet(tmp);
 
                     map.clear();
+                    if (snackbar != null)
+                    {
+                        snackbar.dismiss();
+                    }
                     reset();
                     map.addMarker(startOption).hideInfoWindow();
                     map.addMarker(endOption).hideInfoWindow();
@@ -406,8 +418,11 @@ Snackbar snackbar;
             case R.id.btnTraffic:
                 if (isDirected())
                 {
+                    if (isOnline())
                     // prbLoading.setVisibility(View.VISIBLE);
                     loadTraffic();
+                    else
+                        Toast.makeText(this, "Không có kết nối Internet", Toast.LENGTH_SHORT).show();
                 }
                 else
                 {
@@ -419,44 +434,64 @@ Snackbar snackbar;
 
     void loadTraffic()
     {
-        time = Integer.parseInt(TrafficUtils.getTimeNode());
+        time = TrafficUtils.trafficTime();
         if ((time >= 390 && time <= 720) || (time >= 990 && time <= 1170))
         {
             final LoadingDialog dialog = LoadingDialog.show(this, "Phát hiện những điểm ùn tắc giao thông gần đấy");
-            final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time));
-            firebase.addValueEventListener(new ValueEventListener()    // chưa load downNode
+            final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic));
+            final Query lineQuery = firebase.child("line").orderByChild("time").startAt(time - 30).endAt(time + 30);
+            lineQuery.addListenerForSingleValueEvent(new ValueEventListener()    // chưa load downNode
             {
                 @Override
-                public void onDataChange(DataSnapshot snapshot)
+                public void onDataChange(final DataSnapshot lineData)
                 {
-                    meta = ((Long) snapshot.child("meta").getValue()).intValue();
-
-                    ArrayList<TrafficCircle> trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(snapshot, meta), route);
-                    ArrayList<TrafficLine> trafficLines = TrafficUtils.getLineJam(getTrafficLine(snapshot, meta), route);
-
-                    if (trafficLines.size() > 0 || trafficCircles.size() > 0)
+                    final Query circleQuery = firebase.child("circle").orderByChild("time").startAt(time - 30).endAt(time + 30);
+                    circleQuery.addListenerForSingleValueEvent(new ValueEventListener()
                     {
-                        map.clear();
-                        redraw();
-                        AddTrafficAst asyncTask = new AddTrafficAst(trafficLines, trafficCircles, map);
-                        asyncTask.setListener(new OnLoadListener<Traffic>()
+                        @Override
+                        public void onDataChange(DataSnapshot circleData)
                         {
-                            @Override
-                            public void onFinish(Traffic result)
+                            meta = 30;
+
+                            ArrayList<TrafficCircle> trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(circleData, meta), route);
+                            ArrayList<TrafficLine> trafficLines = TrafficUtils.getLineJam(getTrafficLine(lineData, meta), route);
+
+                            if (trafficLines.size() > 0 || trafficCircles.size() > 0)
                             {
-                                hmTraffic = result;
-                                dialog.dismiss();
+                                map.clear();
+                                if (snackbar != null)
+                                {
+                                    snackbar.dismiss();
+                                }
+                                redraw();
+                                AddTrafficAst asyncTask = new AddTrafficAst(trafficLines, trafficCircles, map);
+                                asyncTask.setListener(new OnLoadListener<Traffic>()
+                                {
+                                    @Override
+                                    public void onFinish(Traffic result)
+                                    {
+                                        hmTraffic = result;
+                                        dialog.dismiss();
+                                    }
+                                });
+                                asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
                             }
-                        });
-                        asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
-                    }
-                    else
-                    {
-                        /*prbLoading.setVisibility(View.GONE);
-                        Toast.makeText(DirectionActivity.this, "Chưa có điểm kẹt xe nào trên đường đi này", Toast.LENGTH_SHORT).show();*/
-                        dialog.dismiss("Chưa có điểm kẹt xe nào trên đường đi này");
-                    }
-                    firebase.removeEventListener(this);
+                            else
+                            {
+                                dialog.dismiss("Chưa có điểm kẹt xe nào trên đường đi này");
+                            }
+                            circleQuery.removeEventListener(this);
+                        }
+
+                        @Override
+                        public void onCancelled(FirebaseError firebaseError)
+                        {
+                            // System.out.println("The read failed: " + firebaseError.getMessage());
+                            dialog.dismiss();
+                            circleQuery.removeEventListener(this);
+                        }
+                    });
+                    lineQuery.removeEventListener(this);
                 }
 
                 @Override
@@ -464,13 +499,12 @@ Snackbar snackbar;
                 {
                     System.out.println("The read failed: " + firebaseError.getMessage());
                     prbLoading.setVisibility(View.GONE);
-                    firebase.removeEventListener(this);
+                    lineQuery.removeEventListener(this);
                 }
             });
         }
         else
         {
-            prbLoading.setVisibility(View.VISIBLE);
             Toast.makeText(this, "Hiện chưa có điểm kẹt xe nào", Toast.LENGTH_SHORT).show();
         }
     }
@@ -517,7 +551,7 @@ Snackbar snackbar;
                     @Override
                     public void onFinish(String address)
                     {
-                        snackbar=  Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime)
+                        snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime)
                                 .setAction("Xóa", new View.OnClickListener()
                                 {
                                     @Override
@@ -542,7 +576,7 @@ Snackbar snackbar;
             public void onFinish(String address)
             {
                 prbLoading.setVisibility(View.GONE);
-                snackbar=       Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
+                snackbar = Snackbar.make(root, address, Snackbar.LENGTH_INDEFINITE)
                         .setAction("Đường tắt", new View.OnClickListener()
                         {
                             @Override
@@ -557,14 +591,14 @@ Snackbar snackbar;
                                     TrafficLine line = hmTraffic.getLine(marker.getId());
                                     shortcuts = line.getShortcuts();
                                     jamType = Traffic.LINE;
-                                    ID = line.getId();
+                                    jamId = line.getId();
                                 }
                                 else
                                 {
                                     TrafficCircle circle = hmTraffic.getCircle(marker.getId());
                                     shortcuts = circle.getShortcuts();
                                     jamType = Traffic.CIRCLE;
-                                    ID = circle.getId();
+                                    jamId = circle.getId();
                                 }
 
                                 if (shortcuts != null && shortcuts.size() > 0)
@@ -580,6 +614,10 @@ Snackbar snackbar;
                                         markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_medium));
                                     }
                                     map.clear();
+                                    if (snackbar != null)
+                                    {
+                                        snackbar.dismiss();
+                                    }
                                     map.addMarker(markerOptions);
                                     redraw();
                                     for (int i = 0; i < shortcuts.size(); ++i)
@@ -632,25 +670,44 @@ Snackbar snackbar;
         map.addPolyline(options);
     }
 
-    void rating(String jamType, int ID, final int rating, final String route)
+    void sendRating(final int shortcutId, final int rating)
     {
-        Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(Integer.toString(time) + "/" + jamType);
-        final Query query = firebase.orderByChild("id").equalTo(ID);
+        Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(jamType);
+        final Query query = firebase.orderByChild("id").equalTo(jamId);
         query.addValueEventListener(new ValueEventListener()
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot)
             {
-                DataSnapshot data = dataSnapshot.child("shortcut");
-                for (DataSnapshot shortcut : data.getChildren())
+                Firebase shortcutRef = FirebaseUtils.getShortcutRef(dataSnapshot);
+                if (shortcutRef != null)
                 {
-                    if (route.equals(shortcut.child("route").getValue()))
+                    final Query shortcutQuery = shortcutRef.orderByChild("id").equalTo(shortcutId);
+                    shortcutQuery.addListenerForSingleValueEvent(new ValueEventListener()
                     {
-                        Firebase ref = shortcut.getRef();
-                        Map<String, Object> rateNode = new HashMap<>();
-                        rateNode.put("rate", rating);
-                        ref.updateChildren(rateNode);
-                    }
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot)
+                        {
+                            Firebase shortcutNode = FirebaseUtils.getShortcutNode(dataSnapshot);
+                            if (shortcutNode != null)
+                            {
+                                HashMap<String, Object> rateNode = new HashMap<>();
+                                rateNode.put("like", rating);
+                                shortcutNode.updateChildren(rateNode);
+                            }
+                            else
+                            {
+                                MessageDialog.showMessage(DirectionActivity.this, getResources().getColor(R.color.colorPrimary), R.drawable.error, "Đã xảy ra lỗi", "Xin hãy thử lại vào lần sau");
+                            }
+                            shortcutQuery.removeEventListener(this);
+                        }
+
+                        @Override
+                        public void onCancelled(FirebaseError firebaseError)
+                        {
+
+                        }
+                    });
                 }
                 query.removeEventListener(this);
             }
@@ -673,7 +730,7 @@ Snackbar snackbar;
             shortcut = hmShortcut.get(polyline.getId());
             if (shortcut != null)
             {
-                ShortcutDialog dialog = new ShortcutDialog(DirectionActivity.this, shortcut, time, jamType, ID);
+                ShortcutDialog dialog = new ShortcutDialog(DirectionActivity.this, shortcut, jamType, jamId);
                 dialog.setListener(new OnLoadListener<Integer>()
                 {
                     @Override
@@ -682,12 +739,16 @@ Snackbar snackbar;
                         if (rating < 0)
                         {
                             map.clear();
+                            if (snackbar != null)
+                            {
+                                snackbar.dismiss();
+                            }
                             reset();
                             navigateShortcut(startOption.getPosition(), shortcut.getStart(), shortcut.getEnd(), endOption.getPosition());
                         }
                         else
                         {
-                            rating(jamType, ID, rating, shortcut.getRouteString());
+                            sendRating(shortcut.getId(), rating);
                         }
                     }
                 });
@@ -696,8 +757,8 @@ Snackbar snackbar;
         }
         else
         {
-            snackbar=   Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime);
-                    snackbar.show();
+            snackbar = Snackbar.make(root, route.getInfo(), Snackbar.LENGTH_INDEFINITE).setActionTextColor(colorLime);
+            snackbar.show();
         }
     }
 
@@ -794,7 +855,16 @@ Snackbar snackbar;
     public void onMapClick(LatLng latLng)
     {
         if (snackbar != null)
+        {
             snackbar.dismiss();
+        }
+    }
+
+    boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }
 

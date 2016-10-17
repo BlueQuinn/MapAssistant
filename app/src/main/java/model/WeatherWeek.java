@@ -61,7 +61,7 @@ public class WeatherWeek {
 
     public String getTemperature()
     {
-        return "Nhiệt độ: " + minTemp + (char) 0x00B0 + "C - " + maxTemp + (char) 0x00B0 + "C";
+        return "Nhiệt độ: " + minTemp + (char) 0x00B0 + "C đến " + maxTemp + (char) 0x00B0 + "C";
     }
 
     private String formatDate(String time) {

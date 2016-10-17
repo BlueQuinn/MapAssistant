@@ -5,12 +5,10 @@ import android.content.Context;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bluebirdaward.mapassistant.MainActivity;
 import com.bluebirdaward.mapassistant.gmmap.R;
-
 
 import listener.OnLoadListener;
 import model.Shortcut;
@@ -21,7 +19,7 @@ import utils.RouteUtils;
  */
 public class ShortcutDialog extends Dialog implements View.OnClickListener
 {
-    int distance, duration, rating, time, ID;
+    int distance, duration, rating, jamId, shortcutId;
     String jamType;
     boolean like;
     TextView txtRating;
@@ -31,15 +29,15 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
 
     OnLoadListener<Integer> listener;
 
-    public ShortcutDialog(Context context, Shortcut shortcut, int time, String jamType, int ID)
+    public ShortcutDialog(Context context, Shortcut shortcut, String jamType, int jamId)
     {
         super(context);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.dialog_shorcut);
 
-        this.time = time;
         this.jamType = jamType;
-        this.ID = ID;
+        this.jamId = jamId;
+        shortcutId = shortcut.getId();
         distance = shortcut.getDistance();
         duration = shortcut.getDuration();
         rating = shortcut.getRating();
@@ -70,7 +68,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         btnDislike.setOnClickListener(this);
         btnLike.setOnClickListener(this);
         btnAdd.setOnClickListener(this);
-        if (MainActivity.sqlite.checkLiked(time, jamType, ID))
+        if (MainActivity.sqlite.checkLiked(jamType, jamId, shortcutId))
         {
             btnDislike.setVisibility(View.VISIBLE);
             btnLike.setVisibility(View.GONE);
@@ -87,7 +85,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
                 rating--;
                 listener.onFinish(rating);
                 dislike();
-                MainActivity.sqlite.dislike(time, jamType, ID, rating);
+                MainActivity.sqlite.dislike(shortcutId);
 
                 btnDislike.setVisibility(View.GONE);
                 btnLike.setVisibility(View.VISIBLE);
@@ -97,7 +95,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
                 rating++;
                 listener.onFinish(rating);
                like();
-                MainActivity.sqlite.like(time, jamType, ID, rating);
+                MainActivity.sqlite.like(jamType, jamId, shortcutId);
 
                 btnDislike.setVisibility(View.VISIBLE);
                 btnLike.setVisibility(View.GONE);

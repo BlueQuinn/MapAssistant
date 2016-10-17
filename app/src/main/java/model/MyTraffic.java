@@ -12,10 +12,10 @@ import java.util.ArrayList;
  */
 public class MyTraffic implements SafeParcelable
 {
-    public ArrayList<Shortcut> getShortcuts()
+    /*public ArrayList<Shortcut> getShortcuts()
     {
         return shortcuts;
-    }
+    }*/
 
     public LatLng getCenter()
     {
@@ -32,7 +32,7 @@ public class MyTraffic implements SafeParcelable
     String time, address;
     LatLng center;
     int radius;
-    ArrayList<Shortcut> shortcuts;
+    //ArrayList<Shortcut> shortcuts;
 
     public String getTime()
     {
@@ -44,7 +44,7 @@ public class MyTraffic implements SafeParcelable
         return address;
     }
 
-    public MyTraffic(int id, LatLng center, int radius, String time, String address, ArrayList<Shortcut> shortcuts)
+    /*public MyTraffic(int id, LatLng center, int radius, String time, String address, ArrayList<Shortcut> shortcuts)
     {
         this.id = id;
         this.center = center;
@@ -52,6 +52,15 @@ public class MyTraffic implements SafeParcelable
         this.time = time;
         this.address = address;
         this.shortcuts = shortcuts;
+    }*/
+
+    public MyTraffic(int id, LatLng center, int radius, String time, String address)
+    {
+        this.id = id;
+        this.center = center;
+        this.radius = radius;
+        this.time = time;
+        this.address = address;
     }
 
     public MyTraffic(int id, LatLng center)
@@ -79,7 +88,7 @@ public class MyTraffic implements SafeParcelable
         dest.writeInt(id);
         dest.writeString(time);
         dest.writeString(address);
-        dest.writeTypedList(shortcuts);
+        //dest.writeTypedList(shortcuts);
     }
 
     MyTraffic(Parcel in)
@@ -89,8 +98,8 @@ public class MyTraffic implements SafeParcelable
         id = in.readInt();
         time = in.readString();
         address = in.readString();
-        shortcuts = new ArrayList<>();
-        in.readTypedList(shortcuts, Shortcut.CREATOR);
+        //shortcuts = new ArrayList<>();
+        //in.readTypedList(shortcuts, Shortcut.CREATOR);
     }
 
     public static final SafeParcelable.Creator CREATOR = new SafeParcelable.Creator()

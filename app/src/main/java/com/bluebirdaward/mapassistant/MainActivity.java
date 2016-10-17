@@ -8,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
@@ -29,6 +31,7 @@ import android.widget.Toast;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -74,6 +77,7 @@ import static utils.FirebaseUtils.*;
 import utils.MapUtils;
 import utils.ServiceUtils;
 import utils.TrafficUtils;
+import widgets.MessageDialog;
 import widgets.PlacePickerDialog;
 
 import static utils.RequestCode.*;
@@ -162,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         listMenu = new ArrayList<>();
         listMenu.add(new Menu("Thông báo tắc đường", R.drawable.warning));
         listMenu.add(new Menu("Tình trạng giao thông", R.drawable.traffic_cone));
-        //listMenu.add(new Menu("Tình trạng giao thông", R.drawable.traffic_cone));
+        listMenu.add(new Menu("Lịch sử thông báo", R.drawable.history));
         listSection.add(new MenuSection("Giao thông", listMenu));
 
         listMenu = new ArrayList<>();
@@ -212,6 +216,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map.getUiSettings().setMyLocationButtonEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
 
+        map.setOnMapClickListener(this);
+
         SharedPreferences sharedPref = getSharedPreferences("myLocation", MODE_PRIVATE);
         String myLat = sharedPref.getString("myLat", "");
         String myLng = sharedPref.getString("myLng", "");
@@ -237,6 +243,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (data != null)
         {
             map.clear();
+            if (snackbar != null)
+            {
+                snackbar.dismiss();
+            }
             switch (requestCode)
             {
                 case SEARCH_DESTINATION:
@@ -267,47 +277,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 case LOCATE_TO_NOTIFY:
                 {
-                    ArrayList<MyTraffic> traffic = sqlite.getMyTraffic();
-                    if (traffic.size() > 0)
-                    {
-                        map.clear();
-
-                        hmTraffic = null;
-                        hmMyTraffic = new HashMap<>();
-
-                        MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high));
-                        LatLng[] points = new LatLng[traffic.size()];
-                        for (int i = 0; i < traffic.size(); ++i)
-                        {
-                            MyTraffic item = traffic.get(i);
-                            points[i] = item.getCenter();
-
-                            markerOptions.position(item.getCenter()).title(item.getTime()).snippet(item.getAddress());
-                            Marker marker = map.addMarker(markerOptions);
-                            hmMyTraffic.put(marker.getId(), item);
-
-                            for (Shortcut s : item.getShortcuts())
-                            {
-                                ArrayList<LatLng> route = s.getRoute();
-                                map.addMarker(new MarkerOptions().position(route.get(0)).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)));
-                                map.addMarker(new MarkerOptions().position(route.get(route.size() - 1)).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag)));
-
-                                PolylineOptions polylineOptions = new PolylineOptions().width(15).color(getResources().getColor(R.color.green));
-                                polylineOptions.addAll(route);
-                                map.addPolyline(polylineOptions);
-                            }
-                        }
-                        map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(points), 15));
-                        setTrafficClick(true);
-                    }
-                    else
-                    {
-                        Toast.makeText(this, "Bạn chưa thông báo điểm tắc đường nào", Toast.LENGTH_SHORT).show();
-                    }
+                    trafficHistory();
                     break;
                 }
-
-
             }
         }
     }
@@ -345,10 +317,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         switch (v.getId())
         {
             case R.id.btnTrack:
-            {
                 openGPS(LOCATE_ON_REQUEST);
                 break;
-            }
 
             case R.id.txtSearch:
                 startActivityForResult(new Intent(this, DestinationActivity.class).putExtra("address", txtSearch.getText().toString()), SEARCH_DESTINATION);
@@ -430,6 +400,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
 
                         map.clear();
+                        if (snackbar != null)
+                        {
+                            snackbar.dismiss();
+                        }
                         MarkerOptions options = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.pin));
                         LatLngBounds.Builder builder = new LatLngBounds.Builder();
                         for (int i = 0; i < list.size(); ++i)
@@ -474,10 +448,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         openGPS(LOCATE_FOR_NEARBY);
                         break;
                     case 2:     // weather
-                    {
                         startActivity(new Intent(this, WeatherActivity.class));
                         break;
-                    }
 
                     case 3:
                         startActivity(new Intent(this, PetrolActivity.class));
@@ -494,15 +466,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 switch (childPosition)
                 {
                     case 0:     // load traffic jam
-                        openGPS(LOCATE_TO_NOTIFY);
+                        if (isOnline())
+                        {
+                            openGPS(LOCATE_TO_NOTIFY);
+                        }
+                        else
+                        {
+                            Toast.makeText(this, "Không có kết nối Internet", Toast.LENGTH_SHORT).show();
+                        }
                         break;
 
                     case 1:     // notify traffic jam
-                        loadTraffic();
+                        if (isOnline())
+                        {
+                            loadTraffic();
+                        }
+                        else
+                        {
+                            Toast.makeText(this, "Không có kết nối Internet", Toast.LENGTH_SHORT).show();
+                        }
                         break;
 
                     case 2:
-                        startActivity(new Intent(this, ShortcutActivity.class));
+                        trafficHistory();
                         break;
                 }
                 break;
@@ -523,7 +509,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
                 break;
             }
-
         }
         drawerLayout.closeDrawer(lvLeftmenu);
         return false;
@@ -553,51 +538,68 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     void loadTraffic()
     {
-        time = Integer.parseInt(TrafficUtils.getTimeNode());
+
+        time = TrafficUtils.trafficTime();
         if ((time >= 390 && time <= 720) || (time >= 990 && time <= 1170))
         {
             prbLoading.setVisibility(View.VISIBLE);
             final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic));
-            final Firebase timeNode = firebase.child(Integer.toString(time));
-            final ValueEventListener listener = new ValueEventListener()    // chưa load downNode
+            final Query lineQuery = firebase.child("line").orderByChild("time").startAt(time - 30).endAt(time + 30);
+            lineQuery.addListenerForSingleValueEvent(new ValueEventListener()    // chưa load downNode
             {
                 @Override
-                public void onDataChange(DataSnapshot snapshot)
+                public void onDataChange(final DataSnapshot lineData)
                 {
-                    prbLoading.setVisibility(View.VISIBLE);
-                    meta = ((Long) snapshot.child("meta").getValue()).intValue();
-
-                    ArrayList<TrafficCircle> trafficCircles = new ArrayList<>();
-                    trafficCircles.addAll(getTrafficCircle(snapshot, meta));
-
-                    ArrayList<TrafficLine> trafficLine = new ArrayList<>();
-                    trafficLine.addAll(getTrafficLine(snapshot, meta));
-
-                    if (trafficLine.size() > 0 || trafficCircles.size() > 0)
+                    final Query circleQuery = firebase.child("circle").orderByChild("time").startAt(time - 30).endAt(time + 30);
+                    circleQuery.addListenerForSingleValueEvent(new ValueEventListener()
                     {
-                        map.clear();
-                        AddTrafficAst asyncTask = new AddTrafficAst(trafficLine, trafficCircles, map);
-                        asyncTask.setListener(new OnLoadListener<Traffic>()
+                        @Override
+                        public void onDataChange(DataSnapshot circleData)
                         {
-                            @Override
-                            public void onFinish(Traffic result)
-                            {
-                                hmMyTraffic = null;
-                                hmTraffic = result;
-                                setTrafficClick(false);
-                                prbLoading.setVisibility(View.GONE);
-                            }
-                        });
-                        asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
-                    }
-                    else
-                    {
-                        map.clear();
-                        prbLoading.setVisibility(View.GONE);
-                        Toast.makeText(MainActivity.this, "Chưa có nơi nào tắc đường", Toast.LENGTH_SHORT).show();
-                    }
-                    timeNode.removeEventListener(this);
+                            prbLoading.setVisibility(View.VISIBLE);
+                            meta = 20;
 
+                            ArrayList<TrafficCircle> trafficCircles = getTrafficCircle(circleData, meta);
+                            ArrayList<TrafficLine> trafficLine = getTrafficLine(lineData, meta);
+
+                            map.clear();
+                            if (snackbar != null)
+                            {
+                                snackbar.dismiss();
+                            }
+                            if (trafficLine.size() > 0 || trafficCircles.size() > 0)
+                            {
+                                AddTrafficAst asyncTask = new AddTrafficAst(trafficLine, trafficCircles, map);
+                                asyncTask.setListener(new OnLoadListener<Traffic>()
+                                {
+                                    @Override
+                                    public void onFinish(Traffic result)
+                                    {
+                                        hmMyTraffic = null;
+                                        hmTraffic = result;
+                                        setTrafficClick(false);
+                                        prbLoading.setVisibility(View.GONE);
+
+                                    }
+                                });
+                                asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
+                            }
+                            else
+                            {
+                                prbLoading.setVisibility(View.GONE);
+                                Toast.makeText(MainActivity.this, "Chưa có nơi nào tắc đường", Toast.LENGTH_SHORT).show();
+                            }
+                            circleQuery.removeEventListener(this);
+                        }
+
+                        @Override
+                        public void onCancelled(FirebaseError firebaseError)
+                        {
+                            prbLoading.setVisibility(View.GONE);
+                            circleQuery.removeEventListener(this);
+                        }
+                    });
+                    lineQuery.removeEventListener(this);
                 }
 
                 @Override
@@ -605,10 +607,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 {
                     System.out.println("The read failed: " + firebaseError.getMessage());
                     prbLoading.setVisibility(View.GONE);
-                    timeNode.removeEventListener(this);
+                    lineQuery.removeEventListener(this);
                 }
-            };
-            timeNode.addValueEventListener(listener);
+            });
         }
         else
         {
@@ -694,6 +695,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onFinish(String address)
                     {
                         map.clear();
+                        if (snackbar != null)
+                        {
+                            snackbar.dismiss();
+                        }
                         prbLoading.setVisibility(View.GONE);
                         txtSearch.setText(address);
                         BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
@@ -979,6 +984,70 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         {
             snackbar.dismiss();
         }
+    }
+
+    void trafficHistory()
+    {
+        ArrayList<MyTraffic> traffic = sqlite.getMyTraffic();
+        if (traffic.size() > 0)
+        {
+            SharedPreferences sharedPref = getSharedPreferences("firstLaunch", MODE_PRIVATE);
+            boolean firstLaunch = sharedPref.getBoolean("mytraffic", true);
+            if (firstLaunch)
+            {
+                MessageDialog.showMessage(this, getResources().getColor(R.color.colorAccent), R.drawable.clock, "Lịch sử thông báo", "Map Assistant lưu lại những lần mà trước đây bạn đã từng thông báo vị trí tắc đường");
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean("mytraffic", false);
+                editor.apply();
+            }
+
+
+            map.clear();
+            if (snackbar != null)
+            {
+                snackbar.dismiss();
+            }
+
+            hmTraffic = null;
+            hmMyTraffic = new HashMap<>();
+
+            MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high));
+            LatLng[] points = new LatLng[traffic.size()];
+            for (int i = 0; i < traffic.size(); ++i)
+            {
+                MyTraffic item = traffic.get(i);
+                points[i] = item.getCenter();
+
+                markerOptions.position(item.getCenter()).title(item.getTime()).snippet(item.getAddress());
+                Marker marker = map.addMarker(markerOptions);
+                hmMyTraffic.put(marker.getId(), item);
+
+                /*for (Shortcut s : item.getShortcuts())
+                {
+                    ArrayList<LatLng> route = s.getRoute();
+                    map.addMarker(new MarkerOptions().position(route.get(0)).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)));
+                    map.addMarker(new MarkerOptions().position(route.get(route.size() - 1)).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag)));
+
+                    PolylineOptions polylineOptions = new PolylineOptions().width(15).color(getResources().getColor(R.color.green));
+                    polylineOptions.addAll(route);
+                    map.addPolyline(polylineOptions);
+                }*/
+            }
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(points), 15));
+            setTrafficClick(true);
+        }
+        else
+        {
+            Toast.makeText(this, "Bạn chưa thông báo điểm tắc đường nào", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    boolean isOnline()
+    {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }
 

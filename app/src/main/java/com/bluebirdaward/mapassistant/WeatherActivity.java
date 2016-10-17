@@ -1,5 +1,6 @@
 package com.bluebirdaward.mapassistant;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -14,6 +15,7 @@ import adapter.ViewPagerAdapter;
 import fragment.WeatherTimeFragment;
 import fragment.WeatherDateFragment;
 import fragment.WeatherWeekFragment;
+import widgets.MessageDialog;
 
 public class WeatherActivity extends AppCompatActivity
 {
@@ -50,6 +52,16 @@ public class WeatherActivity extends AppCompatActivity
         tabLayout.getTabAt(0).setIcon(R.drawable.weather_today);
         tabLayout.getTabAt(1).setIcon(R.drawable.clock);
         tabLayout.getTabAt(2).setIcon(R.drawable.calendar);
+
+        SharedPreferences sharedPref = getSharedPreferences("firstLaunch", MODE_PRIVATE);
+        boolean firstLaunch = sharedPref.getBoolean("weather", true);
+        if (firstLaunch)
+        {
+            MessageDialog.showMessage(this, getResources().getColor(R.color.colorAccent), R.drawable.weather_today, "Dự báo thời tiết", "Bạn sẽ không còn phải lo lắng về việc ngày hôm nay ra đường gặp những cơn mưa bất chợt nữa\nVì đã có Map Assistant, giúp bạn cập nhật thông tin thời tiết một cách thường xuyên để tiện cho việc tham gia giao thông");
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putBoolean("weather", false);
+            editor.apply();
+        }
     }
 
     @Override

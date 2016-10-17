@@ -14,7 +14,6 @@ public class RouteUtils
 
     public static String getDuration(int duration)
     {
-        String time;
         int hour = duration / 3600;
         int minute = (duration - hour * 3600) / 60;
         if (hour == 0)
@@ -29,7 +28,7 @@ public class RouteUtils
             }
             else
             {
-                return Integer.toString(hour) + " tiếng" +  Integer.toString(minute) + " phút";
+                return Integer.toString(hour) + " tiếng" + Integer.toString(minute) + " phút";
             }
         }
     }
@@ -42,7 +41,7 @@ public class RouteUtils
         }
         else
         {
-            return String.format(Locale.US, "%.2f", 1.0f*distance/1000) + "km";
+            return String.format(Locale.US, "%.2f", 1.0f * distance / 1000) + "km";
         }
     }
 }

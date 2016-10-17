@@ -4,10 +4,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -23,9 +25,7 @@ import com.firebase.client.FirebaseError;
 import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -33,22 +33,16 @@ import java.util.Map;
 import asyncTask.AddressAst;
 import listener.OnLoadListener;
 import model.Traffic;
-import model.TrafficCircle;
 import utils.MapUtils;
 import utils.PolyUtils;
 import utils.RequestCode;
 import utils.TrafficUtils;
-import widgets.LoadingDialog;
 import widgets.MessageDialog;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
 import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.maps.model.LatLng;
-
-import static model.TrafficCircle.getRadius;
-import static utils.TimeUtils.*;
 
 public class NotifyActivity extends AppCompatActivity
         implements SeekBar.OnSeekBarChangeListener,
@@ -62,7 +56,7 @@ public class NotifyActivity extends AppCompatActivity
     TextView tvAddress, tvRadius;
     SeekBar radiusPicker;
     String info;
-    Firebase ref;
+    Firebase firebase;
     Query query;
     MessageDialog dialog;
 
@@ -111,7 +105,10 @@ public class NotifyActivity extends AppCompatActivity
                 }
                 else
                 {
+                    if (isOnline())
                     saveTraffic();
+                    else
+                        Toast.makeText(NotifyActivity.this, "Không có kết nối Internet", Toast.LENGTH_SHORT).show();
                 }
                 info = "Thông tin của bạn đang được server xử lý";
             }
@@ -146,12 +143,12 @@ public class NotifyActivity extends AppCompatActivity
                     btnNotify.setText("Thông báo");
                     btnNotify.setOnClickListener(notifyListener);
 
-                    new ShowcaseView.Builder(NotifyActivity.this)
+                   /* new ShowcaseView.Builder(NotifyActivity.this)
                             .setTarget(new ViewTarget(R.id.btnNotify, NotifyActivity.this))
                             .setContentTitle("ShowcaseView")
                             .setContentText("This is highlighting the Home button")
                             .hideOnTouchOutside()
-                            .build();
+                            .build();*/
                 }
             }
         });
@@ -215,7 +212,6 @@ public class NotifyActivity extends AppCompatActivity
     }
 
 
-
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
@@ -241,27 +237,27 @@ public class NotifyActivity extends AppCompatActivity
         return true;
     }
 
-    String time;
+    int time;
 
     void saveTraffic()
     {
         dialog = new MessageDialog(this);
         dialog.show();
 
-        time = TrafficUtils.getTimeNode();
-        ref = new Firebase(getResources().getString(R.string.database_traffic)).child("line");
-        query = ref.
-        ref.addValueEventListener(this);
+        time = TrafficUtils.trafficTime();
+
+        firebase = new Firebase(getResources().getString(R.string.database_traffic));
+        query = firebase.child("line").orderByChild("time").startAt(time - 30).endAt(time + 30);
+        query.addListenerForSingleValueEvent(this);
     }
 
-    @Override
-    public void onDataChange(DataSnapshot snapshot)
+    String jamType = Traffic.MY_TRAFFIC;
+    int id = -1;
+    boolean intersect = false;
+
+    boolean checkLine(DataSnapshot snapshot)
     {
-        boolean find = false;
-        String jamType = Traffic.MY_TRAFFIC;
-        int id = -1;
-        DataSnapshot lineData = snapshot.child("line");
-        for (DataSnapshot i : lineData.getChildren())       // put to existing line
+        for (DataSnapshot i : snapshot.getChildren())       // put to existing line
         {
             double lat1 = (double) i.child("lat1").getValue();
             double lng1 = (double) i.child("lng1").getValue();
@@ -278,36 +274,33 @@ public class NotifyActivity extends AppCompatActivity
                 rateNode.put("rate", rate + 1);
                 ref.updateChildren(rateNode);
                 id = ((Long) i.child("id").getValue()).intValue();
-                find = true;
                 jamType = Traffic.LINE;
-                break;
+                return true;
             }
         }
+        return false;
+    }
 
-        boolean intersect = false;
-        //int myRadius = ((radiusPicker.getProgress() / 2) + 2) * 50;
-        DataSnapshot circleData = snapshot.child("circle");
-        if (!find)      // put to existing circle
+    boolean checkCircle(DataSnapshot dataSnapshot)
+    {
+        for (DataSnapshot i : dataSnapshot.getChildren())
         {
-            for (DataSnapshot i : circleData.getChildren())
+            double lat = (double) i.child("lat").getValue();
+            double lng = (double) i.child("lng").getValue();
+            int radius = ((Long) i.child("radius").getValue()).intValue();
+            float[] distance = new float[2];
+            Location.distanceBetween(myLocation.latitude, myLocation.longitude, lat, lng, distance);
+            if (distance[0] <= radius)      // in circle
             {
-                double lat = (double) i.child("lat").getValue();
-                double lng = (double) i.child("lng").getValue();
-                int radius = ((Long) i.child("radius").getValue()).intValue();
-                float[] distance = new float[2];
-                Location.distanceBetween(myLocation.latitude, myLocation.longitude, lat, lng, distance);
-                if (distance[0] <= radius)      // in circle
-                {
-                    int rate = ((Long) i.child("rate").getValue()).intValue();
-                    Firebase ref = i.getRef();
-                    Map<String, Object> rateNode = new HashMap<>();
-                    rateNode.put("rate", rate + 1);
-                    ref.updateChildren(rateNode);
-                    id = ((Long) i.child("id").getValue()).intValue();
-                    find = true;
-                    jamType = Traffic.CIRCLE;
-                    break;
-                }
+                int rate = ((Long) i.child("rate").getValue()).intValue();
+                Firebase ref = i.getRef();
+                Map<String, Object> rateNode = new HashMap<>();
+                rateNode.put("rate", rate + 1);
+                ref.updateChildren(rateNode);
+                id = ((Long) i.child("id").getValue()).intValue();
+                jamType = Traffic.CIRCLE;
+                return true;
+            }
                 /*else        // out of circle
                 {
                     if (!intersect)
@@ -318,46 +311,62 @@ public class NotifyActivity extends AppCompatActivity
                         }
                     }
                 }*/
-            }
         }
+        return false;
+    }
 
-        if (!find)
+
+    @Override
+    public void onDataChange(DataSnapshot lineData)
+    {
+        if (!checkLine(lineData))
         {
-            if (intersect)     // is intersect = true
+            intersect = false;
+            query = firebase.child("circle").orderByChild("time").startAt(time - 30).endAt(time + 30);
+            query.addListenerForSingleValueEvent(new ValueEventListener()
             {
+                @Override
+                public void onDataChange(DataSnapshot circleData)
+                {
+                    if (!checkCircle(circleData))       // intersect will be change in checkCircle(), in a distant future ?
+                    {
+                        if (intersect)     // is intersect = true
+                        {
 
-            }
-            else    // no intersect, create new circle --> my traffic
-            {
-                id = (int) circleData.getChildrenCount();
-                Map<String, Object> circleNode = new HashMap<>();
-                circleNode.put("lat", myLocation.latitude);
-                circleNode.put("lng", myLocation.longitude);
-                circleNode.put("radius", getRadius());
-                circleNode.put("rate", 1);
-                circleNode.put("id", id);
+                        }
+                        else    // no intersect, create new circle --> my traffic
+                        {
+                            id = (int) circleData.getChildrenCount();       // circleData always has children
+                            Map<String, Object> circleNode = new HashMap<>();
+                            circleNode.put("lat", myLocation.latitude);
+                            circleNode.put("lng", myLocation.longitude);
+                            circleNode.put("radius", getRadius());
+                            circleNode.put("rate", 1);
+                            circleNode.put("id", id);
 
-                Firebase ref = circleData.getRef();
-                ref.push().setValue(circleNode);
-                find = true;
-                jamType = Traffic.MY_TRAFFIC;
-            }
-        }
-        // chưa có new line
+                            Firebase ref = circleData.getRef();
+                            ref.push().setValue(circleNode);
+                            jamType = Traffic.MY_TRAFFIC;
 
-        ref.removeEventListener(this);
-        if (find && id > -1)
-        {
-            String address = tvAddress.getText().toString().replace("Bạn đang ở ", "");
-            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, getRadius(), address, Integer.parseInt(time), jamType);
-            dialog.show(getResources().getColor(R.color.green), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông này cho tất cả mọi người cùng được biết");
+                            submit();
+                        }
+                    }
+                    else
+                    {
+                        submit();
+                    }
+                }
 
+                @Override
+                public void onCancelled(FirebaseError firebaseError)
+                {
 
-           // Log.d("traffic", "notift " + time + " " + jamType + " " + myRadius);
+                }
+            });
         }
         else
         {
-            dialog.show(getResources().getColor(R.color.colorPrimary), R.drawable.error, "Chưa gửi được thông báo", "Xin hãy thử lại");
+            submit();
         }
     }
 
@@ -367,6 +376,22 @@ public class NotifyActivity extends AppCompatActivity
 
     }
 
+    void submit()
+    {
+        firebase.removeEventListener(this);
+        if (id > -1)
+        {
+            String address = tvAddress.getText().toString().replace("Bạn đang ở ", "");
+            MainActivity.sqlite.saveTraffic(id, myLocation.latitude, myLocation.longitude, getRadius(), address, jamType);
+            dialog.show(getResources().getColor(R.color.green), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông này cho tất cả mọi người cùng được biết");
+        }
+        else
+        {
+            dialog.show(getResources().getColor(R.color.colorPrimary), R.drawable.error, "Chưa gửi được thông báo", "Xin hãy thử lại");
+        }
+    }
+
+
     int getLength()
     {
         return (radiusPicker.getProgress() + 4) * 50;
@@ -374,7 +399,14 @@ public class NotifyActivity extends AppCompatActivity
 
     int getRadius()
     {
-        return getLength()/2;
+        return getLength() / 2;
+    }
+
+    boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
 }

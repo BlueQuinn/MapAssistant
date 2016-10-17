@@ -55,7 +55,7 @@ public class WeatherWeekAdt extends ArrayAdapter<WeatherWeek>
         txtDate.setText(list.get(position).getDate());
         txtInfo.setText(list.get(position).getInfo());
         txtTemperature.setText(list.get(position).getTemperature());
-        txtRain.setText(list.get(position).getRain());
+        txtRain.setText(list.get(position).getRain().replace("mưa", "mưa: "));
         image.setImageResource(list.get(position).getIcon());
 /*
 

@@ -15,13 +15,15 @@ import com.bluebirdaward.mapassistant.gmmap.R;
 public class LoadingDialog extends Dialog
 {
     public static LoadingDialog show(Context context, String message)
-    { LoadingDialog dialog = new LoadingDialog(context, message);
+    {
+        LoadingDialog dialog = new LoadingDialog(context, message);
         dialog.show();
         return dialog;
     }
 
     ProgressBar prbLoading;
     TextView txtMessage;
+
     public LoadingDialog(Context context, String message)
     {
         super(context);
@@ -32,12 +34,13 @@ public class LoadingDialog extends Dialog
         setCanceledOnTouchOutside(false);
 
         prbLoading = (ProgressBar) findViewById(R.id.prbLoading);
-        txtMessage  = (TextView) findViewById(R.id.txtMessage);
+        txtMessage = (TextView) findViewById(R.id.txtMessage);
         txtMessage.setText(message);
     }
 
     public void dismiss(String message)
     {
+        setCanceledOnTouchOutside(true);
         prbLoading.setVisibility(View.GONE);
         txtMessage.setText(message);
     }
