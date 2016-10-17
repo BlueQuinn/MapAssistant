@@ -344,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             startActivity(intent);
                         }
                     });
-                    asyncTask.execute(destination.getPosition().latitude, destination.getPosition().longitude);
+                    asyncTask.execute(myLocation.latitude, myLocation.longitude);
                 }
                 else
                 {
@@ -559,8 +559,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             prbLoading.setVisibility(View.VISIBLE);
                             meta = 20;
 
-                            ArrayList<TrafficCircle> trafficCircles = getTrafficCircle(circleData, meta);
-                            ArrayList<TrafficLine> trafficLine = getTrafficLine(lineData, meta);
+                            final ArrayList<TrafficCircle> trafficCircles = getTrafficCircle(circleData, meta);
+                            final ArrayList<TrafficLine> trafficLine = getTrafficLine(lineData, meta);
 
                             map.clear();
                             if (snackbar != null)
@@ -579,6 +579,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         hmTraffic = result;
                                         setTrafficClick(false);
                                         prbLoading.setVisibility(View.GONE);
+
+                                        LatLng[] pos;
+                                        if (trafficLine.size() > 0)
+                                        {
+                                            pos = new LatLng[trafficCircles.size()];
+                                        }
+                                        else
+                                        {
+                                            pos = new LatLng[trafficLine.size()];
+                                        }
+                                        if (pos.length > 0)
+                                        {
+                                            LatLngBounds bound = MapUtils.getBound(pos);
+                                            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bound, 15));
+                                        }
 
                                     }
                                 });
@@ -669,7 +684,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    Marker m;
+    //Marker m;
 
     @Override
     public void onLocationChanged(Location location)
@@ -702,29 +717,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         prbLoading.setVisibility(View.GONE);
                         txtSearch.setText(address);
                         BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.flag);
-                        //map.addMarker(new MarkerOptions().icon(icon).position(new LatLng(myLocation.latitude, myLocation.longitude)).title(address).snippet(""));
-                        m = map.addMarker(new MarkerOptions().icon(icon).position(new LatLng(myLocation.latitude, myLocation.longitude)).title(address).snippet("").draggable(true));
-                        map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener()
-                        {
-                            @Override
-                            public void onMarkerDragStart(Marker marker)
-                            {
-
-                            }
-
-                            @Override
-                            public void onMarkerDrag(Marker marker)
-                            {
-
-                            }
-
-                            @Override
-                            public void onMarkerDragEnd(Marker marker)
-                            {
-                                myLocation = m.getPosition();
-                            }
-                        });
-                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 19));
+                        map.addMarker(new MarkerOptions().icon(icon).position(myLocation).title(address).snippet("Bạn đang ở đây"));
+                        map.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 16));
                         setFavouriteClick();
                     }
                 });
@@ -741,8 +735,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             {
                 prbLoading.setVisibility(View.GONE);
                 Intent intent = new Intent(this, NotifyActivity.class);
-                //intent.putExtra("myLocation", myLocation);
-                intent.putExtra("myLocation", m.getPosition());
+                intent.putExtra("myLocation", myLocation);
+                //intent.putExtra("myLocation", m.getPosition());
                 startActivityForResult(intent, LOCATE_TO_NOTIFY, null);
                 break;
             }
@@ -1044,8 +1038,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     boolean isOnline()
     {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        ConnectivityManager cm =  (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }

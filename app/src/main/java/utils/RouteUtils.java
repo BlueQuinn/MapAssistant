@@ -9,7 +9,7 @@ public class RouteUtils
 {
     public static String getInformation(int duration, int distance)
     {
-        return getDuration(duration) + " - " + getDistance(distance);
+        return  getDistance(distance) + " - " + getDuration(duration);
     }
 
     public static String getDuration(int duration)

@@ -33,6 +33,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -205,7 +206,7 @@ public class DirectionActivity extends AppCompatActivity
             case PLACE_DIRECTION:
                 myLocation = intent.getParcelableExtra("myLocation");
                 Place dest = (Place) intent.getSerializableExtra("destination");
-                String myAdress = intent.getStringExtra("myAddress");
+                String myAddress = intent.getStringExtra("myAddress");
                 //  destination = new LatLng(dest.getLat(), dest.getLng());
                 //   String place = dest.getName();
                 //    String    address = dest.getAddress();
@@ -215,12 +216,12 @@ public class DirectionActivity extends AppCompatActivity
                 }*/
 
                 startOption = new MarkerOptions().position(myLocation).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
-                map.addMarker(startOption.title("Bạn đang ở đây").snippet(myAdress));
+                map.addMarker(startOption.title("Bạn đang ở đây").snippet(myAddress));
 
                 endOption = new MarkerOptions().position(dest.getPosition()).icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
                 map.addMarker(endOption.title(dest.getName()).snippet(dest.getAddress()));
 
-                textView[0].setText(myAdress);
+                textView[0].setText(myAddress);
                 textView[1].setText(dest.getName());
 
                 waypoint = new ArrayList<>();
@@ -453,8 +454,8 @@ public class DirectionActivity extends AppCompatActivity
                         {
                             meta = 30;
 
-                            ArrayList<TrafficCircle> trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(circleData, meta), route);
-                            ArrayList<TrafficLine> trafficLines = TrafficUtils.getLineJam(getTrafficLine(lineData, meta), route);
+                            final ArrayList<TrafficCircle> trafficCircles = TrafficUtils.getCircleJam(getTrafficCircle(circleData, meta), route);
+                            final ArrayList<TrafficLine> trafficLines = TrafficUtils.getLineJam(getTrafficLine(lineData, meta), route);
 
                             if (trafficLines.size() > 0 || trafficCircles.size() > 0)
                             {
@@ -472,6 +473,21 @@ public class DirectionActivity extends AppCompatActivity
                                     {
                                         hmTraffic = result;
                                         dialog.dismiss();
+
+                                        LatLng[] pos;
+                                        if (trafficLines.size() > 0)
+                                        {
+                                            pos = new LatLng[trafficCircles.size()];
+                                        }
+                                        else
+                                        {
+                                            pos = new LatLng[trafficLines.size()];
+                                        }
+                                        if (pos.length > 0)
+                                        {
+                                            LatLngBounds bound = MapUtils.getBound(pos);
+                                            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bound, 15));
+                                        }
                                     }
                                 });
                                 asyncTask.execute(meta, getResources().getColor(R.color.yellowLight), getResources().getColor(R.color.redLight));
