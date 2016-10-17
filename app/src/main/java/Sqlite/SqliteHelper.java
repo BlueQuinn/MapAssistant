@@ -325,8 +325,9 @@ public class SqliteHelper extends SQLiteOpenHelper
 
     public boolean like(String jamType, int jamId, int shortcutId)
     {
+        String type = jamType.substring(0, 1);
         return excute(String.format(Locale.US, "insert into Like values ('%s', %d, %d)",
-                jamType, jamId, shortcutId));
+                type, jamId, shortcutId));
     }
 
     public boolean dislike(int shortcutId)

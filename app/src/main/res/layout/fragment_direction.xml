@@ -23,7 +23,7 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:hint="Xuất phát"
+            android:hint="Chọn nơi xuất phát"
             android:textColorHint="@color/colorHint"
             android:layout_margin="4dp"
             android:background="@color/colorPrimaryLight"
@@ -38,7 +38,7 @@
             android:layout_height="0dp"
             android:singleLine="true"/>
         <TextView
-            android:hint="Điểm đến"
+            android:hint="Chọn điểm đến"
             android:textColorHint="@color/colorHint"
             android:layout_margin="4dp"
             android:background="@color/colorPrimaryLight"

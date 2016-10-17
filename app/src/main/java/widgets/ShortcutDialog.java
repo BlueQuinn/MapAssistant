@@ -49,14 +49,6 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         txtDistance.setText("Chiều dài: " + RouteUtils.getDistance(distance));
         txtDuration.setText("Thời gian đi: " + RouteUtils.getDuration(duration));
 
-        if (like)
-        {
-            like();
-        }
-        else
-        {
-            dislike();
-        }
 
       /*  btnDislike = (LinearLayout) findViewById(R.id.btnDislike);
         btnLike = (LinearLayout) findViewById(R.id.btnLike);
@@ -68,13 +60,33 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         btnDislike.setOnClickListener(this);
         btnLike.setOnClickListener(this);
         btnAdd.setOnClickListener(this);
-        if (MainActivity.sqlite.checkLiked(jamType, jamId, shortcutId))
+
+        like = MainActivity.sqlite.checkLiked(jamType, jamId, shortcutId);
+        if (like)
         {
             btnDislike.setVisibility(View.VISIBLE);
             btnLike.setVisibility(View.GONE);
+            if (rating == 1)
+            {
+                txtRating.setText("Bạn là người đầu tiên thích đường đi này");
+            }
+            else    // > 1
+            {
+                txtRating.setText("Bạn và " + Integer.toString(rating-1) + " người khác đã thích đường đi này");
+            }
+        }
+        else
+        {
+            if (rating == 0)
+            {
+                txtRating.setText("Hãy là người đầu tiên thích đường đi này");
+            }
+            else
+            {
+                txtRating.setText(Integer.toString(rating) + " người đã thích đường đi này");
+            }
         }
     }
-
 
     @Override
     public void onClick(View v)
@@ -83,22 +95,38 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         {
             case R.id.btnDislike:
                 rating--;
+                if (rating == 0)
+                {
+                    txtRating.setText("Hãy là người đầu tiên thích đường đi này");
+                }
+                else
+                {
+                    txtRating.setText(Integer.toString(rating) + " người đã thích đường đi này");
+                }
                 listener.onFinish(rating);
-                dislike();
                 MainActivity.sqlite.dislike(shortcutId);
 
                 btnDislike.setVisibility(View.GONE);
                 btnLike.setVisibility(View.VISIBLE);
+                like = false;
                 break;
 
             case R.id.btnLike:
                 rating++;
+                if (rating == 1)
+                {
+                    txtRating.setText("Bạn là người đầu tiên thích đường đi này");
+                }
+                else    // > 1
+                {
+                    txtRating.setText("Bạn và " + Integer.toString(rating-1) + " người khác đã thích đường đi này");
+                }
                 listener.onFinish(rating);
-               like();
                 MainActivity.sqlite.like(jamType, jamId, shortcutId);
 
                 btnDislike.setVisibility(View.VISIBLE);
                 btnLike.setVisibility(View.GONE);
+                like = true;
                 break;
 
             case R.id.btnAdd:
@@ -113,7 +141,7 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         this.listener = listener;
     }
 
-    void like()
+    /*void like()
     {
         if (rating == 1)
         {
@@ -135,6 +163,6 @@ public class ShortcutDialog extends Dialog implements View.OnClickListener
         {
             txtRating.setText(Integer.toString(rating+1) + " người đã thích đường đi này");
         }
-    }
+    }*/
 
 }

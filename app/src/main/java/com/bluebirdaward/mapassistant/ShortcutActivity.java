@@ -1,6 +1,7 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Geocoder;
 import android.net.ConnectivityManager;
@@ -115,6 +116,15 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
         {
             case R.id.btnAdd:
             {
+                SharedPreferences sharedPref = getSharedPreferences("firstLaunch", MODE_PRIVATE);
+                boolean firstLaunch = sharedPref.getBoolean("addShortcutWaypoint", true);
+                if (firstLaunch)
+                {
+                    MessageDialog.showMessage(this, getResources().getColor(R.color.colorAccent), R.drawable.traffic, "Thêm điểm dừng", "Nhấn giữ vào các điểm trên bản đồ và di chuyển chúng để tạo thành đường đi.\nGiúp bạn dễ dàng tối ưu tuyến đường tắt hơn");
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putBoolean("addShortcutWaypoint", false);
+                    editor.apply();
+                }
                 LatLng position = new LatLng((start.getPosition().latitude + end.getPosition().latitude) / 2, (start.getPosition().longitude + end.getPosition().longitude) / 2);
                 waypoint.add(map.addMarker(option.position(position)));
                 break;
@@ -124,117 +134,123 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
             {
                 if (isOnline())
                 {
-                    if (!route.inCircle(jam, radius))
+                    if (route == null)
                     {
-                        MessageDialog.showMessage(this, red, R.drawable.error, "Vượt quá phạm vi cho phép", "Đường đi tắt mà bạn gợi ý phải nằm trong phạm vi gần điểm ùn tắc.\nHãy thử tìm đường tắt khác nhé!");
-                        return;
-                    }
+                        if (!route.inCircle(jam, radius))
+                        {
+                            MessageDialog.showMessage(this, red, R.drawable.error, "Vượt quá phạm vi cho phép", "Đường đi tắt mà bạn gợi ý phải nằm trong phạm vi gần điểm ùn tắc.\nHãy thử tìm đường tắt khác nhé!");
+                            return;
+                        }
 
-                    int acceptedLength = radius + 2000;
-                    if (route.getDistance() > acceptedLength)
-                    {
-                        MessageDialog.showMessage(this, red, R.drawable.error, "Đường đi quá dài", "Đường đi tắt mà bạn gợi ý phải ngắn hơn " + (acceptedLength / 1000) + "km." + "\nHãy thử tìm đường tắt khác nhé!");
-                        return;
-                    }
+                        int acceptedLength = radius + 2000;
+                        if (route.getDistance() > acceptedLength)
+                        {
+                            MessageDialog.showMessage(this, red, R.drawable.error, "Đường đi quá dài", "Đường đi tắt mà bạn gợi ý phải ngắn hơn " + (acceptedLength / 1000) + "km." + "\nHãy thử tìm đường tắt khác nhé!");
+                            return;
+                        }
 
-                    if (PolyUtils.isLocationOnPath(jam, route.getRoute(), false, 100))
-                    {
-                        MessageDialog.showMessage(this, red, R.drawable.error, "Đường có kẹt xe", "Đường đi tắt mà bạn gợi ý có đi ngang qua hoặc ở gần vị trị có ùn tắc giao thông." + "\nHãy thử tìm đường tắt khác nhé!");
-                        return;
-                    }
-
-                    for (LatLng i : nearbyTraffic)
-                    {
-                        if (PolyUtils.isLocationOnPath(i, route.getRoute(), false, 100))
+                        if (PolyUtils.isLocationOnPath(jam, route.getRoute(), false, 100))
                         {
                             MessageDialog.showMessage(this, red, R.drawable.error, "Đường có kẹt xe", "Đường đi tắt mà bạn gợi ý có đi ngang qua hoặc ở gần vị trị có ùn tắc giao thông." + "\nHãy thử tìm đường tắt khác nhé!");
                             return;
                         }
-                    }
 
-                    //prbLoading.setVisibility(View.VISIBLE);
-
-                    // what the fuck is happening here ??????
-
-
-                    send = false;
-                    final MessageDialog dialog = new MessageDialog(this);
-                    dialog.show();
-
-                    String encodeRoute = PolyUtils.encode(polyline.getPoints());
-                    if (routeString.length() < 1 || !routeString.equals(encodeRoute))
-                    {
-                        routeString = encodeRoute;
-                        final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(jamType);
-                        final Query query = firebase.orderByChild("id").equalTo(jamId);
-                        //final Query query = firebase.orderByChild("id").startAt(1).endAt(15);
-                        query.addListenerForSingleValueEvent(new ValueEventListener()
+                        for (LatLng i : nearbyTraffic)
                         {
-                            @Override
-                            public void onDataChange(DataSnapshot snapshot)     // if not found ID, snapshot.getValue() will be null
+                            if (PolyUtils.isLocationOnPath(i, route.getRoute(), false, 100))
                             {
-                                final Firebase shortcutRef = FirebaseUtils.getShortcutRef(snapshot);
-                                if (shortcutRef != null)
+                                MessageDialog.showMessage(this, red, R.drawable.error, "Đường có kẹt xe", "Đường đi tắt mà bạn gợi ý có đi ngang qua hoặc ở gần vị trị có ùn tắc giao thông." + "\nHãy thử tìm đường tắt khác nhé!");
+                                return;
+                            }
+                        }
+
+                        //prbLoading.setVisibility(View.VISIBLE);
+
+                        // what the fuck is happening here ??????
+
+
+                        send = false;
+                        final MessageDialog dialog = new MessageDialog(this);
+                        dialog.show();
+
+                        String encodeRoute = PolyUtils.encode(polyline.getPoints());
+                        if (routeString.length() < 1 || !routeString.equals(encodeRoute))
+                        {
+                            routeString = encodeRoute;
+                            final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic)).child(jamType);
+                            final Query query = firebase.orderByChild("id").equalTo(jamId);
+                            //final Query query = firebase.orderByChild("id").startAt(1).endAt(15);
+                            query.addListenerForSingleValueEvent(new ValueEventListener()
+                            {
+                                @Override
+                                public void onDataChange(DataSnapshot snapshot)     // if not found ID, snapshot.getValue() will be null
                                 {
-                                    shortcutRef.addListenerForSingleValueEvent(new ValueEventListener()
+                                    final Firebase shortcutRef = FirebaseUtils.getShortcutRef(snapshot);
+                                    if (shortcutRef != null)
                                     {
-                                        @Override
-                                        public void onDataChange(DataSnapshot dataSnapshot)
+                                        shortcutRef.addListenerForSingleValueEvent(new ValueEventListener()
                                         {
-                                            int shortcutID = 0;
-                                            if (dataSnapshot.getValue() instanceof HashMap)
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot)
                                             {
-                                                HashMap<String, Object> hmShortcut = (HashMap<String, Object>) dataSnapshot.getValue();
-                                                shortcutID = hmShortcut.size();
+                                                int shortcutID = 0;
+                                                if (dataSnapshot.getValue() instanceof HashMap)
+                                                {
+                                                    HashMap<String, Object> hmShortcut = (HashMap<String, Object>) dataSnapshot.getValue();
+                                                    shortcutID = hmShortcut.size();
+                                                }
+                                                Map<String, Object> shortcut = new HashMap<>();
+                                                shortcut.put("id", shortcutID);
+                                                shortcut.put("route", routeString);
+                                                shortcut.put("distance", route.getDistance());
+                                                shortcut.put("duration", route.getDuration());
+                                                shortcut.put("like", 0);
+                                                shortcutRef.push().setValue(shortcut);
+                                                query.removeEventListener(this);
+
+                                                //MainActivity.sqlite.addShortcut(ID, jamType, shortcutID, routeString, route.getDistance(), route.getDuration());
+
+                                                dialog.show(green, R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
+
+                                                send = true;
                                             }
-                                            Map<String, Object> shortcut = new HashMap<>();
-                                            shortcut.put("id", shortcutID);
-                                            shortcut.put("route", routeString);
-                                            shortcut.put("distance", route.getDistance());
-                                            shortcut.put("duration", route.getDuration());
-                                            shortcut.put("like", 0);
-                                            shortcutRef.push().setValue(shortcut);
-                                            query.removeEventListener(this);
 
-                                            //MainActivity.sqlite.addShortcut(ID, jamType, shortcutID, routeString, route.getDistance(), route.getDuration());
+                                            @Override
+                                            public void onCancelled(FirebaseError firebaseError)
+                                            {
 
-                                            dialog.show(green, R.drawable.smile, "Đề xuất đường đi thành công", "Cảm ơn bạn đã gợi ý tuyến đường tắt này cho mọi người.\nTất cả người dùng ứng dụng Map Assistant đều sẽ biết được gợi ý của bạn.");
-
-                                            send = true;
-                                        }
-
-                                        @Override
-                                        public void onCancelled(FirebaseError firebaseError)
-                                        {
-
-                                        }
-                                    });
+                                            }
+                                        });
+                                    }
+                                    else
+                                    {
+                                        dialog.show(red, R.drawable.error, "Đã xảy ra lỗi", "Xin hãy thử lại vào lần sau");
+                                    }
                                 }
-                                else
+
+                                @Override
+                                public void onCancelled(FirebaseError firebaseError)
                                 {
-                                    dialog.show(red, R.drawable.error, "Đã xảy ra lỗi", "Xin hãy thử lại vào lần sau");
+                                    query.removeEventListener(this);
                                 }
-                            }
-
-                            @Override
-                            public void onCancelled(FirebaseError firebaseError)
-                            {
-                                query.removeEventListener(this);
-                            }
-                        });
+                            });
+                        }
+                        else
+                        {
+                            dialog.show(red, R.drawable.error, "Tuyến đường bị trùng", "Đường đi mà bạn vừa gợi ý đã có bị trùng với một tuyến đường tắt khác trước đây");
+                        }
                     }
                     else
                     {
-                        dialog.show(red, R.drawable.error, "Tuyến đường bị trùng", "Đường đi mà bạn vừa gợi ý đã có bị trùng với một tuyến đường tắt khác trước đây");
+                        Toast.makeText(this, "Di chuyển các điểm để tạo đường đi", Toast.LENGTH_SHORT).show();
                     }
-
-                    break;
                 }
                 else
                 {
                     Toast.makeText(this, "Không có kết nối Internet", Toast.LENGTH_SHORT).show();
                 }
             }
+            break;
         }
     }
 
@@ -288,16 +304,16 @@ public class ShortcutActivity extends AppCompatActivity implements View.OnClickL
 
                 Log.d("shortcut", "" + radius);
 
-                startPos = new LatLng(jam.latitude, jam.longitude + 0.005);
-                endPos = new LatLng(jam.latitude, jam.longitude - 0.005);
+                startPos = new LatLng(jam.latitude, jam.longitude + 0.0025);
+                endPos = new LatLng(jam.latitude, jam.longitude - 0.0025);
 
                 break;
             }
 
             default:
             {
-                startPos = new LatLng(jam.latitude, jam.longitude + 0.005);
-                endPos = new LatLng(jam.latitude, jam.longitude - 0.005);
+                startPos = new LatLng(jam.latitude, jam.longitude + 0.0025);
+                endPos = new LatLng(jam.latitude, jam.longitude - 0.0025);
                 break;
             }
         }

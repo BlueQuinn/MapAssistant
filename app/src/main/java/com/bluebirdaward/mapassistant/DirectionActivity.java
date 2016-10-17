@@ -1,6 +1,7 @@
 package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Path;
 import android.location.Geocoder;
 import android.net.ConnectivityManager;
@@ -97,7 +98,7 @@ public class DirectionActivity extends AppCompatActivity
     public static final int PLACE_DIRECTION = 3;
 
     ProgressBar prbLoading;
-    int colorGreen, colorLime, colorRoute;
+    int colorGreen, colorLime, colorRoute, colorAccent;
 
     int time;
     MarkerOptions waypointOption;
@@ -119,6 +120,7 @@ public class DirectionActivity extends AppCompatActivity
         colorGreen = getResources().getColor(R.color.green);
         colorLime = getResources().getColor(R.color.lime);
         colorRoute = getResources().getColor(R.color.routeColor);
+        colorAccent = getResources().getColor(R.color.colorAccent);
 
         textView = new TextView[2];
         textView[0] = (TextView) findViewById(R.id.txtFrom);
@@ -284,7 +286,7 @@ public class DirectionActivity extends AppCompatActivity
                 map.addMarker(endOption);
             }*/
 
-            map.animateCamera(CameraUpdateFactory.newLatLng(pos));
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 16));
             if (isDirected())
             {
                 for (Marker i : waypoint)
@@ -407,6 +409,15 @@ public class DirectionActivity extends AppCompatActivity
             case R.id.btnAdd:
                 if (isDirected())
                 {
+                    SharedPreferences sharedPref = getSharedPreferences("firstLaunch", MODE_PRIVATE);
+                    boolean firstLaunch = sharedPref.getBoolean("addWaypoint", true);
+                    if (firstLaunch)
+                    {
+                        MessageDialog.showMessage(this, colorAccent, R.drawable.traffic, "Thêm điểm dừng", "Nhấn giữ vào các lá cờ màu tím và di chuyển để thêm điểm dừng.\nGiúp bạn dễ dàng tối ưu đường đi của mình hơn");
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putBoolean("addWaypoint", false);
+                        editor.apply();
+                    }
                     LatLng position = new LatLng((startOption.getPosition().latitude + endOption.getPosition().latitude) / 2, (startOption.getPosition().longitude + endOption.getPosition().longitude) / 2);
                     waypoint.add(map.addMarker(waypointOption.position(position)));
                 }
@@ -421,9 +432,13 @@ public class DirectionActivity extends AppCompatActivity
                 {
                     if (isOnline())
                     // prbLoading.setVisibility(View.VISIBLE);
-                    loadTraffic();
+                    {
+                        loadTraffic();
+                    }
                     else
+                    {
                         Toast.makeText(this, "Không có kết nối Internet", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 else
                 {
@@ -438,7 +453,7 @@ public class DirectionActivity extends AppCompatActivity
         time = TrafficUtils.trafficTime();
         if ((time >= 390 && time <= 720) || (time >= 990 && time <= 1170))
         {
-            final LoadingDialog dialog = LoadingDialog.show(this, "Phát hiện những điểm ùn tắc giao thông gần đấy");
+            final LoadingDialog dialog = LoadingDialog.show(this, "Phát hiện những nơi có ùn tắc giao thông trên lộ trình");
             final Firebase firebase = new Firebase(getResources().getString(R.string.database_traffic));
             final Query lineQuery = firebase.child("line").orderByChild("time").startAt(time - 30).endAt(time + 30);
             lineQuery.addListenerForSingleValueEvent(new ValueEventListener()    // chưa load downNode
@@ -473,6 +488,16 @@ public class DirectionActivity extends AppCompatActivity
                                     {
                                         hmTraffic = result;
                                         dialog.dismiss();
+
+                                        SharedPreferences sharedPref = getSharedPreferences("firstLaunch", MODE_PRIVATE);
+                                        boolean firstLaunch = sharedPref.getBoolean("detectTraffic", true);
+                                        if (firstLaunch)
+                                        {
+                                            MessageDialog.showMessage(DirectionActivity.this, colorAccent, R.drawable.traffic, "Tránh kẹt xe", "Map Assistant giúp kiểm tra và phát hiện những điểm đang xảy ra ùn tắc giao thông trên lộ trình của bạn.\nTừ nay bạn sẽ không còn phải lo về vấn đề này nữa nhé!");
+                                            SharedPreferences.Editor editor = sharedPref.edit();
+                                            editor.putBoolean("detectTraffic", false);
+                                            editor.apply();
+                                        }
 
                                         LatLng[] pos;
                                         if (trafficLines.size() > 0)
@@ -765,6 +790,7 @@ public class DirectionActivity extends AppCompatActivity
                         else
                         {
                             sendRating(shortcut.getId(), rating);
+                            shortcut.setRating(rating);
                         }
                     }
                 });
@@ -876,7 +902,8 @@ public class DirectionActivity extends AppCompatActivity
         }
     }
 
-    boolean isOnline() {
+    boolean isOnline()
+    {
         ConnectivityManager cm =
                 (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();

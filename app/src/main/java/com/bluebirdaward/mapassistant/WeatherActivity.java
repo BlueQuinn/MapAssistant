@@ -57,7 +57,7 @@ public class WeatherActivity extends AppCompatActivity
         boolean firstLaunch = sharedPref.getBoolean("weather", true);
         if (firstLaunch)
         {
-            MessageDialog.showMessage(this, getResources().getColor(R.color.colorAccent), R.drawable.weather_today, "Dự báo thời tiết", "Bạn sẽ không còn phải lo lắng về việc ngày hôm nay ra đường gặp những cơn mưa bất chợt nữa\nVì đã có Map Assistant, giúp bạn cập nhật thông tin thời tiết một cách thường xuyên để tiện cho việc tham gia giao thông");
+            MessageDialog.showMessage(this, getResources().getColor(R.color.colorAccent), R.drawable.weather_today, "Dự báo thời tiết", "Bạn sẽ không còn phải lo lắng về việc ngày hôm nay ra đường gặp những cơn mưa bất chợt nữa.\nVì đã có Map Assistant, giúp cập nhật thông tin thời tiết một cách thường xuyên để tiện cho việc tham gia giao thông");
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putBoolean("weather", false);
             editor.apply();

@@ -215,7 +215,7 @@ public class NotifyActivity extends AppCompatActivity
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
     {
-        tvRadius.setText("Ước tính phạm vi ùn tắc: " + getRadius() + "m");
+        tvRadius.setText("Ước tính phạm vi ùn tắc: " + getLength() + "m");
     }
 
     @Override
@@ -253,7 +253,7 @@ public class NotifyActivity extends AppCompatActivity
 
     String jamType = Traffic.MY_TRAFFIC;
     int id = -1;
-    boolean intersect = false;
+    boolean intersect;
 
     boolean checkLine(DataSnapshot snapshot)
     {
@@ -340,6 +340,7 @@ public class NotifyActivity extends AppCompatActivity
                             Map<String, Object> circleNode = new HashMap<>();
                             circleNode.put("lat", myLocation.latitude);
                             circleNode.put("lng", myLocation.longitude);
+                            circleNode.put("time", time);
                             circleNode.put("radius", getRadius());
                             circleNode.put("rate", 1);
                             circleNode.put("id", id);

@@ -123,4 +123,9 @@ public class Shortcut implements SafeParcelable
             return new Shortcut[size];
         }
     };
+
+    public void setRating(int rating)
+    {
+        this.rating = rating;
+    }
 }
