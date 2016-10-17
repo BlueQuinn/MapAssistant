@@ -104,16 +104,6 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AndroidManifest.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-11.892858">
-              <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="NotifyActivity.java" pinned="true" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/NotifyActivity.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -174,8 +164,8 @@
       <file leaf-file-name="DirectionActivity.java" pinned="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.3327338">
-              <caret line="568" column="16" selection-start-line="568" selection-start-column="16" selection-end-line="568" selection-end-column="16" />
+            <state vertical-scroll-proportion="-0.52820516">
+              <caret line="320" column="9" selection-start-line="320" selection-start-column="9" selection-end-line="320" selection-end-column="9" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#5554#5597#0" expanded="true" />
@@ -183,7 +173,7 @@
                 <element signature="e#18960#21619#0" expanded="true" />
                 <element signature="e#20301#20309#0" expanded="true" />
                 <element signature="e#21618#21619#0" expanded="true" />
-                <element signature="e#30245#30296#0" expanded="true" />
+                <element signature="e#30406#30457#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -2994,7 +2984,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java</url>
-          <line>771</line>
+          <line>776</line>
           <properties />
           <option name="timeStamp" value="39" />
         </line-breakpoint>
@@ -3036,7 +3026,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java</url>
-          <line>725</line>
+          <line>730</line>
           <properties />
           <option name="timeStamp" value="82" />
         </line-breakpoint>
@@ -3048,7 +3038,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java</url>
-          <line>734</line>
+          <line>739</line>
           <properties />
           <option name="timeStamp" value="87" />
         </line-breakpoint>
@@ -3445,15 +3435,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/NotifyActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="344" column="54" selection-start-line="344" selection-start-column="54" selection-end-line="344" selection-end-column="54" />
-          <folding>
-            <element signature="e#7766#7817#0" expanded="true" />
-            <element signature="e#13408#13409#0" expanded="true" />
-            <element signature="e#13446#13447#0" expanded="true" />
-          </folding>
+        <state vertical-scroll-proportion="0.5978456">
+          <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -3465,11 +3451,15 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/NotifyActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-11.892858">
-          <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
-          <folding />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="344" column="54" selection-start-line="344" selection-start-column="54" selection-end-line="344" selection-end-column="54" />
+          <folding>
+            <element signature="e#7766#7817#0" expanded="true" />
+            <element signature="e#13408#13409#0" expanded="true" />
+            <element signature="e#13446#13447#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -3492,8 +3482,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/com/bluebirdaward/mapassistant/DirectionActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3327338">
-          <caret line="568" column="16" selection-start-line="568" selection-start-column="16" selection-end-line="568" selection-end-column="16" />
+        <state vertical-scroll-proportion="-0.52820516">
+          <caret line="320" column="9" selection-start-line="320" selection-start-column="9" selection-end-line="320" selection-end-column="9" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#5554#5597#0" expanded="true" />
@@ -3501,7 +3491,7 @@
             <element signature="e#18960#21619#0" expanded="true" />
             <element signature="e#20301#20309#0" expanded="true" />
             <element signature="e#21618#21619#0" expanded="true" />
-            <element signature="e#30245#30296#0" expanded="true" />
+            <element signature="e#30406#30457#0" expanded="true" />
           </folding>
         </state>
       </provider>

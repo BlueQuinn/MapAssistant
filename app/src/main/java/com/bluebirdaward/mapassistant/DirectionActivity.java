@@ -568,12 +568,17 @@ public class DirectionActivity extends AppCompatActivity
     @Override
     public void onMarkerDragEnd(Marker marker)
     {
+        map.clear();
+        map.addMarker(startOption);
+        map.addMarker(endOption);
+
         ArrayList<LatLng> point = new ArrayList<>();
         point.add(startOption.getPosition());
         point.add(endOption.getPosition());
         for (Marker i : waypoint)
         {
             point.add(i.getPosition());
+            map.addMarker(waypointOption.position(i.getPosition()));
         }
         navigate(point.toArray(new LatLng[point.size()]));
     }
@@ -847,11 +852,6 @@ public class DirectionActivity extends AppCompatActivity
                             Toast.makeText(getApplicationContext(), "Không thể tải được dữ liệu", Toast.LENGTH_LONG).show();
                             return;
                         }
-
-                        /*if (polyline != null)
-                        {
-                            polyline.remove();
-                        }*/
 
                         PolylineOptions option = new PolylineOptions().width(15).color(colorRoute).clickable(true);
                         option.addAll(firstRoute.getRoute());
