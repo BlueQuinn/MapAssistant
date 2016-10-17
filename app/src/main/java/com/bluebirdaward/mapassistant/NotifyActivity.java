@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 
 import java.text.SimpleDateFormat;
@@ -41,6 +42,9 @@ import widgets.LoadingDialog;
 import widgets.MessageDialog;
 
 import com.bluebirdaward.mapassistant.gmmap.R;
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.maps.model.LatLng;
 
 import static model.TrafficCircle.getRadius;
@@ -59,6 +63,7 @@ public class NotifyActivity extends AppCompatActivity
     SeekBar radiusPicker;
     String info;
     Firebase ref;
+    Query query;
     MessageDialog dialog;
 
     View.OnClickListener reloadListener, notifyListener;
@@ -140,6 +145,13 @@ public class NotifyActivity extends AppCompatActivity
                     tvAddress.setText("Bạn đang ở " + address);
                     btnNotify.setText("Thông báo");
                     btnNotify.setOnClickListener(notifyListener);
+
+                    new ShowcaseView.Builder(NotifyActivity.this)
+                            .setTarget(new ViewTarget(R.id.btnNotify, NotifyActivity.this))
+                            .setContentTitle("ShowcaseView")
+                            .setContentText("This is highlighting the Home button")
+                            .hideOnTouchOutside()
+                            .build();
                 }
             }
         });
@@ -237,7 +249,8 @@ public class NotifyActivity extends AppCompatActivity
         dialog.show();
 
         time = TrafficUtils.getTimeNode();
-        ref = new Firebase(getResources().getString(R.string.database_traffic)).child(time);
+        ref = new Firebase(getResources().getString(R.string.database_traffic)).child("line");
+        query = ref.
         ref.addValueEventListener(this);
     }
 
@@ -272,7 +285,7 @@ public class NotifyActivity extends AppCompatActivity
         }
 
         boolean intersect = false;
-        int myRadius = ((radiusPicker.getProgress() / 2) + 2) * 50;
+        //int myRadius = ((radiusPicker.getProgress() / 2) + 2) * 50;
         DataSnapshot circleData = snapshot.child("circle");
         if (!find)      // put to existing circle
         {
@@ -340,7 +353,7 @@ public class NotifyActivity extends AppCompatActivity
             dialog.show(getResources().getColor(R.color.green), R.drawable.smile, "Gửi thông báo thành công", "Cảm ơn bạn đã thông báo vị trí ùn tắc giao thông này cho tất cả mọi người cùng được biết");
 
 
-            Log.d("traffic", "notift " + time + " " + jamType + " " + myRadius);
+           // Log.d("traffic", "notift " + time + " " + jamType + " " + myRadius);
         }
         else
         {

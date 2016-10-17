@@ -44,4 +44,6 @@ dependencies {
     compile files('libs/urlimageviewhelper-1.0.4.jar')
 
     compile 'com.firebase:firebase-client-android:2.5.2'
+
+    compile 'com.github.amlcurran.showcaseview:library:5.4.3'
 }

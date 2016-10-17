@@ -371,6 +371,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             intent.putExtra("myLocation", myLocation);
                             intent.putExtra("myAddress", address);
                             intent.putExtra("destination", destination);
+                            startActivity(intent);
                         }
                     });
                     asyncTask.execute(destination.getPosition().latitude, destination.getPosition().longitude);
@@ -386,8 +387,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         intent.putExtra("position", myLocation);
                     }
                     intent.putExtra("zoom", map.getCameraPosition().zoom);
+                    startActivity(intent);
                 }
-                startActivity(intent);
                 break;
             }
 

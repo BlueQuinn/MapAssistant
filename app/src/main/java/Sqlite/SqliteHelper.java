@@ -331,4 +331,13 @@ public class SqliteHelper extends SQLiteOpenHelper
     {
         return rating(time, jamType, ID, rating, "0");
     }
+
+    public boolean checkShortcutDuplicate(int time, String jamType, int ID, String route)
+    {
+        String type = jamType.substring(0, 1);
+        ArrayList<HashMap<String, String>> data = executeQuery(String.format(Locale.US,
+                "select * from Shortcut where Time = %d and JamType = '%s' and ID = %d and Route = '%s'",
+                time, type, ID, route));
+        return data.size() > 0;
+    }
 }
