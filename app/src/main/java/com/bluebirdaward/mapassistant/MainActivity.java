@@ -580,18 +580,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                         setTrafficClick(false);
                                         prbLoading.setVisibility(View.GONE);
 
-                                        LatLng[] pos;
+                                        ArrayList<LatLng> pos = new ArrayList<LatLng>();
                                         if (trafficLine.size() > 0)
                                         {
-                                            pos = new LatLng[trafficCircles.size()];
+                                            for (TrafficLine line : trafficLine)
+                                            {
+                                                pos.add(line.getEnd());
+                                                pos.add(line.getStart());
+                                            }
                                         }
                                         else
                                         {
-                                            pos = new LatLng[trafficLine.size()];
+                                            for (TrafficCircle circle : trafficCircles)
+                                            {
+                                                pos.add(circle.getCenter());
+                                            }
                                         }
-                                        if (pos.length > 0)
+                                        if (pos.size() > 0)
                                         {
-                                            LatLngBounds bound = MapUtils.getBound(pos);
+                                            LatLngBounds bound = MapUtils.getBound(pos.toArray(new LatLng[pos.size()]));
                                             map.animateCamera(CameraUpdateFactory.newLatLngBounds(bound, 15));
                                         }
 
@@ -1038,7 +1045,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     boolean isOnline()
     {
-        ConnectivityManager cm =  (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
