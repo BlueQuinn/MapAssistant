@@ -2,7 +2,6 @@ package com.bluebirdaward.mapassistant;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Path;
 import android.location.Geocoder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -91,8 +90,8 @@ public class DirectionActivity extends AppCompatActivity
 
     Traffic hmTraffic;
     HashMap<String, Shortcut> hmShortcut;
+    ArrayList<Polyline> listPolyline;
 
-    int request;
     final int CUSTOM_DIRECTION = 1;      //
     public static final int RESTAURANT_DIRECTION = 2;    // btnTrack click
     public static final int PLACE_DIRECTION = 3;
@@ -100,7 +99,7 @@ public class DirectionActivity extends AppCompatActivity
     ProgressBar prbLoading;
     int colorGreen, colorLime, colorRoute, colorAccent;
 
-    int time;
+
     MarkerOptions waypointOption;
     String jamType;
     int jamId;
@@ -172,7 +171,7 @@ public class DirectionActivity extends AppCompatActivity
         geocoder = new Geocoder(this, Locale.getDefault());
 
         Intent intent = getIntent();
-        request = intent.getIntExtra("request", CUSTOM_DIRECTION);
+       int request = intent.getIntExtra("request", CUSTOM_DIRECTION);
         switch (request)
         {
             case CUSTOM_DIRECTION:
@@ -416,6 +415,7 @@ public class DirectionActivity extends AppCompatActivity
                     }
                     LatLng position = new LatLng((startOption.getPosition().latitude + endOption.getPosition().latitude) / 2, (startOption.getPosition().longitude + endOption.getPosition().longitude) / 2);
                     waypoint.add(map.addMarker(waypointOption.position(position)));
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 16));
                 }
                 else
                 {
@@ -446,7 +446,8 @@ public class DirectionActivity extends AppCompatActivity
 
     void loadTraffic()
     {
-        time = TrafficUtils.trafficTime();
+        shortcut = null;
+     final int   time = TrafficUtils.trafficTime();
         if ((time >= 390 && time <= 720) || (time >= 990 && time <= 1170))
         {
             final LoadingDialog dialog = LoadingDialog.show(this, "Phát hiện những nơi có ùn tắc giao thông trên lộ trình");
@@ -568,17 +569,22 @@ public class DirectionActivity extends AppCompatActivity
     @Override
     public void onMarkerDragEnd(Marker marker)
     {
-        map.clear();
-        map.addMarker(startOption);
-        map.addMarker(endOption);
-
         ArrayList<LatLng> point = new ArrayList<>();
         point.add(startOption.getPosition());
         point.add(endOption.getPosition());
         for (Marker i : waypoint)
         {
             point.add(i.getPosition());
-            map.addMarker(waypointOption.position(i.getPosition()));
+
+        }
+        map.clear();
+        map.addMarker(startOption);
+        map.addMarker(endOption);
+        waypoint = new ArrayList<>();
+        for (int i = 2; i < point.size(); ++i)
+        {
+            Marker m = map.addMarker(waypointOption.position(point.get(i)));
+            waypoint.add(m);
         }
         navigate(point.toArray(new LatLng[point.size()]));
     }
@@ -590,6 +596,15 @@ public class DirectionActivity extends AppCompatActivity
         {
             return false;
         }
+        if (marker.getSnippet() != null && (marker.getSnippet().equals("Điểm đầu") || marker.getSnippet().equals("Điểm cuối")))
+        {
+            return false;
+        }
+        /*if (shortcut != null && (marker.getPosition().equals(shortcut.getStart()) || marker.getPosition().equals(shortcut.getEnd())))
+        {
+            return false;
+        }*/
+
         for (final Marker m : waypoint)
         {
             if (m.getId().equals(marker.getId()))
@@ -618,6 +633,11 @@ public class DirectionActivity extends AppCompatActivity
             }
         }
 
+        if (shortcut != null)
+        {
+            return false;
+        }
+
         AddressAst asyncTask = new AddressAst(geocoder);
         asyncTask.setListener(new OnLoadListener<String>()
         {
@@ -633,53 +653,52 @@ public class DirectionActivity extends AppCompatActivity
                             {
                                 prbLoading.setVisibility(View.VISIBLE);
 
+                                if (listPolyline != null && listPolyline.size() > 0)
+                                {
+                                    for (Polyline polyline : listPolyline)
+                                    {
+                                        polyline.remove();
+                                    }
+                                }
+                                listPolyline = new ArrayList<>();
                                 hmShortcut = new HashMap<>();
-                                ArrayList<Shortcut> shortcuts;
+                                ArrayList<Shortcut> shortcuts = null;
                                 if (hmTraffic.isLine(marker.getId()))
                                 {
                                     TrafficLine line = hmTraffic.getLine(marker.getId());
-                                    shortcuts = line.getShortcuts();
-                                    jamType = Traffic.LINE;
-                                    jamId = line.getId();
+                                    if (line != null)
+                                    {
+                                        shortcuts = line.getShortcuts();
+                                        jamType = Traffic.LINE;
+                                        jamId = line.getId();
+                                    }
                                 }
                                 else
                                 {
                                     TrafficCircle circle = hmTraffic.getCircle(marker.getId());
-                                    shortcuts = circle.getShortcuts();
-                                    jamType = Traffic.CIRCLE;
-                                    jamId = circle.getId();
+                                    if (circle != null)
+                                    {
+                                        shortcuts = circle.getShortcuts();
+                                        jamType = Traffic.CIRCLE;
+                                        jamId = circle.getId();
+                                    }
                                 }
 
                                 if (shortcuts != null && shortcuts.size() > 0)
                                 {
-                                    MarkerOptions markerOptions = new MarkerOptions().position(marker.getPosition())
-                                            .title(marker.getTitle()).snippet(marker.getSnippet());
-                                    if (getRating(marker.getSnippet()) > 2 * meta)
-                                    {
-                                        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_high));
-                                    }
-                                    else
-                                    {
-                                        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.traffic_medium));
-                                    }
-                                    map.clear();
-                                    if (snackbar != null)
-                                    {
-                                        snackbar.dismiss();
-                                    }
-                                    map.addMarker(markerOptions);
-                                    redraw();
                                     for (int i = 0; i < shortcuts.size(); ++i)
                                     {
                                         PolylineOptions options = new PolylineOptions().color(colorGreen).width(15);
                                         options.addAll(shortcuts.get(i).getRoute()).clickable(true).zIndex(10);
                                         Polyline polyline = map.addPolyline(options);
                                         hmShortcut.put(polyline.getId(), shortcuts.get(i));
+                                        listPolyline.add(polyline);
 
                                         addStart(shortcuts.get(i).getStart(), i);
                                         addEnd(shortcuts.get(i).getEnd(), i);
                                     }
                                     prbLoading.setVisibility(View.GONE);
+                                    //snackbar.dismiss();
                                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16));
                                 }
                                 else
@@ -687,6 +706,8 @@ public class DirectionActivity extends AppCompatActivity
                                     prbLoading.setVisibility(View.GONE);
                                     Toast.makeText(DirectionActivity.this, "Hiện chưa có tuyến đường tắt nào", Toast.LENGTH_SHORT).show();
                                 }
+
+                                //snackbar.dismiss();
                             }
                         });
                 snackbar.show();
@@ -865,8 +886,12 @@ public class DirectionActivity extends AppCompatActivity
                         option.addAll(route.getRoute());
                         polyline = map.addPolyline(option);
 
-                        map.addMarker(waypointOption.position(shortcut.getStart()));
-                        map.addMarker(waypointOption.position(shortcut.getEnd()));
+                        waypoint = new ArrayList<>();
+
+                        Marker s = map.addMarker(waypointOption.position(shortcut.getStart()));
+                        Marker e = map.addMarker(waypointOption.position(shortcut.getEnd()));
+                        waypoint.add(s);
+                        waypoint.add(e);
                         map.addMarker(startOption);
                         map.addMarker(endOption);
                         map.animateCamera(CameraUpdateFactory.newLatLngBounds(MapUtils.getBound(startOption.getPosition(), endOption.getPosition()), width, height, 150));
